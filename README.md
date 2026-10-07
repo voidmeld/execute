@@ -54,13 +54,13 @@ local groups: { ScopedChecks.Group } = {
 	{
 		name = "tools",
 		paths = { "^tools/" },
-		specs = { "^tools/.*%.spec%.luau$" },
+		specs = { "^tools/.*%.verify%.luau$" },
 		checks = { { "tools/check-no-any.luau" } },
 	},
 }
 
 local changed = { "tools/check-comments.luau", "docs/STATE.md", "notes.txt" }
-local candidates = { "tools/check-comments.spec.luau", "tools/other.spec.luau" }
+local candidates = { "tools/check-comments.verify.luau", "tools/other.verify.luau" }
 
 local selection = ScopedChecks.select(changed, groups, candidates, nil)
 for _, group in selection.groups do
@@ -111,7 +111,7 @@ Run `lute run tools/gate.luau` on final bytes. It is one declared [Verify](https
 The specs use the Verify testing library. An adopter who copies a module does not need it.
 The gate pins Verify in `dependencies.lock.luau` and materializes it into the ignored `.lute/dependencies` directory. Set `VERIFY_SOURCE` to a local Verify checkout to avoid the network.
 
-Run one spec with `lute run tools/gate.luau --file extensions/luau/landing.spec.luau`.
+Run one spec with `lute run tools/gate.luau --file extensions/luau/landing.verify.luau`.
 Run the cases whose name contains a text with `--name text`.
 Other options are `--only producer`, `--case id`, `--rerun`, `--explain id` and `--list`. A narrowed run is not the gate.
 

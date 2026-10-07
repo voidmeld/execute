@@ -33,8 +33,8 @@ table.sort(luauFiles)
 local specs = Lute.corpus.discover({
 	listDir = fs.listDirectory,
 	rules = {
-		{ root = "extensions/luau", pattern = "%.spec%.luau$" },
-		{ root = "tools", pattern = "%.spec%.luau$" },
+		{ root = "extensions/luau", pattern = "%.verify%.luau$" },
+		{ root = "tools", pattern = "%.verify%.luau$" },
 	},
 })
 assert(#specs > 0, "test corpus is empty")

@@ -32,9 +32,9 @@ Freshness uses file modification times. A source that is touched without a conte
 
 ## Verification
 
-Each module has an adjacent `*.spec.luau` specification. The specs use the Verify testing library. An adopter who copies a module does not need it.
-`worktree.spec.luau` exercises setup and landing against temporary git repositories and removes them through its case context.
-Run `lute run tools/gate.luau` for the whole repository gate. Run one spec with `lute run tools/gate.luau --file extensions/luau/<name>.spec.luau`.
+Each module has an adjacent `*.verify.luau` specification. The specs use the Verify testing library. An adopter who copies a module does not need it.
+`worktree.lute.verify.luau` exercises setup and landing against temporary git repositories and removes them through its case context.
+Run `lute run tools/gate.luau` for the whole repository gate. Run one spec with `lute run tools/gate.luau --file extensions/luau/<name>.verify.luau`.
 Follow [Validate](../../README.md#validate).
 
 ## Adoption

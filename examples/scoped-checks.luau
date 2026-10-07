@@ -12,13 +12,13 @@ local groups: { ScopedChecks.Group } = {
 	{
 		name = "tools",
 		paths = { "^tools/" },
-		specs = { "^tools/.*%.spec%.luau$" },
+		specs = { "^tools/.*%.verify%.luau$" },
 		checks = { { "tools/check-no-any.luau" } },
 	},
 }
 
 local changed = { "tools/check-comments.luau", "docs/STATE.md", "notes.txt" }
-local candidates = { "tools/check-comments.spec.luau", "tools/other.spec.luau" }
+local candidates = { "tools/check-comments.verify.luau", "tools/other.verify.luau" }
 
 local selection = ScopedChecks.select(changed, groups, candidates, nil)
 for _, group in selection.groups do

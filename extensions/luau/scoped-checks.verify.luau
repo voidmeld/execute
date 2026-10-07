@@ -7,13 +7,13 @@ local groups: { ScopedChecks.Group } = {
 	{
 		name = "zone",
 		paths = { "^world/zone/" },
-		specs = { "^tests/Zone[^/]*%.spec%.luau$" },
+		specs = { "^tests/Zone[^/]*%.verify%.luau$" },
 		checks = { { "tools/audit.luau" } },
 	},
 	{
 		name = "art",
 		paths = { "^assets/" },
-		specs = { "^tests/Zone[^/]*%.spec%.luau$", "^tests/Art%.spec%.luau$" },
+		specs = { "^tests/Zone[^/]*%.verify%.luau$", "^tests/Art%.verify%.luau$" },
 		checks = { { "tools/audit.luau" }, { "tools/rights.luau" } },
 	},
 }
@@ -37,10 +37,10 @@ return function(suite: Verify.Harness)
 
 	suite:case("selects specs and checks by owning group", function(context)
 		local candidates =
-			{ "tests/ZoneB.spec.luau", "tests/Art.spec.luau", "tests/ZoneA.spec.luau", "tests/Other.spec.luau" }
+			{ "tests/ZoneB.verify.luau", "tests/Art.verify.luau", "tests/ZoneA.verify.luau", "tests/Other.verify.luau" }
 		local selection = ScopedChecks.select({ "world/zone/a.luau" }, groups, candidates, nil)
 		context:expect(#selection.specs):toBe(2)
-		context:expect(selection.specs[1]):toBe("tests/ZoneA.spec.luau")
+		context:expect(selection.specs[1]):toBe("tests/ZoneA.verify.luau")
 		context:expect(#selection.checks):toBe(1)
 		context:expect(selection.checks[1][1]):toBe("tools/audit.luau")
 
@@ -49,10 +49,10 @@ return function(suite: Verify.Harness)
 		context:expect(#both.checks):toBe(2)
 
 		local dropped = ScopedChecks.select({ "world/zone/a.luau" }, groups, candidates, function(spec: string)
-			return spec ~= "tests/ZoneB.spec.luau"
+			return spec ~= "tests/ZoneB.verify.luau"
 		end)
 		context:expect(#dropped.specs):toBe(1)
-		context:expect(dropped.specs[1]):toBe("tests/ZoneA.spec.luau")
+		context:expect(dropped.specs[1]):toBe("tests/ZoneA.verify.luau")
 
 		local none = ScopedChecks.select({ "README.md" }, groups, candidates, nil)
 		context:expect(#none.groups):toBe(0)
