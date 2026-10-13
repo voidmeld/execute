@@ -19,11 +19,14 @@ Exact Owner grants belong in [OWNER](OWNER.md).
 A successor reads this section first and needs no chat history.
 Keep it current at every handoff and before you yield. Delete a line when its work lands or is disposed.
 
-- Helpers: for each helper, the native identity, worktree path, branch, base commit, brief and state (running, returned or blocked). Add the returned commit when it is known. FILL
+- Helpers: for each declared session, its identity, worktree, branch, base, current assignment and state (running, returned or blocked). Link its one replaceable result record. FILL
 - Background tasks: for each task, the exact command, worktree, start time, output location and what its completion unblocks. FILL
 - Unlanded branches and worktrees: path, branch, head commit, what remains and whether it is safe to discard. FILL
 - Integration in progress: branch, candidate commit, last refusal and its log path, or none. FILL
 - Next action: the single next step and its exact command. FILL
+- Native/heavy slot: current holder, command, source, completion notification and release condition, or free. FILL
+
+Keep one current product plan in the adopting project. Replace superseded state; do not replay old briefs or keep a second prompt queue.
 
 ### Resume
 

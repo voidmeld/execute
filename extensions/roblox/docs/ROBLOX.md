@@ -17,7 +17,7 @@ Read [generative assets](ROBLOX-GENERATIVE-ASSETS.md) only for generation work.
 1. **Static and spec:** source, types, contracts and deterministic builds.
 2. **Headless engine:** APIs and engine behavior on an isolated test place.
 3. **Scenario play:** a scripted journey with captures, under the exact identity of the built source.
-4. **Played destination:** the published client journey and an independent artifact verdict.
+4. **Played destination:** the published client journey and the accountable CEO's artifact verdict, with any review required by OWNER.
 
 Evidence from a lower tier never proves a claim of a higher tier.
 Publication is complete only when you read back the source identity, owner, privacy, moderation, access and destination bytes.
@@ -141,7 +141,7 @@ Marketplace payloads are geometry and rigs only. Inspect them for scripts and ca
 Generation, upload, access change, place save and publication are external mutations.
 
 1. Bind the exact payload and destination.
-2. Apply risk-tiered independent review.
+2. Apply the review and rights requirements declared by OWNER for this exact payload.
 3. Perform one authorized act.
 4. Read back ownership, privacy and moderation.
 

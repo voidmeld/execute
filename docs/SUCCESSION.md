@@ -1,10 +1,10 @@
 # CEO appointment
 
 Use this procedure to appoint or replace the CEO.
-Transfer the adopter's continuation controls and the roles that the Owner does not retain on the old harness.
+Transfer the active roles and tasks that the Owner does not retain on the old harness.
 Preserve the adopter's staffing decision. A solo operation remains solo. A template reference to helpers does not authorize creating them.
 Keep healthy resources and unfinished work. Do not keep old agent drivers.
-Helpers do not survive a change of harness. Recreate them from the [recovery record](STATE.md#recovery) with the native subagents of the new harness. Do not build a bridge.
+Preserve the declared helper sessions unless OWNER replaces them. A harness change does not authorize new sessions or another staffing model.
 
 A CEO is one active harness identity recorded in [STATE](STATE.md). Only one CEO may operate at a time.
 
@@ -17,8 +17,8 @@ A CEO is one active harness identity recorded in [STATE](STATE.md). Only one CEO
 5. Verify the identity, model, effort, permission mode and continuation controls.
 6. Complete the permitted setup and approval clicks under the [agentic standard](AGENTIC-STANDARD.md#conflict-resolution). Keep required confirmation in the current conversation. Keep completed preparation. Keep the candidate without an appointment while required access is unresolved.
 7. Confirm that `main` is clean and current. Read AGENTS, the operating skill and STATE.
-8. Arm the native continuation of the harness through the [adapter](../adapters/README.md), so that the CEO keeps operating between Owner turns. Read it back.
-9. Record the verified identity, settings and continuation in STATE. Then integrate the control change through [PLAYBOOK](PLAYBOOK.md).
+8. Verify the [adapter](../adapters/README.md) can deliver the next useful assignment or task completion. Do not arm an idle loop.
+9. Record the verified identity, settings and next useful event in STATE. Then integrate the control change through [PLAYBOOK](PLAYBOOK.md).
 10. After the new identity is verified, archive the stopped prior session. If verification fails, leave operations without a CEO or explicitly restore the prior identity. Never allow overlapping drivers.
 
 Keep the active batch, its priority, the missing acceptance evidence and any blocker with its clearing condition in STATE.
@@ -47,6 +47,6 @@ The appointment is ready when all of these conditions hold:
 - One live CEO matches STATE.
 - `main` is current.
 - The retained work and any declared helper assignments are reconciled.
-- The retained setup ownership and the native continuation are verified.
+- The retained setup ownership and next useful event are verified.
 - All replaced drivers and wakeups are stopped.
 - The next action is clear.

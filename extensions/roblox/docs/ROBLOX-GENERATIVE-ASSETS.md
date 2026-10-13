@@ -27,7 +27,7 @@ When generation capacity is scarce, pause only new generation. Continue work wit
 - Spend one candidate on one materially distinct hypothesis.
 - Never retry a warned or rejected hash. Never disguise a derivative.
 - Before upload, inspect topology, scale, materials, scripts or capabilities, body and deformation risk, and moderation exposure.
-- For humanlike, body-bearing, deforming or uncertain payloads, use the strongest coverage and the independent-review floor of the project. Uncertainty selects the higher risk tier.
+- For humanlike, body-bearing, deforming or uncertain payloads, use the strongest coverage and the review requirements declared by OWNER. Uncertainty selects the higher risk tier.
 - Upload only under exact authority. Read back group ownership, privacy and moderation. Prove the durable ID in the intended runtime consumer.
 
 ## Staging is ephemeral

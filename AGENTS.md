@@ -42,7 +42,7 @@ The host injects git, filesystem, clock and process access.
 ## Delivery standard
 
 Apply [the standard](docs/AGENTIC-STANDARD.md) to workflows and code review.
-The CEO executes and judges the integrated work. TASKS limits independent review.
+The CEO executes and judges the integrated work. OWNER names any required independent review.
 A gate proves its checks. It does not prove a consumer outcome that nobody observed.
 
 ## Operating documents

@@ -22,7 +22,7 @@ A helper stops at its return. The CEO integrates.
 1. Prepare or reuse an isolated worktree on a named branch from the base. Use the adopter's worker-setup. Read the [PLAYBOOK](../../../docs/PLAYBOOK.md#worktrees-and-setup) procedure.
 2. Diagnose the observed failure at its causal boundary. Implement the bounded outcome. Run focused checks.
 3. Helper: commit one commit. Return the branch, commit, checks and limits.
-4. CEO: consume returns and refill bounded work under [TASKS](../../../docs/TASKS.md#helpers) before long serial QA.
+4. CEO: review each returned result before assigning another bounded outcome under [TASKS](../../../docs/TASKS.md#helpers). Respect the one shared native/heavy slot.
 5. CEO: review and freeze the candidate. Use the declared integration procedure. Let its tool run the final gate once and prove remote equality. If integration is withheld, return the gated candidate.
 6. Verify each user-visible or runtime claim on the assigned surface against the exact candidate. Do it before or after source integration, as the assignment requires. A claim without proof remains open.
 7. Publish only where [OWNER](../../../docs/OWNER.md) grants it, after the required running-build proof. Use the [external transaction](../../../docs/PLAYBOOK.md#external-actions). Then verify the published result as PLAYBOOK requires.
@@ -44,5 +44,6 @@ Never retry an ambiguous or attempted external action. Reconcile its journal fir
 
 In quiet mode, return the outcome, the frozen commit, the checks, the original evidence, the limits and the next action.
 Update the [recovery record](../../../docs/STATE.md#recovery).
+Replace the helper's current result instead of appending a history. Stop until a useful new assignment or dependency event arrives.
 Keep assigned surfaces between outcomes. When ownership changes, stop input and hand the surfaces back.
 Report source readiness separately from product acceptance.

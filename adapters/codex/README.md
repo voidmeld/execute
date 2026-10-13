@@ -2,33 +2,26 @@
 
 ## CEO
 
-The CEO is one top-level Codex task. At appointment, record its identity in STATE.
-Also record the observed model, reasoning, service tier, approval policy, sandbox and overlays.
-Mark each unavailable control `not exposed`. Never infer settings. Never widen permissions after a denial.
+Record the top-level task identity and observed model, reasoning, service tier, approval policy and sandbox in STATE.
+Mark an unavailable control `not exposed`. Never widen permissions after a denial.
 
 ## Helpers
 
-Helpers are native subagents with isolated editing worktrees under [TASKS](../../docs/TASKS.md#helpers). Reuse them across assignments.
+Use the persistent helper sessions declared by OWNER under [TASKS](../../docs/TASKS.md#helpers).
+Give each session AGENTS, its current bounded assignment, worktree and one result location.
+Native subagents are optional. Cross-harness sessions use their own declared transport.
+Record each session identity, branch, base and current result in the [recovery record](../../docs/STATE.md#recovery).
+Do not create a second writer for an app-owned thread or replace a declared session silently.
 
-- Give each helper AGENTS and its exact assignment.
-- Give a reviewer only the inputs in the [Reviewer contract](../../docs/TASKS.md#reviewer).
-- Record the identity, the worktree, the base and the returned HEAD in the [recovery record](../../docs/STATE.md#recovery).
-- Follow TASKS for model routing and quiet communication.
-- Address helpers by task path.
-- If helpers are app threads on the shared local daemon, use the available app messaging and completion tools. Otherwise use `codex queue --thread <name>` and its `task_complete` return.
-- Never run `codex exec resume` on an app thread, because the app holds its writer.
-- Threads rely on automatic compaction.
+## Completion and resume
 
-## Continuation
+Run a long check through a native background task and consume its completion notification.
+Respect the [shared heavy/native slot](../../docs/TASKS.md#delivery-control).
+A completed task releases the slot only after its owned processes and surface are reconciled.
 
-1. At appointment, create a heartbeat on the CEO's thread. Its prompt is `Operate as CEO indefinitely`. Read it back.
-2. Keep the current Owner continuation conditions in STATE. Apply them at each wake.
-3. Use the heartbeat. Do not use a native goal.
-4. If the controls permit, schedule the next actionable event. Otherwise use the Owner's cadence, or 30 minutes if the Owner specifies none. Record the cadence.
-5. At each invocation, apply [delivery control](../../docs/TASKS.md#delivery-control) once. Act on the completion events that arrive.
-
-Do not imply instantaneous wakeups if the harness has not demonstrated them.
-The heartbeat grants no release authority. It cannot wake a stopped app.
+Resume for a new assignment, a result, a cleared dependency or an explicit Owner request.
+Send only that event and its next useful action; read current state instead of replaying history.
+Do not create a scheduled heartbeat or perpetual goal just to keep the CEO or a returned helper active.
+If no useful action remains, record the dependency and stop.
 
 The same task resumes from STATE. A changed CEO identity follows [SUCCESSION](../../docs/SUCCESSION.md).
-Cross-harness work follows the [shared adapter contract](../README.md).

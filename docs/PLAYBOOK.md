@@ -52,7 +52,7 @@ For a claim about the running product, the assigned helper or the CEO runs the e
 
 Bind the evidence to the product commit that ran, not to a later receipt commit.
 Helpers execute checks and repair their assigned outcomes. The CEO evaluates the returned evidence against the fixed criteria.
-If the declared material or asset risk requires independent review, use the [Reviewer contract](TASKS.md#reviewer).
+If OWNER requires independent review for the material or asset, follow the declared scope in [TASKS](TASKS.md#review).
 State the coverage and the limits. A passing gate does not prove the whole product.
 Turn each defect that the Owner finds into a regression at the boundary that can detect it.
 Do not present a build until its required acceptance checks pass.
@@ -69,7 +69,7 @@ Give each runtime one driver.
 - Hand off control before another driver acts.
 - When the run ends, release the resource.
 - Terminate only an exact owned disposable process.
-- If measured capacity permits, run independent surfaces in parallel.
+- Use the team's single native/heavy slot. Keep independent lightweight source work outside that slot.
 
 A runtime assignment grants no credentials, publication, spending or permission changes.
 
@@ -105,6 +105,8 @@ The outcome assignment grants the CEO scoped integration unless it explicitly wi
 Select checks by changed file. The adopter declares groups of path patterns with their specs and checks.
 The landing tool runs only the groups that the candidate touches, plus any explicit selection.
 If no group owns a path, use an explicit selection or the adopter's full-gate flag. No tool silently runs everything.
+Use focused checks while editing. Qualify the combined candidate once for a shared-contract change or release claim.
+Do not repeat that qualification before and during landing. Repeat only for a relevant change or an unresolved failure.
 
 For direct solo integration:
 

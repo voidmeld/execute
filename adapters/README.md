@@ -1,34 +1,19 @@
 # Harness adapters
 
-Adapters map the operating contract of Execute to native agent controls.
-They do not redefine roles, permissions or review requirements.
-[TASKS](../docs/TASKS.md) owns those decisions. STATE records live identities and assignments. ADOPTION records model and harness choices.
+Adapters map Execute's operating contract to available controls. They do not grant authority or define staffing.
+[TASKS](../docs/TASKS.md) owns assignments and results. OWNER chooses the sessions; ADOPTION records the harness and model routes.
 
-- [Codex](codex/README.md): tasks, native subagents and continuation.
-- [Claude Code](claude/README.md): sessions, native Agents and continuation.
+- [Codex](codex/README.md): tasks and background completion.
+- [Claude](claude/README.md): sessions and background completion.
 
 ## Shared procedure
 
-- Record the observed identity, route and settings in STATE. Mark each unavailable control `not exposed`.
-- Use native completion notifications or bounded waits. Do not build a manager daemon, a polling loop or a parallel task system.
-- At appointment, arm and read back continuation as the selected adapter requires.
-- At each wake, perform [delivery control](../docs/TASKS.md#delivery-control) once. Reload only the changed state, act on new results or decisions, then yield quietly.
-- A continuation control grants no authority.
+Record observed identity and settings in STATE. Mark unavailable controls `not exposed`.
+Use the harness's message, resume and completion controls for the declared sessions.
+Resume only with the useful event and bounded assignment that TASKS requires.
+Do not install a heartbeat, timer command, prompt watcher or polling supervisor to keep an idle session awake.
+If a required completion control is unavailable, record that limit and stop at the dependency.
 
-A bounded assignment to another harness uses the CLI of that harness under the same task limits.
-A full transfer follows [SUCCESSION](../docs/SUCCESSION.md). Keep setup and work. Replace the outgoing drivers unless the Owner explicitly retains them.
-
-## Agent graph
-
-The default relationship in the template is:
-
-```text
-Owner → CEO → optional helpers
-         └→ independent Reviewer when required
-```
-
-[TASKS](../docs/TASKS.md) owns the work, QA, integration and review boundaries of each role.
-The adopter may specialize this structure. A template graph never authorizes extra agents.
-
-[TASKS](../docs/TASKS.md#helpers) owns helper assignments, reuse and returns.
-ADOPTION owns model routes. STATE records observed identities and [background tasks](../docs/STATE.md#recovery).
+A cross-harness helper uses its declared native transport and the same assignment and result contract.
+A full transfer follows [SUCCESSION](../docs/SUCCESSION.md). Keep healthy setup and preserved work;
+replace or retain sessions only as OWNER directs. Never overlap drivers on a shared surface.

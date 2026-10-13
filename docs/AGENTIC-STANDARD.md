@@ -46,8 +46,8 @@ Activity, test counts and running processes are not delivery.
 Reuse setup and evidence while their exact bindings remain valid.
 
 Delegate disjoint work only if it saves more than the cost of briefing, review and integration.
-Name the outcome, the paths, the proof and the stop boundary. Keep required independent review free of implementer context.
-Consume returns and refill the declared capacity before long serial work. The operating contract owns the exceptions.
+Name the outcome, the paths, the proof and the stop boundary. Keep any Owner-required independent review within its declared scope.
+Consume each result before assigning another outcome. A returned helper waits for a new useful assignment.
 
 Distinguish product failures, environment failures and observation-tool failures with the smallest discriminating check.
 Bound repairs and cumulative cost. Keep failures, change the cause before you retry, continue independent work and return at the boundary.
@@ -63,7 +63,7 @@ A file, a successful command or a self-reported verdict does not prove the consu
 Bind evidence to the source, the environment and the observations. State the limits.
 Keep source readiness, product acceptance and release authority separate.
 
-Before you yield, keep the outcome, pending returns, blockers, next action and owned setup in existing state.
+Before you yield, keep the outcome, current results, blockers, next action and owned setup in existing state.
 Transfer control explicitly and keep healthy resources.
 Put lessons in the owning contract or regression, not in another ledger.
 

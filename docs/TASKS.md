@@ -1,92 +1,75 @@
 # Operating contract
 
-[AGENTS](../AGENTS.md) owns repository rules. [OWNER](OWNER.md) owns grants and staffing limits. [STATE](STATE.md) holds current work.
-The adopter supplies the product priorities, the helper domains and the required proof surfaces.
+[AGENTS](../AGENTS.md) owns repository rules. [OWNER](OWNER.md) owns authority and staffing.
+[STATE](STATE.md) holds current work. The adopter keeps one product plan for priorities and acceptance.
 
-## Quiet mode
+## Communication
 
-Send only these messages:
-
-- an assignment
-- a completed delivery
-- a blocker or decision that needs the recipient to act
-
-Do not send routine progress or diagnostic updates. Write a handoff in three to five lines: outcome, material blocker or limit, next action and evidence path.
-Keep detail in existing artifacts. The adopter names the Owner's point of contact.
+Send an assignment, a completed result, or a decision that needs the recipient to act.
+Keep each helper's current result in one replaceable record: outcome, commit, checks, limits and next dependency.
+Replace superseded status. Link retained evidence instead of copying logs or appending a diary.
+Do not create separate standing, pending and history prompt systems.
 
 ## CEO
 
-One accountable CEO drives the operation. The CEO owns daily priorities, allocation, review, one integrated candidate, integration and acceptance.
-Helpers are optional. The CEO alone answers for their work.
-Configure continuation through the native adapter at the adopter's cadence. Continuation grants no authority.
+One accountable CEO owns priorities, assignments, review, the combined candidate and acceptance.
+The adopter chooses the helper count, identities, models, harnesses and rights in OWNER and ADOPTION.
+A staffing choice grants no release or external-action authority.
 
-- Reuse suitable checkouts and owned surfaces.
-- Confirm identity and handoff before you act on a shared resource. After a run, release it.
-- Keep healthy resources until their release condition.
-- Review ordinary changes yourself. Batch compatible work and focused checks. Reuse valid evidence at its exact bindings.
-- Inspect the saved evidence before you land user-visible work.
-- Integrate under [PLAYBOOK](PLAYBOOK.md#integration). Keep source readiness separate from product acceptance.
-- Publish under [external actions](PLAYBOOK.md#external-actions). Publication needs an OWNER grant.
-
-Report to the Owner only at a completed delivery or at a decision or budget boundary that needs Owner action.
-Otherwise execute, and keep diagnostics in artifacts. Continue authorized next work or fallback work without routine acknowledgment.
-Stop when no useful authorized action remains.
+- Inspect actual work and new results before choosing the next action.
+- Review the implementation and its evidence yourself unless OWNER explicitly requires another review.
+- Exercise user-visible work on its required surface before claiming product acceptance.
+- Integrate under [PLAYBOOK](PLAYBOOK.md#integration); keep source readiness separate from product acceptance.
+- Preserve healthy setup and hand off each shared resource before changing its driver.
+- Report a completed delivery or a decision that needs Owner action. Keep routine diagnostics in the evidence.
 
 ### Delivery control
 
-At each wake, inspect the actual work, the helper returns that you have not disposed of, blocked acceptance and resources.
-Compare verified outcomes with elapsed cost. Correct each actual gap and verify the action.
-Record changed priorities and blockers in [STATE](STATE.md#recovery). Otherwise yield quietly. A wake ends. It does not start another delivery loop.
+Resume only for a useful authorized action: a new assignment, a result to review, a cleared dependency,
+a recovery step or an explicit Owner request. Read the changed current state, then act on that event.
+If no useful action is available, record the dependency and stop. Do not schedule an empty resume loop.
+A resume never grants authority or resets a repair budget.
 
-- Require only the prerequisites of the claim.
-- Use existing public controls before you extend tools.
-- Bound repair attempts and cumulative cost. Keep failures and continue independent work.
-- A new diagnosis does not reset the budget.
+Keep one shared slot for native operation or heavy qualification across the team.
+Record its holder, command, source and release condition in STATE. Other workers do independent source work.
+Use the harness's background task and completion notification. Do not add shell polling supervisors or timer agents.
+A completion signal means the task ended; inspect the actual result before claiming success.
 
 ## Helpers
 
-OWNER names the maximum number of helpers and their authority. Zero is a valid staffing decision.
-A helper is a native subagent of the CEO's harness. The helper works in its own isolated worktree, receives its brief by message and returns once.
-Run long checks and smokes as tracked background tasks with a completion notification. Do not use extra agents for them.
+Helpers are persistent assigned sessions. They may use the same harness as the CEO or an adopter-approved different harness.
+Native subagents are an available transport, not a required role definition.
+Reuse the declared sessions and worktrees. Do not create replacements or additional agents without authority.
 
 ### Assignment
 
-Delegate disjoint work only if it saves more than the cost of briefing, review and integration.
-Assign one coherent outcome with owned paths, acceptance criteria, focused checks and a stop boundary.
-Name the base. The helper's branch starts from the shared base branch, not from a moving candidate, and ends as one commit.
-Prepare the worktree with the adopter's worker-setup. It creates or reuses the worktree and reports what is stale ([PLAYBOOK](PLAYBOOK.md#worktrees-and-setup)).
+Give each helper one coherent outcome with owned paths, acceptance criteria, focused checks and a stop boundary.
+Name the source base and the required evidence surface. An assignment supersedes its prior brief;
+preserve any unfinished candidate before starting incompatible work.
+Prepare the worktree through the adopter's [setup route](PLAYBOOK.md#worktrees-and-setup).
+Delegate only when it saves more than the briefing, review and integration cost.
 
 ### Return
 
-The helper resolves routine details, runs focused checks, exercises the required consumer and repairs defects before it returns.
-The helper returns the outcome, branch, commit, checks, limits and next action.
-The helper interrupts only for a decision that the CEO must make.
-The CEO reviews the return and disposes of it before the CEO accepts another return from the same helper. The CEO lands compatible work.
-Do not exchange messages for every edit, check or micro-interaction.
+Resolve routine details and run the focused success and failure checks before returning.
+Return once with the commit, result, evidence, limits and exact next dependency.
+Keep that result in the replaceable record until the CEO accepts, rejects or supersedes it.
+The CEO reviews the result before assigning the helper another outcome.
+A returned helper stops; it does not refill itself or repeat its previous brief.
 
 ### Capacity
 
-- Keep one active outcome and one ready follow-on for each helper.
-- Reuse named helpers and their checkouts. Do not replace, rotate or delete them between assignments.
-- Models follow ADOPTION.
-- Each helper drives only its assigned runtime.
-- Integration, push and shared apps stay with the CEO. Reserved external acts and credentials stay with the named holder.
-- Reduce concurrency only for a path conflict, a missing prerequisite, no ready work, a resource limit or an actual review or QA backlog.
-  Name the blocked work and its clearing event in STATE.
-- Do not invent reviews or paperwork to fill slots.
-- Debt must unblock a current consumer or remove repeated friction. Verify that consumer. Remove the displaced code, tests and references together.
+- Keep at most one active assignment per helper.
+- A plan may name follow-on work. It is not another active assignment or an automatic resume instruction.
+- A helper operates only its assigned runtime and only with the rights in its brief.
+- The adopter assigns integration rights explicitly. Publication, credentials and other reserved acts remain with OWNER's named holder.
+- Use focused checks during iteration. Reserve combined qualification for actual shared-contract risk or release evidence.
+- State a blocked dependency and its clearing event. Continue independent work only within the active brief.
 
-### Reviewer
+### Review
 
-An independent reviewer returns PASS or FAIL on exact candidate bytes when either trigger applies:
-
-- **Code risk:** persistence, external mutation, concurrency state, or a concrete platform-policy or authorization risk. Tooling alone is not a trigger. Limit the review to the qualifying changes.
-- **Assets:** applies only if the adopter produces assets. Delivered assets and material rights or safety risks under [TASTE](TASTE.md). The producer inspects ordinary intermediate inputs, unless the adopter names a concrete risk.
-
-Give the reviewer the artifact, the access and the criteria, without implementer context. The reviewer neither repairs nor drives.
-The reviewer returns the checks, the concrete findings with file and line and a failure scenario, and the limits.
-Only a concrete failure scenario blocks.
-After a second FAIL, re-scope the work or take it over. Unrelated ready work continues.
-
-The CEO reviews other changes, judges routine evidence and judges the returned evidence for acceptance.
-The adopter must define any additional formal independent grading explicitly. Ordinary delivery does not imply it.
+The CEO is accountable for self-review of the candidate and its evidence.
+OWNER may require an independent review for a named risk, artifact or reserved act.
+The reviewer requirement, if any, comes from that grant; the template does not require a separate reviewer or authorize another session.
+Retain exact source and artifact bindings, rights, refusal reasons and recovery evidence under either review model.
+Only a concrete failure scenario blocks acceptance. A passing source gate never replaces required running-product evidence.

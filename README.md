@@ -11,8 +11,8 @@ Execute is a set of documents with optional Luau modules.
 - **Adopter:** the project that adopts the template.
 - **Owner:** the human who holds authority.
 - **CEO:** the one accountable agent. It leads the work.
-- **Helper:** a native subagent of the CEO.
-- **Reviewer:** an independent agent that judges exact candidate bytes when [TASKS](docs/TASKS.md#reviewer) requires it.
+- **Helper:** a persistent session with one bounded assignment from the CEO.
+- **Reviewer:** a reviewer of exact candidate bytes, only when OWNER explicitly requires independent review.
 - **Appointment:** the Owner's act that names the CEO. [SUCCESSION](docs/SUCCESSION.md) owns it.
 - **Gate:** the command that checks a change.
 
@@ -25,8 +25,9 @@ Execute is a set of documents with optional Luau modules.
 - Map the operating contract to a harness (Codex or Claude Code) with an adapter.
 - Add domain rules with an extension: interactive QA, Roblox operating rules, or Luau modules for landing, check selection, authority, retention and worktree setup.
 
-The template defines a human Owner and one accountable CEO. [TASKS](docs/TASKS.md#helpers) defines the optional helpers and the reviewer.
+The template defines a human Owner and one accountable CEO. [TASKS](docs/TASKS.md#helpers) defines optional persistent helpers.
 The adopter appoints agents and grants authority in [OWNER](docs/OWNER.md). Copying the template grants neither.
+The adopter chooses the exact staffing. Execute requires neither a second reviewer nor perpetual automatic resumes.
 
 ## Getting started
 
