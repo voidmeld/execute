@@ -6,18 +6,19 @@
 ## Communication
 
 Send an assignment, a completed result, or a decision that needs the recipient to act.
-Keep each helper's current result in one replaceable record: outcome, commit, checks, limits and next dependency.
+Keep each worker's current result in one replaceable record: outcome, commit, checks, limits and next dependency.
 Replace superseded status. Link retained evidence instead of copying logs or appending a diary.
 Do not create separate standing, pending and history prompt systems.
 
 ## CEO
 
-One accountable CEO owns priorities, assignments, review, the combined candidate and acceptance.
-The adopter chooses the helper count, identities, models, harnesses and rights in OWNER and ADOPTION.
+One accountable CEO chooses priorities, assigns outcomes, removes dependencies and accepts integrated product quality.
+The CEO owns reserved external acts within OWNER's grants. Workers own scoped implementation, self-review, verification and landing.
+The adopter chooses the worker count, identities, models, harnesses and rights in OWNER and ADOPTION.
 A staffing choice grants no release or external-action authority.
 
 - Inspect actual work and new results before choosing the next action.
-- Review the implementation and its evidence yourself unless OWNER explicitly requires another review.
+- Inspect integrated product quality and evidence. Routine code changes and assigned follow-on work need no CEO approval.
 - Exercise user-visible work on its required surface before claiming product acceptance.
 - Integrate under [PLAYBOOK](PLAYBOOK.md#integration); keep source readiness separate from product acceptance.
 - Preserve healthy setup and hand off each shared resource before changing its driver.
@@ -30,46 +31,48 @@ a recovery step or an explicit Owner request. Read the changed current state, th
 If no useful action is available, record the dependency and stop. Do not schedule an empty resume loop.
 A resume never grants authority or resets a repair budget.
 
-Keep one shared slot for native operation or heavy qualification across the team.
-Record its holder, command, source and release condition in STATE. Other workers do independent source work.
+Assign exclusive runtimes for independent native work. Serialize only resources that are actually shared: desktop input or capture and resource-heavy qualification.
+Record each shared resource's holder, command, source and release condition in STATE. Other workers continue authorized independent work.
 Use the harness's background task and completion notification. Do not add shell polling supervisors or timer agents.
 A completion signal means the task ended; inspect the actual result before claiming success.
 
-## Helpers
+## Workers
 
-Helpers are persistent assigned sessions. They may use the same harness as the CEO or an adopter-approved different harness.
+Workers are persistent assigned sessions. They may use the same harness as the CEO or an adopter-approved different harness.
 Native subagents are an available transport, not a required role definition.
 Reuse the declared sessions and worktrees. Do not create replacements or additional agents without authority.
 
 ### Assignment
 
-Give each helper one coherent outcome with owned paths, acceptance criteria, focused checks and a stop boundary.
-Name the source base and the required evidence surface. An assignment supersedes its prior brief;
-preserve any unfinished candidate before starting incompatible work.
+Give each worker one bounded assignment: a coherent outcome or an ordered sequence of outcomes.
+Name exclusive paths and runtime, the source base, acceptance criteria, focused checks and required native evidence for each outcome.
+Name integration rights, dependencies, repair limits and the return boundary. Assign follow-on work explicitly; a priority list grants no scope.
+An assignment supersedes its prior brief. Preserve any unfinished candidate before starting incompatible work.
 Prepare the worktree through the adopter's [setup route](PLAYBOOK.md#worktrees-and-setup).
 Delegate only when it saves more than the briefing, review and integration cost.
 
 ### Return
 
-Resolve routine details and run the focused success and failure checks before returning.
-Return once with the commit, result, evidence, limits and exact next dependency.
+Resolve routine details, self-review and run the required success, failure and native checks for each outcome.
+Land each scoped candidate under [PLAYBOOK](PLAYBOOK.md#integration), then continue the assigned sequence without a CEO round-trip.
+Return once at its boundary or a genuine block with commits, results, exact evidence, retained work, limits and the clearing event.
 Keep that result in the replaceable record until the CEO accepts, rejects or supersedes it.
-The CEO reviews the result before assigning the helper another outcome.
-A returned helper stops; it does not refill itself or repeat its previous brief.
+The CEO consumes the result to judge integrated quality and choose a new assignment.
+A returned worker stops; it does not refill itself or repeat its previous brief.
 
 ### Capacity
 
-- Keep at most one active assignment per helper.
-- A plan may name follow-on work. It is not another active assignment or an automatic resume instruction.
-- A helper operates only its assigned runtime and only with the rights in its brief.
-- The adopter assigns integration rights explicitly. Publication, credentials and other reserved acts remain with OWNER's named holder.
+- Keep at most one active assignment per worker.
+- Progress only through the ordered outcomes in the active assignment. Do not expand scope, self-spawn or select unassigned work.
+- A worker operates only its assigned runtime and only with the rights in its brief.
+- The assignment grants scoped integration unless it withholds it. Publication, credentials, accounts and rights remain under OWNER's grants.
 - Use focused checks during iteration. Reserve combined qualification for actual shared-contract risk or release evidence.
-- State a blocked dependency and its clearing event. Continue independent work only within the active brief.
+- On a block, preserve the candidate and evidence. Continue independent assigned work if its order permits; otherwise return with the clearing event.
 
 ### Review
 
-The CEO is accountable for self-review of the candidate and its evidence.
+Each worker reviews its exact candidate and evidence before landing. The CEO accepts integrated product quality.
 OWNER may require an independent review for a named risk, artifact or reserved act.
 The reviewer requirement, if any, comes from that grant; the template does not require a separate reviewer or authorize another session.
-Retain exact source and artifact bindings, rights, refusal reasons and recovery evidence under either review model.
-Only a concrete failure scenario blocks acceptance. A passing source gate never replaces required running-product evidence.
+Retain exact source and artifact bindings, rights, refusal reasons and recovery evidence.
+Hold acceptance for a concrete failure, missing required proof or missing authority. A passing source gate never replaces required running-product evidence.

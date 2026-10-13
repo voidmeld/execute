@@ -5,7 +5,7 @@ Write operative rules, not quotations or history. Other documents link here. The
 
 ## Staffing
 
-FILL: the CEO, helper domains and maximum helpers (zero is valid), with their authority limits.
+FILL: the CEO, worker domains and maximum workers (zero is valid), with their authority limits.
 
 ## Standing grants
 

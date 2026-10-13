@@ -5,7 +5,7 @@ The adopter supplies the exact commands, hosts, devices and destinations.
 
 ## Evidence for an experience claim
 
-The assigned helper or the CEO runs the exact candidate through ordinary input in the required host. Record:
+The assigned worker or the CEO runs the exact candidate through ordinary input in the required host. Record:
 
 - the product commit and artifact
 - the host and the destination version
@@ -26,13 +26,14 @@ Motion and audio need time-based evidence. One viewport does not prove other dev
 ## Scenarios and user checks
 
 A scenario proves the path that it exercises.
-Helpers execute QA and repair their assigned outcomes. The CEO inspects the integrated result and evaluates the returned evidence against the fixed criteria.
+Workers execute QA, inspect their own evidence and repair their assigned outcomes. The CEO inspects the integrated result and evaluates the returned evidence against the fixed criteria.
 State the coverage and the limits. A passing gate does not prove the whole experience.
 Do not present a build until its required scenario and user checks pass.
 Inspect the saved captures before you land user-visible work.
 
 ## Input and release
 
-Confirm identity and handoff before you send input.
+Confirm identity and exclusive ownership before you send input or capture.
+Independent runtimes may run concurrently. A shared desktop input or capture channel requires serial ownership.
 When the scenario ends, release held input and end test mode.
 Follow [runtime ownership](../../../docs/PLAYBOOK.md#runtime-ownership) for the driver of each surface.

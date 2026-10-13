@@ -2,9 +2,9 @@
 
 Use this procedure to appoint or replace the CEO.
 Transfer the active roles and tasks that the Owner does not retain on the old harness.
-Preserve the adopter's staffing decision. A solo operation remains solo. A template reference to helpers does not authorize creating them.
+Preserve the adopter's staffing decision. A solo operation remains solo. A template reference to workers does not authorize creating them.
 Keep healthy resources and unfinished work. Do not keep old agent drivers.
-Preserve the declared helper sessions unless OWNER replaces them. A harness change does not authorize new sessions or another staffing model.
+Preserve the declared worker sessions unless OWNER replaces them. A harness change does not authorize new sessions or another staffing model.
 
 A CEO is one active harness identity recorded in [STATE](STATE.md). Only one CEO may operate at a time.
 
@@ -27,7 +27,7 @@ After a restart or a succession, the recorded CEO continues under the [CEO contr
 ## Setup handoff
 
 Before you stop the prior CEO, complete the [recovery record](STATE.md#recovery) and link the existing evidence:
-helpers, background tasks, unlanded branches, integration in progress and next action.
+workers, background tasks, unlanded branches, integration in progress and next action.
 Also record the checkout paths and source revisions, the running services, the owned sessions and the exact resource bindings.
 Keep credentials out of the handoff.
 
@@ -46,7 +46,7 @@ The appointment is ready when all of these conditions hold:
 
 - One live CEO matches STATE.
 - `main` is current.
-- The retained work and any declared helper assignments are reconciled.
+- The retained work and any declared worker assignments are reconciled.
 - The retained setup ownership and next useful event are verified.
 - All replaced drivers and wakeups are stopped.
 - The next action is clear.

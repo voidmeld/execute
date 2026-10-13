@@ -41,7 +41,7 @@ Climb this ladder. Evidence from a lower step never proves a claim of a higher s
 A destination readback proves what arrived. A fake is a diagnostic model. Require it to refuse what the real host refuses.
 Never use a fake to close a host claim that nobody observed.
 
-For a claim about the running product, the assigned helper or the CEO runs the exact candidate in the required host. Record:
+For a claim about the running product, the assigned worker or the CEO runs the exact candidate in the required host. Record:
 
 - the product commit and artifact
 - the host and the destination version
@@ -51,7 +51,7 @@ For a claim about the running product, the assigned helper or the CEO runs the e
 - FILL: other items that the product requires
 
 Bind the evidence to the product commit that ran, not to a later receipt commit.
-Helpers execute checks and repair their assigned outcomes. The CEO evaluates the returned evidence against the fixed criteria.
+Workers execute checks and repair their assigned outcomes. The CEO evaluates the returned evidence against the fixed criteria.
 If OWNER requires independent review for the material or asset, follow the declared scope in [TASKS](TASKS.md#review).
 State the coverage and the limits. A passing gate does not prove the whole product.
 Turn each defect that the Owner finds into a regression at the boundary that can detect it.
@@ -69,9 +69,9 @@ Give each runtime one driver.
 - Hand off control before another driver acts.
 - When the run ends, release the resource.
 - Terminate only an exact owned disposable process.
-- Use the team's single native/heavy slot. Keep independent lightweight source work outside that slot.
+- Run independent owned runtimes concurrently. Serialize actual shared desktop input or capture and resource-heavy qualification under [TASKS](TASKS.md#delivery-control).
 
-A runtime assignment grants no credentials, publication, spending or permission changes.
+A runtime assignment grants no publication, credentials, account changes, spending, permissions or rights.
 
 Treat an environment failure separately from a product failure.
 Change one named environmental condition only when the change distinguishes the cause.
@@ -93,14 +93,15 @@ It names each stale item with its fix: base branch moved, lock changed, LFS poin
 Never copy ignored files between worktrees by hand.
 The adopter declares the inputs, sources, commands and manifest patterns in its own worker-setup configuration.
 
-A helper's branch starts from the base branch, not from a moving candidate, and ends as one commit.
+Each worker outcome starts from the base branch, not from a moving candidate, and ends as one scoped commit.
 
 - If the base moves, run `git rebase <base>`.
 - If a candidate was squashed, run `git rebase --onto <base> <old candidate tip>`.
 
 ## Integration
 
-The outcome assignment grants the CEO scoped integration unless it explicitly withholds it.
+The outcome assignment grants its worker scoped self-landing unless it explicitly withholds it.
+Complete self-review and any OWNER-required review before landing. CEO acceptance is not a routine source-landing prerequisite.
 
 Select checks by changed file. The adopter declares groups of path patterns with their specs and checks.
 The landing tool runs only the groups that the candidate touches, plus any explicit selection.
@@ -116,20 +117,24 @@ For direct solo integration:
 
 No temporary branch or worktree is required.
 
-For a helper branch, use the optional landing tool. Land a candidate that is a single commit on a branch checked out in a worktree.
+For a worker branch, follow these steps directly or use the optional landing tool. Land a candidate that is a single commit on a branch checked out in a worktree.
 Without that worktree, the landing tool refuses before it runs any check. The refusal names the `git worktree add <path> <branch>` remedy.
 
-1. Review and freeze the combined candidate.
-2. The tool rebases it and runs the declared gate once on the final committed bytes.
-3. The tool fast-forwards, pushes and proves remote equality.
+1. Acquire exclusive integration control. Confirm that shared main is clean and equal to its remote.
+2. Review and freeze the scoped candidate. Rebase it onto current main if the base moved.
+3. Inspect the final diff. Refresh required native proof where the rebase affects behavior or its evidence bindings.
+4. Run the declared gate on final committed bytes.
+5. Fast-forward main, push and prove exact remote equality. Release integration control.
 
-A failing step refuses with the failing check names, a bounded output tail and the path of the complete log.
+A failing tool step refuses with the failing check names, a bounded output tail and the path of the complete log.
 Diagnose from that log, not from a second run.
 
 - Serialize shared main.
-- Refuse a failed gate, a moved base or candidate, an unrelated diff or missing authority.
+- Refuse a failed gate, a moved base or candidate, an unrelated diff, missing required proof or missing authority.
+- If main moves, rebase and recheck affected changes before a new landing attempt.
+- If a push is rejected or ambiguous, reconcile local and remote commits before retrying. Keep unresolved integration discoverable in STATE.
 - Record the commit, the gate result, the review, the clean status and the evidence paths.
-- Source landing needs no product acceptance and does not authorize publication.
+- Source landing requires the assigned native proof but needs no CEO product acceptance and does not authorize publication.
 - Retire the worktree only after its commits land, its remaining work is preserved or disposed, and no live task owns it.
 
 ## External actions

@@ -41,13 +41,13 @@ Plan dependencies and ownership. Straightforward work needs no separate planning
 
 ## Feedback and capacity
 
-Optimize the elapsed time and resources for each verified outcome.
+Optimize wall time to the adopter's full outcome, including verification and integration.
 Activity, test counts and running processes are not delivery.
 Reuse setup and evidence while their exact bindings remain valid.
 
 Delegate disjoint work only if it saves more than the cost of briefing, review and integration.
 Name the outcome, the paths, the proof and the stop boundary. Keep any Owner-required independent review within its declared scope.
-Consume each result before assigning another outcome. A returned helper waits for a new useful assignment.
+Allow the assigned sequence to continue without routine CEO approval. Consume its result at the boundary or a genuine block.
 
 Distinguish product failures, environment failures and observation-tool failures with the smallest discriminating check.
 Bound repairs and cumulative cost. Keep failures, change the cause before you retry, continue independent work and return at the boundary.

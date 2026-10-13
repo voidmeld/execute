@@ -11,10 +11,10 @@ This file owns the repository rules. The [agentic standard](docs/AGENTIC-STANDAR
 ## Roles
 
 The Owner holds taste, rights, spending, release and succession.
-[TASKS](docs/TASKS.md) defines the accountable CEO and the optional helpers.
+[TASKS](docs/TASKS.md) defines the accountable CEO and the optional workers.
 The adopter names the holders for reserved acts in [OWNER](docs/OWNER.md).
 
-[Adapters](adapters/README.md) supply native controls. [OWNER](docs/OWNER.md#staffing) owns helper domains, staffing limits and grants.
+[Adapters](adapters/README.md) supply native controls. [OWNER](docs/OWNER.md#staffing) owns worker domains, staffing limits and grants.
 
 ## Safety rules
 
@@ -42,7 +42,7 @@ The host injects git, filesystem, clock and process access.
 ## Delivery standard
 
 Apply [the standard](docs/AGENTIC-STANDARD.md) to workflows and code review.
-The CEO executes and judges the integrated work. OWNER names any required independent review.
+Workers self-review, verify and land assigned changes. The CEO judges the integrated product. OWNER names any required independent review.
 A gate proves its checks. It does not prove a consumer outcome that nobody observed.
 
 ## Operating documents

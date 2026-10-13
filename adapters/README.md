@@ -14,6 +14,6 @@ Resume only with the useful event and bounded assignment that TASKS requires.
 Do not install a heartbeat, timer command, prompt watcher or polling supervisor to keep an idle session awake.
 If a required completion control is unavailable, record that limit and stop at the dependency.
 
-A cross-harness helper uses its declared native transport and the same assignment and result contract.
+A cross-harness worker uses its declared native transport and the same assignment and result contract.
 A full transfer follows [SUCCESSION](../docs/SUCCESSION.md). Keep healthy setup and preserved work;
 replace or retain sessions only as OWNER directs. Never overlap drivers on a shared surface.

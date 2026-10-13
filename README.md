@@ -11,21 +11,21 @@ Execute is a set of documents with optional Luau modules.
 - **Adopter:** the project that adopts the template.
 - **Owner:** the human who holds authority.
 - **CEO:** the one accountable agent. It leads the work.
-- **Helper:** a persistent session with one bounded assignment from the CEO.
+- **Worker:** a persistent session that self-reviews, verifies and lands a bounded assignment from the CEO.
 - **Reviewer:** a reviewer of exact candidate bytes, only when OWNER explicitly requires independent review.
 - **Appointment:** the Owner's act that names the CEO. [SUCCESSION](docs/SUCCESSION.md) owns it.
 - **Gate:** the command that checks a change.
 
 ## Use cases
 
-- Name a human Owner and one accountable CEO, with optional helpers and exact grants.
+- Name a human Owner and one accountable CEO, with optional workers and exact grants.
 - Set the safety rules, the required proof and the destinations for a project.
 - Run work in isolated worktrees, with a gate, serial integration and recorded evidence.
 - Keep current work, identities and the next action in one state document so a new session can resume.
 - Map the operating contract to a harness (Codex or Claude Code) with an adapter.
 - Add domain rules with an extension: interactive QA, Roblox operating rules, or Luau modules for landing, check selection, authority, retention and worktree setup.
 
-The template defines a human Owner and one accountable CEO. [TASKS](docs/TASKS.md#helpers) defines optional persistent helpers.
+The template defines a human Owner and one accountable CEO. [TASKS](docs/TASKS.md#workers) defines optional persistent workers.
 The adopter appoints agents and grants authority in [OWNER](docs/OWNER.md). Copying the template grants neither.
 The adopter chooses the exact staffing. Execute requires neither a second reviewer nor perpetual automatic resumes.
 
@@ -33,7 +33,7 @@ The adopter chooses the exact staffing. Execute requires neither a second review
 
 1. Install the pinned tools: `rokit install`. Generate the Lute typings: `lute setup`.
 2. Copy the core documents, one [harness adapter](adapters/README.md) and only the [extensions](extensions/README.md) the product needs. Replace this README with the product README.
-3. Fill the placeholders in AGENTS, STATE, OWNER, TASTE and ADOPTION. Declare the product purpose, the CEO, the helper limit, the commands, the destinations, the required proof and the exact grants. Keep technical architecture beside its implementation.
+3. Fill the placeholders in AGENTS, STATE, OWNER, TASTE and ADOPTION. Declare the product purpose, the CEO, the worker limit, the commands, the destinations, the required proof and the exact grants. Keep technical architecture beside its implementation.
 4. Record the exact Execute commit and tree, the selected files and the intentional differences in [ADOPTION](docs/ADOPTION.md). Adopt upstream updates deliberately and validate them in the consumer.
 5. For an Owner-authorized appointment, follow [SUCCESSION](docs/SUCCESSION.md). An existing operation resumes from STATE without another appointment.
 
@@ -86,7 +86,7 @@ Run it with `lute run examples/scoped-checks.luau`. The command prints the touch
 | --- | --- |
 | [AGENTS](AGENTS.md) | Repository rules and authority boundaries. It also owns the adopter startup route. |
 | [OWNER](docs/OWNER.md) | Current grants, directions and reserved decisions. |
-| [TASKS](docs/TASKS.md) | CEO, helpers, review and communication. |
+| [TASKS](docs/TASKS.md) | CEO, workers, review and communication. |
 | [STATE](docs/STATE.md) | Current work, recovery record, identities, resources and next action. |
 | [PLAYBOOK](docs/PLAYBOOK.md) | Iteration, worktrees, evidence, integration and external-action procedures. |
 | [TASTE](docs/TASTE.md) | Product quality criteria. |
