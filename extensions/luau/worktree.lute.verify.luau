@@ -283,6 +283,30 @@ return function(suite: Verify.Harness)
 		context:expect(WorkerSetup.prepareCheckout(config, host, {})[2].status):toBe("SKIP")
 	end)
 
+	suite:case("runs appended steps after checkout preparation and continues after a failed step", function(context)
+		local _, primary = initRepository(context)
+		local host = checkoutHost(primary, recorder())
+		local config: WorkerSetup.Config = { base = "main", directories = { "build/generated" }, inputs = {} }
+		local after: { WorkerSetup.Step } = {}
+		local order: { string } = {}
+		for _, status in { "PASS", "FAIL", "WARN" } do
+			table.insert(after, {
+				name = status,
+				run = function(name: string): WorkerSetup.StepOutcome
+					context:expect(fs.exists(primary .. "/build/generated")):toBeTruthy()
+					table.insert(order, name)
+					return { name = name, status = status, detail = "appended step" }
+				end,
+			})
+		end
+		local outcomes = WorkerSetup.prepareCheckout(config, host, after)
+		context:expect(#outcomes):toBe(5)
+		context:expect(outcomes[1].name):toBe("build/generated")
+		context:expect(outcomes[2].name):toBe("stale generated manifests")
+		context:expect(table.concat(order, ",")):toBe("PASS,FAIL,WARN")
+		context:expect(WorkerSetup.failureCount(outcomes)):toBe(1)
+	end)
+
 	suite:case("hydrates LFS pointer files", function(context)
 		local _, primary = initRepository(context)
 		local rec = recorder()

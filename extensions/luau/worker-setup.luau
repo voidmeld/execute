@@ -133,14 +133,6 @@ local function cleanTreeStep(name: string, result: CommandResult, warning: (stri
 	return { name = name, status = "WARN", detail = warning(table.concat(shown, ", ")) }
 end
 
-local function runPlan(steps: { Step }): { StepOutcome }
-	local outcomes: { StepOutcome } = {}
-	for _, step in steps do
-		table.insert(outcomes, step.run(step.name))
-	end
-	return outcomes
-end
-
 local function failureCount(outcomes: { StepOutcome }): number
 	local failures = 0
 	for _, outcome in outcomes do
@@ -432,50 +424,25 @@ local function manifestStep(config: Config, host: Host): StepOutcome
 end
 
 local function prepareCheckout(config: Config, host: Host, after: { Step }): { StepOutcome }
-	local steps: { Step } = {}
+	local outcomes: { StepOutcome } = {}
 	for _, directory in config.directories or {} do
-		table.insert(steps, {
-			name = directory,
-			run = function(name: string): StepOutcome
-				return directoryStep(name, host.exists, host.createDirectory)
-			end,
-		})
+		table.insert(outcomes, directoryStep(directory, host.exists, host.createDirectory))
 	end
 	if config.lfs then
-		table.insert(steps, {
-			name = "git lfs",
-			run = function(name: string): StepOutcome
-				return lfsStep(name, host)
-			end,
-		})
+		table.insert(outcomes, lfsStep("git lfs", host))
 	end
-	if config.lock ~= nil then
-		local lock = config.lock :: Lock
-		table.insert(steps, {
-			name = "dependency sync",
-			run = function(name: string): StepOutcome
-				return lockStep(name, lock, host)
-			end,
-		})
+	local lock = config.lock
+	if lock ~= nil then
+		table.insert(outcomes, lockStep("dependency sync", lock, host))
 	end
 	for _, input in config.inputs do
-		table.insert(steps, {
-			name = input.name,
-			run = function(): StepOutcome
-				return inputStep(input, config, host)
-			end,
-		})
+		table.insert(outcomes, inputStep(input, config, host))
 	end
-	table.insert(steps, {
-		name = "stale generated manifests",
-		run = function(): StepOutcome
-			return manifestStep(config, host)
-		end,
-	})
+	table.insert(outcomes, manifestStep(config, host))
 	for _, step in after do
-		table.insert(steps, step)
+		table.insert(outcomes, step.run(step.name))
 	end
-	return runPlan(steps)
+	return outcomes
 end
 
 local function freshness(config: Config, host: Host): { Finding }
@@ -558,7 +525,6 @@ return {
 	directoryStep = directoryStep,
 	dirtyPaths = dirtyPaths,
 	cleanTreeStep = cleanTreeStep,
-	runPlan = runPlan,
 	failureCount = failureCount,
 	ensureWorktree = ensureWorktree,
 	prepareCheckout = prepareCheckout,

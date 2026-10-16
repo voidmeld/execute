@@ -121,38 +121,6 @@ return function(suite: Verify.Harness)
 		context:expect(unavailable.detail):toContain("git missing")
 	end)
 
-	suite:case("runs every step of a plan in order", function(context)
-		local order: { string } = {}
-		local outcomes = WorkerSetup.runPlan({
-			{
-				name = "one",
-				run = function(name: string): WorkerSetup.StepOutcome
-					table.insert(order, name)
-					return { name = name, status = "PASS", detail = "" }
-				end,
-			},
-			{
-				name = "two",
-				run = function(name: string): WorkerSetup.StepOutcome
-					table.insert(order, name)
-					return { name = name, status = "FAIL", detail = "" }
-				end,
-			},
-			{
-				name = "three",
-				run = function(name: string): WorkerSetup.StepOutcome
-					table.insert(order, name)
-					return { name = name, status = "WARN", detail = "" }
-				end,
-			},
-		})
-		context:expect(#outcomes):toBe(3)
-		context:expect(order[1]):toBe("one")
-		context:expect(order[2]):toBe("two")
-		context:expect(order[3]):toBe("three")
-		context:expect(WorkerSetup.failureCount(outcomes)):toBe(1)
-	end)
-
 	suite:case("counts no failures for an empty plan", function(context)
 		context:expect(WorkerSetup.failureCount({})):toBe(0)
 	end)
