@@ -16,6 +16,8 @@ Keep product names, identities, destinations, paths, risk rules and milestones i
 | [guarded-surface](guarded-surface.luau) | Checks path or section tiers and the acting identity against authority that the caller supplies. |
 | [retention](retention.luau) | Plans deletion by receipt family. It keeps the required newest records and terminal-state records. |
 
+For `retained-terminal` families, a superseded reason takes priority over a nonterminal reason. Both reasons preserve the row's group and detail.
+
 ## Worker-setup configuration
 
 The adopter's command builds a `Config` and a `Host`, and calls the module. `Config` declares these fields:

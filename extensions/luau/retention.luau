@@ -37,17 +37,13 @@ local function newestPerGroup(category: string, reason: string, rows: { Row }): 
 	local newest: { [string]: Row } = {}
 	for _, row in rows do
 		local held = newest[row.group]
-		if
-			held == nil
-			or row.rank > (held :: Row).rank
-			or (row.rank == (held :: Row).rank and row.path > held.path)
-		then
+		if held == nil or row.rank > held.rank or (row.rank == held.rank and row.path > held.path) then
 			newest[row.group] = row
 		end
 	end
 	local deletions: { Deletion } = {}
 	for _, row in rows do
-		local kept = newest[row.group] :: Row
+		local kept = newest[row.group]
 		if kept.path ~= row.path then
 			table.insert(deletions, {
 				path = row.path,
@@ -67,17 +63,12 @@ local function retainedTerminal(
 ): { Deletion }
 	local deletions: { Deletion } = {}
 	for _, row in rows do
-		if not row.retained then
+		local reason = if not row.retained then supersededReason elseif not row.terminal then nonTerminalReason else nil
+		if reason ~= nil then
 			table.insert(deletions, {
 				path = row.path,
 				category = category,
-				reason = ("%s group=%s%s"):format(supersededReason, row.group, row.detail),
-			})
-		elseif not row.terminal then
-			table.insert(deletions, {
-				path = row.path,
-				category = category,
-				reason = ("%s group=%s%s"):format(nonTerminalReason, row.group, row.detail),
+				reason = ("%s group=%s%s"):format(reason, row.group, row.detail),
 			})
 		end
 	end

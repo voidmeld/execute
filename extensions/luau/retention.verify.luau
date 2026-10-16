@@ -61,18 +61,22 @@ return function(suite: Verify.Harness)
 	end)
 
 	suite:case("deletes superseded and stale nonterminal records", function(context)
+		local supersededOpen = row("journal/superseded-open.json", "target", 0, false, false)
+		supersededOpen.detail = " receipt=original"
 		local deletions = Retention.retainedTerminal("journal", "superseded_attempt", "stale_nonterminal_attempt", {
 			row("journal/kept.json", "target", 0, true, true),
 			row("journal/superseded.json", "target", 0, false, true),
 			row("journal/open.json", "target", 0, true, false),
+			supersededOpen,
 		})
-		context:expect(#deletions):toBe(2)
+		context:expect(#deletions):toBe(3)
 		local reasons: { [string]: string } = {}
 		for _, deletion in deletions do
 			reasons[deletion.path] = deletion.reason
 		end
 		context:expect(reasons["journal/superseded.json"]):toContain("superseded_attempt")
 		context:expect(reasons["journal/open.json"]):toContain("stale_nonterminal_attempt")
+		context:expect(reasons["journal/superseded-open.json"]):toBe("superseded_attempt group=target receipt=original")
 		context:expect(reasons["journal/kept.json"]):toBeNil()
 	end)
 
