@@ -39,6 +39,9 @@ type GitOverrides = {
 	conflictedFiles: ((worktreePath: string) -> CommandResult)?,
 	add: ((worktreePath: string, path: string) -> CommandResult)?,
 	mergeFastForward: ((branch: string, cwd: string?) -> CommandResult)?,
+	mergeBase: ((a: string, b: string) -> CommandResult)?,
+	pathsBetween: ((from: string, to: string) -> CommandResult)?,
+	changedPaths: ((worktreePath: string) -> CommandResult)?,
 	resetHard: ((worktreePath: string, sha: string) -> CommandResult)?,
 	push: (() -> CommandResult)?,
 	fetch: (() -> CommandResult)?,
@@ -80,6 +83,15 @@ local function stubGit(overrides: GitOverrides): Landing.Git
 		mergeFastForward = function(): Landing.CommandResult
 			return ok("2 files changed, 4 insertions(+)")
 		end,
+		mergeBase = function(): Landing.CommandResult
+			return ok("1111111111111111111111111111111111111111\n")
+		end,
+		pathsBetween = function(): Landing.CommandResult
+			return ok("docs/unrelated.md\n")
+		end,
+		changedPaths = function(): Landing.CommandResult
+			return ok("src/feature.luau\n")
+		end,
 		resetHard = function(): Landing.CommandResult
 			return ok("")
 		end,
@@ -104,6 +116,9 @@ local function stubGit(overrides: GitOverrides): Landing.Git
 	base.conflictedFiles = overrides.conflictedFiles or base.conflictedFiles
 	base.add = overrides.add or base.add
 	base.mergeFastForward = overrides.mergeFastForward or base.mergeFastForward
+	base.mergeBase = overrides.mergeBase or base.mergeBase
+	base.pathsBetween = overrides.pathsBetween or base.pathsBetween
+	base.changedPaths = overrides.changedPaths or base.changedPaths
 	base.resetHard = overrides.resetHard or base.resetHard
 	base.push = overrides.push or base.push
 	base.fetch = overrides.fetch or base.fetch
@@ -232,6 +247,59 @@ return function(suite: Verify.Harness)
 		context:expect(outcome.ok):toBeTruthy()
 		context:expect((outcome :: Landing.Success).sha):toBe("cafecafecafecafecafecafecafecafecafecafe")
 		context:expect((outcome :: Landing.Success).filesChanged):toBe(2)
+	end)
+
+	suite:case(
+		"fast-forwards a gated candidate after a disjoint base move without rerunning the gate",
+		function(context)
+			local gateRuns, merges = 0, 0
+			local outcome = Landing.landOne("feature", {
+				git = stubGit({
+					mergeFastForward = function(branch: string): Landing.CommandResult
+						merges += 1
+						if branch == "feature" and merges == 1 then
+							return bad(128, "fatal: Not possible to fast-forward, aborting.")
+						end
+						return ok("1 file changed, 2 insertions(+)")
+					end,
+				}),
+				plan = stubPlan({
+					verify = function(): Landing.Refusal?
+						gateRuns += 1
+						return nil
+					end,
+				}),
+			})
+			context:expect(outcome.ok):toBeTruthy()
+			context:expect(gateRuns):toBe(1)
+		end
+	)
+
+	suite:case("refuses a moved base that touches a candidate path so the caller reruns the gate", function(context)
+		local gateRuns, merges = 0, 0
+		local outcome = Landing.landOne("feature", {
+			git = stubGit({
+				mergeFastForward = function(branch: string): Landing.CommandResult
+					merges += 1
+					if branch == "feature" and merges == 1 then
+						return bad(128, "fatal: Not possible to fast-forward, aborting.")
+					end
+					return ok("1 file changed, 2 insertions(+)")
+				end,
+				pathsBetween = function(): Landing.CommandResult
+					return ok("src/feature.luau\n")
+				end,
+			}),
+			plan = stubPlan({
+				verify = function(): Landing.Refusal?
+					gateRuns += 1
+					return nil
+				end,
+			}),
+		})
+		context:expect(outcome.ok):toBeFalsy()
+		context:expect((outcome :: Landing.Refusal).reason):toBe("merge_failed")
+		context:expect(gateRuns):toBe(1)
 	end)
 
 	suite:case("refuses outside the primary checkout", function(context)

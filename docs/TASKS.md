@@ -69,10 +69,20 @@ A returned worker stops; it does not refill itself or repeat its previous brief.
 - Use focused checks during iteration. Reserve combined qualification for actual shared-contract risk or release evidence.
 - On a block, preserve the candidate and evidence. Continue independent assigned work if its order permits; otherwise return with the clearing event.
 
+### Lane rotation
+
+A lane is a worker role with its worktree and exclusive paths, and it outlasts its agents.
+At each outcome boundary the CEO may hand a lane to a fresh agent so that none carries a long context.
+The outgoing agent leaves a hand-over file with the landed commits, what passes, what breaks and the next step.
+The fresh agent starts from that file and from current STATE. Two agents never hold one lane at once.
+A rotation grants no scope. The [adapters](../adapters/README.md) name the model for each role.
+
 ### Review
 
 Each worker reviews its exact candidate and evidence before landing. The CEO accepts integrated product quality.
 OWNER may require an independent review for a named risk, artifact or reserved act.
 The reviewer requirement, if any, comes from that grant; the template does not require a separate reviewer or authorize another session.
 Retain exact source and artifact bindings, rights, refusal reasons and recovery evidence.
+Never tune content to a test fixture. Build a fixture to match the brief's intended level and equipment, and cite the brief for a difficulty change.
+Run the changed-file analysis and the adopter's static policy checks before every landing. A red whole tree on shared main belongs to the owner of its last landing, who fixes it with the next one.
 Hold acceptance for a concrete failure, missing required proof or missing authority. A passing source gate never replaces required running-product evidence.

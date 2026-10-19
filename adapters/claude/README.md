@@ -11,6 +11,8 @@ Use OWNER's declared persistent sessions under [TASKS](../../docs/TASKS.md#worke
 Native Agents and approved cross-harness sessions follow the same bounded assignment contract.
 Give each worker AGENTS, its worktree and one replaceable result location.
 Record observed identities and the current assignment in [STATE](../../docs/STATE.md#recovery).
+Run the CEO on `claude-fable-5-1` and the workers on `claude-sonnet-5-5` with bypass permissions. Use `claude-opus-5-5` for one stuck outcome at a time.
+Rotate a lane by starting a fresh native agent that reads the hand-over file. Verify the observed model and permissions before it starts.
 Display-scope tools may be limited to the CEO. That limitation does not grant another session access.
 
 Continue the assigned ordered sequence through self-review, required native verification and scoped landing without routine CEO approval.

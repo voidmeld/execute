@@ -131,11 +131,25 @@ Diagnose from that log, not from a second run.
 
 - Serialize shared main.
 - Refuse a failed gate, a moved base or candidate, an unrelated diff, missing required proof or missing authority.
-- If main moves, rebase and recheck affected changes before a new landing attempt.
+- If main moves, rebase and recheck affected changes before a new landing attempt. After a passed gate, the landing tool fast-forwards without rerunning it when main moved only on paths that the candidate does not touch.
 - If a push is rejected or ambiguous, reconcile local and remote commits before retrying. Keep unresolved integration discoverable in STATE.
 - Record the commit, the gate result, the review, the clean status and the evidence paths.
 - Source landing requires the assigned native proof but needs no CEO product acceptance and does not authorize publication.
 - Retire the worktree only after its commits land, its remaining work is preserved or disposed, and no live task owns it.
+
+## Worker hygiene
+
+Run every check batch, run, render or landing as one background command with a hard deadline from the host's bounded-run mechanism.
+After starting it, end the turn. The completion resumes the worker. Use no sleep loops and no status-only turns.
+Keep every file that a worker makes under its worktree or the primary checkout. Installing a host tool needs the CEO's go.
+A runner that can disturb shared sessions, such as a multi-client cohort, runs only at a gate that the CEO calls.
+A lane changes hands at an outcome boundary under [lane rotation](TASKS.md#lane-rotation).
+
+## Upload route
+
+Beside each file to upload, the CEO writes a review record with the digest, the reviewer, the verdict and what the CEO inspected personally, and lands it.
+The CEO then runs the adopter's upload command from the primary checkout at a main equal to its remote.
+The command's receipt carries the resulting ids. The owning worker records them in the manifest with the receipt paths, the content hash and the provenance.
 
 ## External actions
 

@@ -155,6 +155,15 @@ local function realGit(primary: string): Landing.Git
 		mergeFastForward = function(branch, cwd)
 			return git({ "merge", "--ff-only", branch }, cwd)
 		end,
+		mergeBase = function(a, b)
+			return git({ "merge-base", a, b })
+		end,
+		pathsBetween = function(from, to)
+			return git({ "diff", "--name-only", from .. ".." .. to })
+		end,
+		changedPaths = function(worktreePath)
+			return git({ "diff", "--name-only", "main..HEAD" }, worktreePath)
+		end,
 		resetHard = function(worktreePath, sha)
 			return git({ "reset", "--hard", sha }, worktreePath)
 		end,

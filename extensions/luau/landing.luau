@@ -72,6 +72,9 @@ export type Git = {
 	conflictedFiles: (worktreePath: string) -> CommandResult,
 	add: (worktreePath: string, path: string) -> CommandResult,
 	mergeFastForward: (branch: string, cwd: string?) -> CommandResult,
+	mergeBase: (a: string, b: string) -> CommandResult,
+	pathsBetween: (from: string, to: string) -> CommandResult,
+	changedPaths: (worktreePath: string) -> CommandResult,
 	resetHard: (worktreePath: string, sha: string) -> CommandResult,
 	push: () -> CommandResult,
 	fetch: () -> CommandResult,
@@ -585,6 +588,55 @@ local function abortTrain(
 	end
 end
 
+local function pathSet(output: string): { [string]: boolean }
+	local set: { [string]: boolean } = {}
+	for _, line in trimmedLines(output) do
+		set[line] = true
+	end
+	return set
+end
+
+local function landAfterBaseMoved(branch: string, worktreePath: string, deps: Dependencies): Outcome?
+	local git, plan = deps.git, deps.plan
+	if git.fetch().exitcode ~= 0 or git.mergeFastForward(plan.remote .. "/" .. plan.base).exitcode ~= 0 then
+		return nil
+	end
+	local mergeBase = git.mergeBase(plan.base, branch)
+	local baseSha: string? = if mergeBase.exitcode == 0 then string.match(mergeBase.stdout, "^%s*(%x+)%s*$") else nil
+	if baseSha == nil then
+		return nil
+	end
+	local moved = git.pathsBetween(baseSha :: string, plan.base)
+	if moved.exitcode ~= 0 or git.rebase(worktreePath, plan.base).exitcode ~= 0 then
+		return nil
+	end
+	local candidate = git.changedPaths(worktreePath)
+	if candidate.exitcode ~= 0 then
+		return nil
+	end
+	local movedPaths = pathSet(moved.stdout)
+	for path in pathSet(candidate.stdout) do
+		if movedPaths[path] then
+			plan.log(("base moved on %s; rerunning the gate"):format(path))
+			return nil
+		end
+	end
+	plan.log("base moved on disjoint paths after a passed gate; fast-forwarding without a gate rerun")
+	local classified = mergeVerified(branch, plan.base, nil, deps, nil)
+	if classified.status ~= "ok" then
+		return refusal("merge_" .. classified.status, classified.detail)
+	end
+	local sha, pushRefusal = pushAndVerify(deps)
+	if pushRefusal ~= nil then
+		return pushRefusal :: Refusal
+	end
+	local cleanupRefusal = cleanupOne(worktreePath, branch, sha :: string, deps)
+	if cleanupRefusal ~= nil then
+		return cleanupRefusal :: Refusal
+	end
+	return { ok = true, sha = sha :: string, filesChanged = classified.filesChanged }
+end
+
 local function logRebase(deps: Dependencies, label: string, resolvedPaths: { string }?)
 	if resolvedPaths ~= nil and #(resolvedPaths :: { string }) > 0 then
 		deps.plan.log(("PASS rebase %s resolved=%s"):format(label, table.concat(resolvedPaths :: { string }, ",")))
@@ -650,6 +702,12 @@ local function landOne(branch: string, deps: Dependencies): Outcome
 
 	plan.log(("fast-forward merging %s from the primary checkout"):format(branch))
 	local classified = mergeVerified(branch, plan.base, nil, deps, verifiedCandidate)
+	if classified.status == "failed" then
+		local landed = landAfterBaseMoved(branch, worktreePath :: string, deps)
+		if landed ~= nil then
+			return landed
+		end
+	end
 	if classified.status ~= "ok" then
 		return refusal("merge_" .. classified.status, classified.detail)
 	end
