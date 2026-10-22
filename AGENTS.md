@@ -41,6 +41,8 @@ The host injects git, filesystem, clock and process access.
 
 ## Delivery standard
 
+Changes to this library use a pull request to `main` and the required `Gate` check. Do not push directly to `main` or bypass a failing check.
+
 Apply [the standard](docs/AGENTIC-STANDARD.md) to workflows and code review.
 Workers self-review, verify and land assigned changes. The CEO judges the integrated product. OWNER names any required independent review.
 A gate proves its checks. It does not prove a consumer outcome that nobody observed.
