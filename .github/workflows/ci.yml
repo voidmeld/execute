@@ -35,6 +35,9 @@ jobs:
           rokit install --no-trust-check
           lute setup
       - name: Run repository gate
+        env:
+          GIT_COMMITTER_NAME: voidmeld
+          GIT_COMMITTER_EMAIL: 158495725+voidmeld@users.noreply.github.com
         run: lute run tools/gate.luau
       - name: Retain gate evidence
         if: always()
