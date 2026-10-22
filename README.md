@@ -98,11 +98,13 @@ Run it with `lute run examples/scoped-checks.luau`. The command prints the touch
 
 ## Validate
 
-GitHub Actions runs the repository gate as the `Gate` check using the pinned tools and SDK types. Follow the [contribution rules](AGENTS.md).
-
 To change Execute itself, read this section and [the agentic standard](docs/AGENTIC-STANDARD.md).
 The role, staffing and authority placeholders govern adopting projects after appointment.
 Keep reusable rules in Execute and product decisions in the adopter. Update each owning document and its callers together.
+
+Submit library changes through a pull request to `main`. Squash-merge only after the required `Gate` check passes.
+Do not push directly to `main` or bypass a failing check.
+GitHub Actions runs the repository gate with the pinned tools and SDK types.
 
 Run `lute run tools/gate.luau` on final bytes. It is one declared [Verify](https://github.com/voidmeld/verify) gate. It checks these items:
 
