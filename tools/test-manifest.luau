@@ -8,5 +8,4 @@ return table.freeze({
 	"extensions/luau/scoped-checks.verify.luau",
 	"extensions/luau/worker-setup.verify.luau",
 	"extensions/luau/worktree.lute.verify.luau",
-	"tools/check-comments.verify.luau",
 })

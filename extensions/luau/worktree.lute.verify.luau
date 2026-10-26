@@ -7,20 +7,12 @@ local Landing = require("./landing")
 local WorkerSetup = require("./worker-setup")
 local Verify = require("../../.lute/dependencies/verify/src/core")
 local Bdd = require("../../.lute/dependencies/verify/src/bdd")
-local TemporaryDirectory = require("../../tools/lib/temporary-directory")
+local TemporaryDirectory = require("../../.lute/dependencies/verify/src/checks").temporaryDirectory
 
 local function sh(cwd: string, command: { string }): string
 	local result = process.run(command, { cwd = cwd })
 	assert(result.ok, table.concat(command, " ") .. ": " .. result.stderr)
 	return string.gsub(result.stdout, "%s+$", "") :: string
-end
-
-local function tempDirectory(own: Bdd.Own): string
-	local root = TemporaryDirectory.allocate(TemporaryDirectory.root(), "execute-worktree")
-	own(function()
-		assert(TemporaryDirectory.remove(root) == nil, "temporary repository cleanup failed: " .. root)
-	end)
-	return root
 end
 
 local function write(path: string, contents: string)
@@ -32,8 +24,7 @@ local function commit(repo: string, message: string)
 	sh(repo, { "git", "-c", "user.name=t", "-c", "user.email=t@example.com", "commit", "-q", "-m", message })
 end
 
-local function initRepository(own: Bdd.Own): (string, string)
-	local root = tempDirectory(own)
+local function initRepository(root: string): (string, string)
 	local origin = root .. "/origin.git"
 	local primary = root .. "/primary"
 	sh(root, { "git", "init", "-q", "--bare", "-b", "main", origin })
@@ -205,9 +196,18 @@ return function(suite: Verify.Harness)
 	local test = Bdd.create(suite)
 	local describe, it, expect = test.describe, test.it, test.expect
 
+	local function case(name: string, body: (string) -> ())
+		it(name, function()
+			TemporaryDirectory.run(TemporaryDirectory.root(), "execute-worktree", function(root)
+				body(root)
+				return nil
+			end)
+		end)
+	end
+
 	describe("worktree", function()
-		it("creates, reuses and refuses worktrees and reports a moved base", function(own)
-			local root, primary = initRepository(own)
+		case("creates, reuses and refuses worktrees and reports a moved base", function(directory)
+			local root, primary = initRepository(directory)
 			local host = checkoutHost(primary, recorder())
 			local path = root .. "/helper"
 			local spec: WorkerSetup.WorktreeSpec = { repo = primary, path = path, branch = "helper/a", base = "main" }
@@ -252,8 +252,8 @@ return function(suite: Verify.Harness)
 			expect(#WorkerSetup.freshness(config, checkoutHost(path, recorder()))):toBe(0)
 		end)
 
-		it("syncs dependencies only when the lock changes", function(own)
-			local _, primary = initRepository(own)
+		case("syncs dependencies only when the lock changes", function(directory)
+			local _, primary = initRepository(directory)
 			local rec = recorder()
 			local host = checkoutHost(primary, rec)
 			local config: WorkerSetup.Config = {
@@ -288,8 +288,8 @@ return function(suite: Verify.Harness)
 			expect(WorkerSetup.freshness(config, host)[1].kind):toBe("lock_changed")
 		end)
 
-		it("creates declared directories", function(own)
-			local _, primary = initRepository(own)
+		case("creates declared directories", function(directory)
+			local _, primary = initRepository(directory)
 			local host = checkoutHost(primary, recorder())
 			local config: WorkerSetup.Config =
 				{ base = "main", directories = { "build", "build/generated" }, inputs = {} }
@@ -299,8 +299,8 @@ return function(suite: Verify.Harness)
 			expect(WorkerSetup.prepareCheckout(config, host, {})[2].status):toBe("SKIP")
 		end)
 
-		it("runs appended steps after checkout preparation and continues after a failed step", function(own)
-			local _, primary = initRepository(own)
+		case("runs appended steps after checkout preparation and continues after a failed step", function(directory)
+			local _, primary = initRepository(directory)
 			local host = checkoutHost(primary, recorder())
 			local config: WorkerSetup.Config = { base = "main", directories = { "build/generated" }, inputs = {} }
 			local after: { WorkerSetup.Step } = {}
@@ -324,8 +324,8 @@ return function(suite: Verify.Harness)
 			expect(WorkerSetup.failureCount(outcomes)):toBe(1)
 		end)
 
-		it("hydrates LFS pointer files", function(own)
-			local _, primary = initRepository(own)
+		case("hydrates LFS pointer files", function(directory)
+			local _, primary = initRepository(directory)
 			local rec = recorder()
 			local host = checkoutHost(primary, rec)
 			local config: WorkerSetup.Config = { base = "main", lfs = true, inputs = {} }
@@ -361,8 +361,8 @@ return function(suite: Verify.Harness)
 			expect(failed[1].detail):toContain("smudge error")
 		end)
 
-		it("removes undeclared generated manifests", function(own)
-			local _, primary = initRepository(own)
+		case("removes undeclared generated manifests", function(directory)
+			local _, primary = initRepository(directory)
 			local rec = recorder()
 			local host = checkoutHost(primary, rec)
 			local config: WorkerSetup.Config = {
@@ -387,8 +387,8 @@ return function(suite: Verify.Harness)
 			expect(WorkerSetup.prepareCheckout(config, host, {})[1].status):toBe("SKIP")
 		end)
 
-		it("ignores a collapsed ignored directory", function(own)
-			local _, primary = initRepository(own)
+		case("ignores a collapsed ignored directory", function(directory)
+			local _, primary = initRepository(directory)
 			local rec = recorder()
 			local host = checkoutHost(primary, rec)
 			local config: WorkerSetup.Config = {
@@ -405,8 +405,8 @@ return function(suite: Verify.Harness)
 			expect(WorkerSetup.prepareCheckout(config, host, {})[1].status):toBe("SKIP")
 		end)
 
-		it("regenerates, copies and verifies generated inputs", function(own)
-			local root, primary = initRepository(own)
+		case("regenerates, copies and verifies generated inputs", function(directory)
+			local root, primary = initRepository(directory)
 			local rec = recorder()
 			local host = checkoutHost(primary, rec)
 			local input: WorkerSetup.Input = {
@@ -485,8 +485,8 @@ return function(suite: Verify.Harness)
 			expect(fs.readFileToString(helperPath .. "/build/out.txt")):toBe("regenerated\n")
 		end)
 
-		it("lands a candidate through real git and refuses a red gate", function(own)
-			local root, primary = initRepository(own)
+		case("lands a candidate through real git and refuses a red gate", function(directory)
+			local root, primary = initRepository(directory)
 			local git = realGit(primary)
 			local stepHost: Landing.StepHost = {
 				run = function(command, cwd)
