@@ -1,9 +1,9 @@
 # Roblox adoption
 
-An adopting project must declare the values below when it adopts the Roblox extension.
-The operating rules are in [README.md](README.md) and [docs/ROBLOX.md](docs/ROBLOX.md).
+When a project adopts this extension, declare the values below. The operating rules are in
+[README.md](README.md) and [docs/ROBLOX.md](docs/ROBLOX.md).
 
-Declare these values in the project layer, with exact values:
+Record exact project values:
 
 1. Accounts and destinations:
    - the group owner, the operator account and the recovery account, kept apart
@@ -17,6 +17,6 @@ Declare these values in the project layer, with exact values:
 6. Asset source, rights, lineage, quarantine, moderation, ownership, durable IDs, consumers and played proof.
 7. The tracked gate and the audit of the user-scope permission overlay.
 
-Publication defaults to non-production destinations: private or restricted. Production is never an implicit alias, fallback or retry destination.
-Merge only irreversible-loss rules into AGENTS. Link PLAYBOOK to the exact Roblox procedure of the project.
-Load generative guidance only for that work.
+By default, publish only to private or restricted destinations outside production. Do not use production as an
+implicit alias, alternative or retry destination. Merge only rules against irreversible loss into AGENTS. Link
+PLAYBOOK to the project's exact Roblox procedure. Read generation guidance only for generation work.

@@ -1,147 +1,72 @@
 # Execute
 
-Execute is an agentic orchestration template. You adopt its documents to define who owns work, what agents may do,
-how they verify and integrate results, and how work continues across sessions.
-The agent harness supplies execution and communication. Execute adds no manager daemon and no task system.
-
-Execute is a set of documents with optional Luau modules.
-
-## Terms
-
-- **Adopter:** the project that adopts the template.
-- **Owner:** the human who holds authority.
-- **CEO:** the one accountable agent. It leads the work.
-- **Worker:** a persistent session that self-reviews, verifies and lands a bounded assignment from the CEO.
-- **Reviewer:** a reviewer of exact candidate bytes, only when OWNER explicitly requires independent review.
-- **Appointment:** the Owner's act that names the CEO. [SUCCESSION](docs/SUCCESSION.md) owns it.
-- **Gate:** the command that checks a change.
-
-## Use cases
-
-- Name a human Owner and one accountable CEO, with optional workers and exact grants.
-- Set the safety rules, the required proof and the destinations for a project.
-- Run work in isolated worktrees, with a gate, serial integration and recorded evidence.
-- Keep current work, identities and the next action in one state document so a new session can resume.
-- Map the operating contract to a harness (Codex or Claude Code) with an adapter.
-- Add domain rules with an extension: interactive QA, Roblox operating rules, or Luau modules for landing, check selection, authority, retention and worktree setup.
-
-The template defines a human Owner and one accountable CEO. [TASKS](docs/TASKS.md#workers) defines optional persistent workers.
-The adopter appoints agents and grants authority in [OWNER](docs/OWNER.md). Copying the template grants neither.
-The adopter chooses the exact staffing. Execute requires neither a second reviewer nor perpetual automatic resumes.
+Execute is a template for work that agents do in a project. Its documents define roles, authority, checks,
+integration and recovery. The agent harness runs the work and sends messages. Execute has no manager process or
+task system. Optional Luau modules supply common tool operations.
 
 ## Getting started
 
-1. Install the pinned tools: `rokit install`. Generate the Lute typings: `lute setup`.
-2. Copy the core documents, one [harness adapter](adapters/README.md) and only the [extensions](extensions/README.md) the product needs. Replace this README with the product README.
-3. Fill the placeholders in AGENTS, STATE, OWNER, TASTE and ADOPTION. Declare the product purpose, the CEO, the worker limit, the commands, the destinations, the required proof and the exact grants. Keep technical architecture beside its implementation.
-4. Record the exact Execute commit and tree, the selected files and the intentional differences in [ADOPTION](docs/ADOPTION.md). Adopt upstream updates deliberately and validate them in the consumer.
-5. For an Owner-authorized appointment, follow [SUCCESSION](docs/SUCCESSION.md). An existing operation resumes from STATE without another appointment.
+First, select the documents and one [harness adapter](adapters/README.md) for your project.
 
-To use an optional Luau module, require it and pass the data it needs. This is the complete file
-[examples/scoped-checks.luau](examples/scoped-checks.luau). It selects the checks that own the changed paths:
+1. Copy the core documents in the map below.
+2. Copy one adapter.
+3. Select only the [extensions](extensions/README.md) that your project needs.
+4. Fill the placeholders in AGENTS, STATE, OWNER, TASTE and ADOPTION.
+5. Record the exact source commit and tree in [ADOPTION](docs/ADOPTION.md).
+6. If the Owner authorizes a CEO appointment, follow [SUCCESSION](docs/SUCCESSION.md).
+7. Replace this README with the product README.
 
-```luau
---!strict
+Copying files grants no authority. For an existing operation, resume from STATE. The project chooses its workers
+and any required independent review in OWNER.
 
-local ScopedChecks = require("../extensions/luau/scoped-checks")
+## Terms
 
-local groups: { ScopedChecks.Group } = {
-	{
-		name = "docs",
-		paths = { "^docs/", "%.md$" },
-		specs = {},
-		checks = { { "tools/gate.luau" } },
-	},
-	{
-		name = "tools",
-		paths = { "^tools/" },
-		specs = { "^tools/.*%.verify%.luau$" },
-		checks = { { "tools/check-no-any.luau" } },
-	},
-}
-
-local changed = { "tools/check-comments.luau", "docs/STATE.md", "notes.txt" }
-local candidates = { "tools/first.verify.luau", "tools/other.verify.luau" }
-
-local selection = ScopedChecks.select(changed, groups, candidates, nil)
-for _, group in selection.groups do
-	print("group:", group.name)
-end
-for _, spec in selection.specs do
-	print("spec:", spec)
-end
-for _, check in selection.checks do
-	print("check:", table.concat(check, " "))
-end
-for _, path in ScopedChecks.unowned(changed, groups) do
-	print("unowned:", path)
-end
-```
-
-Run it with `lute run examples/scoped-checks.luau`. The command prints the touched groups, the selected specs and checks, and the unowned paths.
+- **Adopter:** the project that uses this template.
+- **Owner:** the human who holds authority.
+- **CEO:** the one agent accountable for the work.
+- **Worker:** a persistent session with a bounded assignment from the CEO.
+- **Reviewer:** a reviewer of exact candidate bytes, when OWNER requires independent review.
+- **Appointment:** the Owner's act that names the CEO.
+- **Gate:** the command that checks a change.
 
 ## Documentation
 
-| Document | Owns |
+Each page owns the subject in this map. Read the procedure or reference only when the task needs it.
+
+| Page | Subject |
 | --- | --- |
-| [AGENTS](AGENTS.md) | Repository rules and authority boundaries. It also owns the adopter startup route. |
-| [OWNER](docs/OWNER.md) | Current grants, directions and reserved decisions. |
-| [TASKS](docs/TASKS.md) | CEO, workers, review and communication. |
-| [STATE](docs/STATE.md) | Current work, recovery record, identities, resources and next action. |
-| [PLAYBOOK](docs/PLAYBOOK.md) | Iteration, worktrees, evidence, integration and external-action procedures. |
+| [AGENTS](AGENTS.md) | Repository rules and startup route. |
+| [OWNER](docs/OWNER.md) | Grants, staffing and reserved decisions. |
+| [TASKS](docs/TASKS.md) | Roles, assignments, results and review. |
+| [STATE](docs/STATE.md) | Current facts and recovery. |
+| [PLAYBOOK](docs/PLAYBOOK.md) | Work procedures and evidence. |
 | [TASTE](docs/TASTE.md) | Product quality criteria. |
-| [ADOPTION](docs/ADOPTION.md) | The upstream relationship and the intentional differences. |
-| [SUCCESSION](docs/SUCCESSION.md) | Appointment and replacement. |
-| [Agentic standard](docs/AGENTIC-STANDARD.md) | Documentation, workflow and code-review practice. |
-| [Adapters](adapters/README.md) | Native harness controls. |
-| [Extensions](extensions/README.md) | The [Luau extension](extensions/luau/README.md) (injected tooling primitives), the [interactive QA extension](extensions/interactive-qa/README.md) (evidence rules for operated products) and the [Roblox extension](extensions/roblox/README.md) (platform operating rules). None contains a product identity, credentials or destinations. |
+| [ADOPTION](docs/ADOPTION.md) | Source identity and local differences. |
+| [SUCCESSION](docs/SUCCESSION.md) | CEO appointment and replacement. |
+| [Agentic standard](docs/AGENTIC-STANDARD.md) | Writing, execution and review rules. |
+| [Validation](docs/VALIDATE.md) | Setup and checks for changes to Execute. |
+| [Luau API](docs/api.md) | Exported module members. |
+| [Adapters](adapters/README.md) | Harness selection and shared controls. |
+| [Codex adapter](adapters/codex/README.md) | Codex task controls. |
+| [Claude adapter](adapters/claude/README.md) | Claude session controls. |
+| [Extensions](extensions/README.md) | Extension selection and adoption. |
+| [Luau extension](extensions/luau/README.md) | Module configuration. |
+| [Interactive QA extension](extensions/interactive-qa/README.md) | Adoption for products with an interface. |
+| [Interactive QA](extensions/interactive-qa/docs/INTERACTIVE-QA.md) | Captures, scenarios and input. |
+| [Roblox extension](extensions/roblox/README.md) | Roblox rules and references. |
+| [Roblox adoption](extensions/roblox/INTEGRATION.md) | Required project values. |
+| [Roblox operations](extensions/roblox/docs/ROBLOX.md) | Accounts, Studio, persistence and assets. |
+| [Generative assets](extensions/roblox/docs/ROBLOX-GENERATIVE-ASSETS.md) | Asset generation and acceptance. |
+| [Operating skill](.agents/skills/execute-operate/SKILL.md) | The delivery procedure for an assigned outcome. |
+| [Claude entry](CLAUDE.md) | Claude instruction discovery. |
+| [Claude skill entry](.claude/skills/execute-operate/SKILL.md) | The route to the operating skill. |
 
 ## Validate
 
-To change Execute itself, read this section and [the agentic standard](docs/AGENTIC-STANDARD.md).
-The role, staffing and authority placeholders govern adopting projects after appointment.
-Keep reusable rules in Execute and product decisions in the adopter. Update each owning document and its callers together.
+To change Execute, follow [Validation](docs/VALIDATE.md). The placeholders in the template govern an adopting
+project after appointment.
 
-Submit library changes through a pull request to `main`. Squash-merge only after the required `Gate` check passes.
-Do not push directly to `main` or bypass a failing check.
-GitHub Actions runs the repository gate with the pinned tools and SDK types.
-
-Commit the candidate, then run `lute run tools/gate.luau` on the clean HEAD.
-Do not change verified bytes before integration.
-It is one declared [Verify](https://github.com/voidmeld/verify) gate. It checks these items:
-
-- the license and the Markdown links and anchors
-- source comments, formatting and lint
-- strict types with no explicit `any` under both Luau solvers across all maintained Luau
-- the executable extension contracts
-- the test manifest against the specifications on disk and the Verify consumer rules
-- compact spec style through Verify's `Checks.specStyle`
-- host-neutral module boundaries, dependency provenance and consumer leakage
-- the [documented public API](docs/api.md) against the exported module tables
-- a fresh clone of HEAD running the fast gate without working-tree state
-
-The specs use the Verify testing library. An adopter who copies a module does not need it.
-After adding or removing a specification, run `lute run tools/check-test-manifest.luau --write`.
-The gate pins Verify in `dependencies.lock.luau` and materializes it into the ignored `.lute/dependencies` directory. Set `VERIFY_SOURCE` to a local Verify checkout to avoid the network.
-
-Run one spec with `lute run tools/gate.luau --file extensions/luau/landing.verify.luau`.
-Run the cases whose name contains a text with `--name text`.
-Use `--tier fast` to run the repository checks while editing, without the fresh clone.
-Other options are `--only producer`, `--case id`, `--rerun`, `--explain id` and `--list`. A narrowed run is not the gate.
-
-Analysis uses the exported types of the installed SDK. The gate ignores diagnostics in the SDK's own implementation outside the repository.
-The gate does not verify an adopter's product behavior.
-
-Every maintained Luau file must start with `--!strict`. The gate parses types and compiler directives.
-Explicit `any`, `--!nonstrict` and `--!nocheck` fail. Use concrete types, correlated generics and validated `unknown` at external boundaries.
-
-Run `lute run tools/check-comments.luau` to check all maintained Luau and Lua source comments.
-Tool directives and required license notices stay. Code review covers other languages.
-
-Run `lute run tools/check-spec-style.luau` to check compact spec style, or select the gate's fast `spec-style` producer.
-Specs use `Bdd.create` and bind `local describe, it, expect = ...` once.
-`tools/checks-config.luau` selects tracked and untracked specs. It can exclude paths that test Verify's raw harness API.
 
 ## License
 
-[MIT License](LICENSE). Preserve the copyright and permission notice in copies or substantial portions.
+[MIT License](LICENSE). Keep the copyright and permission notice in copies or substantial portions.

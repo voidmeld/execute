@@ -1,16 +1,15 @@
 # Interactive QA extension
 
-Adopt this extension if a person operates your product through an interface: an app, a tool or a game.
-It adds the evidence rules for running clients. The core ladder in [PLAYBOOK](../../docs/PLAYBOOK.md#evidence) stays generic.
-
-- [Interactive QA](docs/INTERACTIVE-QA.md): the evidence record, captures, scenarios, input and release of a running client.
+Use this extension for a product that a person operates through an interface. It adds evidence rules for running
+clients. The core [evidence ladder](../../docs/PLAYBOOK.md#evidence) remains generic. [Interactive
+QA](docs/INTERACTIVE-QA.md) owns captures, scenarios, input and release.
 
 ## Adopt the extension
 
 1. Copy `extensions/interactive-qa`.
-2. In PLAYBOOK, fill the product-level acceptance step of the evidence ladder with a link to [Interactive QA](docs/INTERACTIVE-QA.md).
-3. Declare the exact commands, hosts, devices and input classes in your project layer. They do not belong here.
+2. In PLAYBOOK, link the product-level acceptance step to [Interactive QA](docs/INTERACTIVE-QA.md).
+3. Declare exact commands, hosts, devices and input classes in the project.
 4. Record the source commit in [ADOPTION](../../docs/ADOPTION.md).
-5. Delete the guidance that your product does not need.
+5. Delete unused guidance.
 
-An extension that targets one platform links here for the shared rules. See the [Roblox extension](../roblox/README.md).
+Platform extensions link here for shared rules. The [Roblox extension](../roblox/README.md) uses these rules.

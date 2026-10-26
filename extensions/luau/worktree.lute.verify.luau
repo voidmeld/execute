@@ -75,9 +75,6 @@ local function checkoutHost(root: string, recorder: Recorder): WorkerSetup.Host
 		write = function(path: string, contents: string)
 			write(resolve(path), contents)
 		end,
-		copy = function(from: string, to: string)
-			fs.copy(resolve(from), resolve(to))
-		end,
 		remove = function(path: string)
 			fs.remove(resolve(path))
 		end,
@@ -405,8 +402,8 @@ return function(suite: Verify.Harness)
 			expect(WorkerSetup.prepareCheckout(config, host, {})[1].status):toBe("SKIP")
 		end)
 
-		case("regenerates, copies and verifies generated inputs", function(directory)
-			local root, primary = initRepository(directory)
+		case("regenerates and verifies generated inputs", function(directory)
+			local _, primary = initRepository(directory)
 			local rec = recorder()
 			local host = checkoutHost(primary, rec)
 			local input: WorkerSetup.Input = {
@@ -445,44 +442,6 @@ return function(suite: Verify.Harness)
 			local silent = WorkerSetup.prepareCheckout(config, host, {})
 			expect(silent[1].status):toBe("FAIL")
 			expect(silent[1].detail):toContain("absent")
-
-			local helperPath = root .. "/helper"
-			local helper = checkoutHost(helperPath, rec)
-			sh(primary, { "git", "worktree", "add", "-q", "-b", "helper", helperPath, "main" })
-			write(primary .. "/build/out.txt", "reference build\n")
-			local copying: WorkerSetup.Config = {
-				base = "main",
-				reference = primary,
-				inputs = {
-					{
-						name = "generated",
-						outputs = { "build/out.txt" },
-						sources = { "source.txt" },
-						regenerate = { "generate" },
-						copyFromReference = true,
-					},
-				},
-			}
-			local before = count(rec.calls, "generate")
-			local copied = WorkerSetup.prepareCheckout(copying, helper, {})[1]
-			expect(copied.status):toBe("PASS")
-			expect(copied.detail):toContain("copied from")
-			expect(fs.readFileToString(helperPath .. "/build/out.txt")):toBe("reference build\n")
-			expect(count(rec.calls, "generate")):toBe(before)
-
-			write(helperPath .. "/source.txt", "diverged\n")
-			commit(helperPath, "diverge")
-			fs.remove(helperPath .. "/build/out.txt")
-			write(primary .. "/build/out.txt", "reference build\n")
-			rec.scripted["generate"] = function(): WorkerSetup.CommandResult
-				fs.createDirectory(helperPath .. "/build", { makeParents = true })
-				write(helperPath .. "/build/out.txt", "regenerated\n")
-				return { exitcode = 0, stdout = "", stderr = "" }
-			end
-			local regenerated = WorkerSetup.prepareCheckout(copying, helper, {})[1]
-			expect(regenerated.status):toBe("PASS")
-			expect(regenerated.detail):toBe("")
-			expect(fs.readFileToString(helperPath .. "/build/out.txt")):toBe("regenerated\n")
 		end)
 
 		case("lands a candidate through real git and refuses a red gate", function(directory)

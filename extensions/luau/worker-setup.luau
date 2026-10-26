@@ -25,7 +25,6 @@ export type Host = {
 	modified: (path: string) -> number?,
 	read: (path: string) -> string?,
 	write: (path: string, contents: string) -> (),
-	copy: (from: string, to: string) -> (),
 	remove: (path: string) -> (),
 	createDirectory: (path: string) -> (),
 }
@@ -35,7 +34,6 @@ export type Input = {
 	outputs: { string },
 	sources: { string },
 	regenerate: { string },
-	copyFromReference: boolean?,
 }
 
 export type Lock = {
@@ -46,7 +44,6 @@ export type Lock = {
 
 export type Config = {
 	base: string,
-	reference: string?,
 	directories: { string }?,
 	lfs: boolean?,
 	lock: Lock?,
@@ -333,48 +330,10 @@ local function inputProblem(input: Input, host: Host): (("input_missing" | "inpu
 	return nil, nil
 end
 
-local function sourceIdentity(input: Input, host: Host, repo: string?): string?
-	local tree = git(host, pathspecArguments({ "ls-tree", "-r", "HEAD" }, input.sources), repo)
-	local status = git(host, pathspecArguments({ "status", "--porcelain" }, input.sources), repo)
-	if tree.exitcode ~= 0 or status.exitcode ~= 0 or trimmed(status.stdout) ~= "" or trimmed(tree.stdout) == "" then
-		return nil
-	end
-	return tree.stdout
-end
-
-local function copyFromReference(input: Input, reference: string, host: Host): string?
-	if #input.sources == 0 then
-		return nil
-	end
-	local mine = sourceIdentity(input, host, nil)
-	if mine == nil or mine ~= sourceIdentity(input, host, reference) then
-		return nil
-	end
-	for _, output in input.outputs do
-		if not host.exists(reference .. "/" .. output) then
-			return nil
-		end
-	end
-	for _, output in input.outputs do
-		local directory = dirname(output)
-		if directory ~= nil then
-			host.createDirectory(directory)
-		end
-		host.copy(reference .. "/" .. output, output)
-	end
-	return reference
-end
-
-local function inputStep(input: Input, config: Config, host: Host): StepOutcome
+local function inputStep(input: Input, host: Host): StepOutcome
 	local problem = inputProblem(input, host)
 	if problem == nil then
 		return { name = input.name, status = "SKIP", detail = "fresh" }
-	end
-	if input.copyFromReference and config.reference ~= nil then
-		local copied = copyFromReference(input, config.reference, host)
-		if copied ~= nil then
-			return { name = input.name, status = "PASS", detail = "copied from " .. copied .. " with identical sources" }
-		end
 	end
 	local outcome = commandStep(input.name, input.regenerate, function(command: { string }): CommandResult
 		return host.run(command, nil)
@@ -443,7 +402,7 @@ local function prepareCheckout(config: Config, host: Host, after: { Step }): { S
 		table.insert(outcomes, lockStep("dependency sync", lock, host))
 	end
 	for _, input in config.inputs do
-		table.insert(outcomes, inputStep(input, config, host))
+		table.insert(outcomes, inputStep(input, host))
 	end
 	table.insert(outcomes, manifestStep(config, host))
 	for _, step in after do

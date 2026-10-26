@@ -1,22 +1,22 @@
 # Luau API
 
-Require a module from `extensions/luau/<module>`. Each module returns the table described here.
-The host supplies external operations. Types are exported from the same module.
-The [extension guide](../extensions/luau/README.md) owns configuration and adoption.
+Require a module from `extensions/luau/<module>`. Each module returns the table described here. The host
+supplies external operations. Types are exported from the same module. The [extension
+guide](../extensions/luau/README.md) owns configuration and adoption.
 
 ## Commit policy
 
 ### `CommitPolicy.FIELD`
 
-Field separator used by the commit log format and parser.
+The commit log format and parser use this field separator.
 
 ### `CommitPolicy.RECORD`
 
-Record separator used by the commit log format and parser.
+The commit log format and parser use this record separator.
 
 ### `CommitPolicy.LOG_FORMAT`
 
-Git log format that carries commit identity, author, committer and body for policy checks.
+This Git log format carries commit identity, author, committer and body for policy checks.
 
 ### `CommitPolicy.parseLog`
 
@@ -32,22 +32,10 @@ Checks commits against the supplied author, committer and trailer rules. Returns
 
 ### `CommitPolicy.runRange`
 
-Reads the candidate range through the supplied Git function, parses it and evaluates its commits.
-Refuses unreadable or malformed logs.
+Reads the candidate range through the supplied Git function, parses it and evaluates its commits. Refuses
+unreadable or malformed logs.
 
 ## Guarded surface
-
-### `GuardedSurface.sectionText`
-
-Extracts a named Markdown section from supplied text.
-
-### `GuardedSurface.withoutAsides`
-
-Removes HTML asides before section content is inspected.
-
-### `GuardedSurface.pathsFromSection`
-
-Extracts the paths declared in a Markdown section.
 
 ### `GuardedSurface.matchedRule`
 
@@ -67,7 +55,7 @@ Finds the heading that owns a line.
 
 ### `GuardedSurface.sectionsTouched`
 
-Finds the sections affected by the changed line ranges.
+Finds the sections that the changed line ranges affect.
 
 ### `GuardedSurface.offendingPaths`
 
@@ -79,17 +67,9 @@ Evaluates the acting identity and changed paths or sections against the supplied
 
 ### `GuardedSurface.withOverride`
 
-Applies an explicit override to a refusal. Returns a warning that identifies the bypassed refusal and banking result.
+Applies an explicit override to a refusal. Returns a warning with the bypassed refusal and banking result.
 
 ## Landing
-
-### `Landing.refusal`
-
-Constructs a refusal with a reason, detail and exit code.
-
-### `Landing.attributed`
-
-Adds branch attribution to a refusal.
 
 ### `Landing.extractFailingLines`
 
@@ -131,18 +111,15 @@ Returns the short display form of a commit identity.
 
 Builds the branch name for an integration train.
 
-### `Landing.trainGuidance`
-
-Builds recovery guidance for a refused train.
-
 ### `Landing.landOne`
 
-Lands one candidate through host setup, preparation, guard and verification.
-Requires a candidate worktree, integrates serially and proves remote equality before cleanup.
+Lands one candidate through host setup, preparation, guard and verification. Requires a candidate worktree,
+integrates serially and proves remote equality before cleanup.
 
 ### `Landing.landTrain`
 
-Combines the supplied candidates as one integration. Runs the train checks and resets members when the train aborts.
+Combines the supplied candidates as one integration. Runs the train checks and resets members when the train
+aborts.
 
 ## Retention
 
@@ -160,8 +137,8 @@ Combines family deletion plans and sorts them by path.
 
 ### `Retention.run`
 
-Runs `plan`, `check` or `apply`. Only `apply` invokes the supplied remove function.
-Returns a refusal for an unknown mode or a failed remove command.
+Runs `plan`, `check` or `apply`. Only `apply` invokes the supplied remove function. Returns a refusal for an
+unknown mode or a failed remove command.
 
 ## Scoped checks
 
@@ -179,9 +156,12 @@ Finds changed paths that no supplied group owns.
 
 ### `ScopedChecks.select`
 
-Selects owning groups, matching specifications and distinct commands for the changed paths and optional selection.
+Selects owning groups, matching specifications and distinct commands for the changed paths and optional
+selection.
 
 ## Worker setup
+
+`Config` and `Input` configure local generation. Reference-copy options and the host copy operation are absent.
 
 ### `WorkerSetup.DIRTY_PATH_LIMIT`
 
@@ -197,7 +177,8 @@ Runs a command through the supplied function. Converts process failures and thro
 
 ### `WorkerSetup.directoryStep`
 
-Creates a missing directory through the supplied functions. Skips an existing directory and reports creation errors.
+Creates a missing directory through the supplied functions. Skips an existing directory and reports creation
+errors.
 
 ### `WorkerSetup.dirtyPaths`
 
@@ -205,7 +186,8 @@ Extracts paths from Git porcelain status output.
 
 ### `WorkerSetup.cleanTreeStep`
 
-Reports a clean checkout or a warning with dirty paths. An unreadable status is a warning, not proof of cleanliness.
+Reports a clean checkout or a warning with dirty paths. An unreadable status is a warning, not proof of
+cleanliness.
 
 ### `WorkerSetup.failureCount`
 
@@ -217,8 +199,8 @@ Creates or reuses the declared branch worktree. Refuses a path that holds a diff
 
 ### `WorkerSetup.prepareCheckout`
 
-Creates directories, hydrates LFS, syncs changed dependencies and prepares declared generated inputs.
-Removes undeclared generated manifests, then runs appended steps. Returns all step outcomes.
+Creates directories, hydrates LFS, syncs changed dependencies and regenerates absent or stale inputs. Removes
+undeclared generated manifests. Then runs appended steps. Returns all step outcomes.
 
 ### `WorkerSetup.freshness`
 

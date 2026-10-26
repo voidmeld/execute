@@ -645,6 +645,40 @@ local function logRebase(deps: Dependencies, label: string, resolvedPaths: { str
 	end
 end
 
+local function verifyCandidate(
+	worktreePath: string,
+	branch: string,
+	deps: Dependencies,
+	subject: string
+): (string?, Refusal?)
+	local plan = deps.plan
+	local prepareRefusal = plan.prepare(worktreePath)
+	if prepareRefusal ~= nil then
+		return nil, prepareRefusal
+	end
+
+	local commitRefusal = plan.commitGuard(branch)
+	if commitRefusal ~= nil then
+		return nil, commitRefusal
+	end
+
+	local verifiedCandidate = resolvedSha(deps.git.revParse(branch))
+	if verifiedCandidate == nil then
+		return nil, refusal("candidate_unresolved", subject .. " commit could not be resolved before verification")
+	end
+	local verifyRefusal = plan.verify(worktreePath)
+	if verifyRefusal ~= nil then
+		return nil, verifyRefusal
+	end
+
+	local changeRefusal = plan.changeGuard(branch)
+	if changeRefusal ~= nil then
+		return nil, changeRefusal
+	end
+
+	return verifiedCandidate, nil
+end
+
 local function landOne(branch: string, deps: Dependencies): Outcome
 	local plan = deps.plan
 	local primaryRefusal = requirePrimary(deps)
@@ -676,28 +710,9 @@ local function landOne(branch: string, deps: Dependencies): Outcome
 	end
 	logRebase(deps, branch, resolvedPaths)
 
-	local prepareRefusal = plan.prepare(worktreePath :: string)
-	if prepareRefusal ~= nil then
-		return prepareRefusal :: Refusal
-	end
-
-	local commitRefusal = plan.commitGuard(branch)
-	if commitRefusal ~= nil then
-		return commitRefusal :: Refusal
-	end
-
-	local verifiedCandidate = resolvedSha(deps.git.revParse(branch))
-	if verifiedCandidate == nil then
-		return refusal("candidate_unresolved", "candidate commit could not be resolved before verification")
-	end
-	local verifyRefusal = plan.verify(worktreePath :: string)
-	if verifyRefusal ~= nil then
-		return verifyRefusal :: Refusal
-	end
-
-	local changeRefusal = plan.changeGuard(branch)
-	if changeRefusal ~= nil then
-		return changeRefusal :: Refusal
+	local verifiedCandidate, candidateRefusal = verifyCandidate(worktreePath :: string, branch, deps, "candidate")
+	if candidateRefusal ~= nil then
+		return candidateRefusal
 	end
 
 	plan.log(("fast-forward merging %s from the primary checkout"):format(branch))
@@ -804,32 +819,9 @@ local function landTrain(branches: { string }, deps: Dependencies): Outcome
 		plan.log(("PASS merged %s files_changed=%d"):format(branch, classified.filesChanged))
 	end
 
-	local prepareRefusal = plan.prepare(trainPath)
-	if prepareRefusal ~= nil then
-		local refused = prepareRefusal :: Refusal
-		return abortWith(refused.reason, refused.detail, nil)
-	end
-
-	local commitRefusal = plan.commitGuard(trainBranch)
-	if commitRefusal ~= nil then
-		local refused = commitRefusal :: Refusal
-		return abortWith(refused.reason, refused.detail, nil)
-	end
-
-	local verifiedCandidate = resolvedSha(deps.git.revParse(trainBranch))
-	if verifiedCandidate == nil then
-		return abortWith("candidate_unresolved", "train commit could not be resolved before verification", nil)
-	end
-	local verifyRefusal = plan.verify(trainPath)
-	if verifyRefusal ~= nil then
-		local refused = verifyRefusal :: Refusal
-		return abortWith(refused.reason, refused.detail, nil)
-	end
-
-	local changeRefusal = plan.changeGuard(trainBranch)
-	if changeRefusal ~= nil then
-		local refused = changeRefusal :: Refusal
-		return abortWith(refused.reason, refused.detail, nil)
+	local verifiedCandidate, candidateRefusal = verifyCandidate(trainPath, trainBranch, deps, "train")
+	if candidateRefusal ~= nil then
+		return abortWith(candidateRefusal.reason, candidateRefusal.detail, nil)
 	end
 
 	plan.log(("fast-forward merging train %s from the primary checkout"):format(trainBranch))
@@ -866,8 +858,6 @@ local function landTrain(branches: { string }, deps: Dependencies): Outcome
 end
 
 return {
-	refusal = refusal,
-	attributed = attributed,
 	extractFailingLines = extractFailingLines,
 	runStep = runStep,
 	isPrimaryCheckout = isPrimaryCheckout,
@@ -878,7 +868,6 @@ return {
 	handAuthoredDetail = handAuthoredDetail,
 	shortSha = shortSha,
 	trainBranchName = trainBranchName,
-	trainGuidance = trainGuidance,
 	landOne = landOne,
 	landTrain = landTrain,
 }

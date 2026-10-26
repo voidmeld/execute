@@ -1,113 +1,96 @@
 # Playbook
 
-This page owns the procedures for iteration, worktree setup, evidence, runtime handoff, integration and external actions.
-[TASKS](TASKS.md) owns roles and assignments. The adopter supplies the exact commands, destinations and required proof.
+This page owns work procedures. [TASKS](TASKS.md) owns roles and assignments. The project supplies exact
+commands, destinations and required proof.
 
 ## Daily iteration
 
-Document one short path from an authored change to its real consumer: edit, run focused checks, exercise the changed behavior, inspect the result and repair.
-Link integration and publication only where needed.
+Document the short path from an edit to its real consumer. Include focused checks, the changed behavior, result
+inspection and repair. Link integration and publication only where needed. Keep first-time setup and failure
+recovery outside this path. An ordinary edit must not reinstall dependencies, rebuild unrelated artifacts,
+reopen healthy applications or repeat valid calibration. Refresh changed source bindings only. Invalidate
+evidence only where its inputs change.
 
-Keep first-time setup and failure recovery apart from this path. An ordinary edit must not:
-
-- reinstall dependencies
-- rebuild unrelated artifacts
-- reopen healthy applications
-- repeat valid calibration
-
-Refresh only the changed source bindings. Invalidate evidence only where its inputs changed.
-
-Use existing tools before you add a wrapper.
-
-- An open or setup command reuses the exact healthy resource when possible. It refuses ambiguous matches.
-- Before you replace a tool, measure setup, synchronization, runtime startup and verification separately.
-- Keep the current working route until the replacement completes a real task and its relevant failure and recovery path.
-
-Keep commands and recovery instructions in their owning runbook, and link them from current state.
-A successor must be able to run them without chat history.
-When you discover a workflow repair, put it in that runbook. Do not put it in a second checklist or a private handoff note.
+Use existing tools before you add a wrapper. An open or setup command reuses the exact healthy resource when
+possible. It refuses ambiguous matches. Before a tool replacement, measure setup, synchronization, startup and
+verification separately. Keep the working route until the replacement completes a real task and its relevant
+failure and recovery path. Keep commands and recovery instructions in the owning runbook. Link that runbook from
+current state. A successor must need no chat history. Put a workflow repair in that runbook, without a second
+checklist or private handoff note.
 
 ## Evidence
 
-Use the cheapest check that can disprove the claim.
-
-Climb this ladder. Evidence from a lower step never proves a claim of a higher step.
+Use the cheapest check that can disprove the claim. A lower step cannot prove a higher step's claim:
 
 1. **Static checks:** source, types, contracts and deterministic builds.
 2. **Automated tests:** the behavior that the tests exercise.
-3. **Product-level acceptance:** FILL: the exact candidate runs in its real host and its observed behavior is recorded.
+3. **Product-level acceptance:** FILL: the exact candidate runs in its real host, with recorded observations.
 4. **Owner acceptance:** the Owner judges the result against [TASTE](TASTE.md).
 
-A destination readback proves what arrived. A fake is a diagnostic model. Require it to refuse what the real host refuses.
-Never use a fake to close a host claim that nobody observed.
-
-For a claim about the running product, the assigned worker or the CEO runs the exact candidate in the required host. Record:
+A destination readback proves what arrived. A fake is a diagnostic model. Require it to refuse what the real
+host refuses. Do not use a fake to accept an unobserved host claim. For a running-product claim, the assigned
+worker or CEO runs the exact candidate in the required host. Record these items:
 
 - the product commit and artifact
-- the host and the destination version
-- the relevant configuration and dependencies
-- the observed output
-- the receipt path
-- FILL: other items that the product requires
+- the host and destination version
+- relevant configuration and dependencies
+- observed output and receipt path
+- FILL: other required product evidence
 
-Bind the evidence to the product commit that ran, not to a later receipt commit.
-Workers execute checks and repair their assigned outcomes. The CEO evaluates the returned evidence against the fixed criteria.
-If OWNER requires independent review for the material or asset, follow the declared scope in [TASKS](TASKS.md#review).
-State the coverage and the limits. A passing gate does not prove the whole product.
-Turn each defect that the Owner finds into a regression at the boundary that can detect it.
-Do not present a build until its required acceptance checks pass.
-
-A product that a person operates through an interface adds the [interactive QA extension](../extensions/interactive-qa/README.md).
+Bind evidence to the product commit that ran. Workers run checks and repair assigned outcomes. The CEO judges
+the returned evidence against fixed criteria. If OWNER requires independent review, follow its scope under
+[TASKS](TASKS.md#review). State coverage and limits. A passed gate does not prove the whole product. Add a
+regression for each defect the Owner finds at a boundary that can detect it. Present a build only after its
+required acceptance checks pass. For a product with an interface, add the [interactive QA
+extension](../extensions/interactive-qa/README.md).
 
 ## Runtime ownership
 
 Give each runtime one driver.
 
-- Reuse standing authority and healthy owned surfaces.
-- In STATE, keep only what recovery needs: the exact instance or PID, the document or build, the driver and the release condition.
-- Add special restrictions when they apply. Do not repeat unchanged grants for each run.
-- Hand off control before another driver acts.
+- Reuse standing authority and healthy resources that you own.
+- In STATE, record the exact instance or PID, document or build, driver and release condition.
+- Add applicable restrictions. Do not repeat unchanged grants for each run.
+- Transfer control before another driver acts.
 - When the run ends, release the resource.
-- Terminate only an exact owned disposable process.
-- Run independent owned runtimes concurrently. Serialize actual shared desktop input or capture and resource-heavy qualification under [TASKS](TASKS.md#delivery-control).
+- Terminate only an exact disposable process that you own.
+- Run independent owned runtimes concurrently. Follow [delivery control](TASKS.md#delivery-control) for shared resources.
 
-A runtime assignment grants no publication, credentials, account changes, spending, permissions or rights.
-
-Treat an environment failure separately from a product failure.
-Change one named environmental condition only when the change distinguishes the cause.
-A busy host alone proves neither an environment failure nor a product failure.
+A runtime assignment grants no publication, credential access, account changes, spending, permissions or rights.
+Separate environment failure from product failure. Change one named environment condition only if it helps
+distinguish the cause. A busy host alone proves neither kind of failure.
 
 ## Worktrees and setup
 
-A sole driver may edit a clean primary checkout. Use an isolated worktree for concurrent edits or unrelated local work.
-The adopter's worker-setup command does the whole preparation in one step. It is safe to run again:
+A sole driver can edit a clean primary checkout. For concurrent edits or unrelated local work, use an isolated
+worktree. The project's worker-setup command prepares the checkout in one step. It is safe to run again:
 
-1. Create the worktree on the branch from the base. If the path already holds that branch, reuse it.
-2. Hydrate LFS pointer files.
+1. Create the worktree on the branch from the base.
+   If the path holds that branch, reuse it.
+2. Fetch LFS file content.
 3. If the lock changed since the last sync, sync dependencies.
-4. Materialize each declared generated or git-ignored input. Reuse it while no source is newer. Otherwise copy it from a reference checkout whose sources are byte-identical. Otherwise regenerate it.
-5. Delete generated manifests that the current sources do not declare.
+4. Prepare each declared generated or Git-ignored input.
+   If no source is newer, reuse the input.
+   Otherwise, regenerate it.
+5. Delete generated manifests that current sources do not declare.
 
-Run its freshness check before long work and before landing. The check changes nothing.
-It names each stale item with its fix: base branch moved, lock changed, LFS pointer, missing or older-than-source input, or undeclared manifest.
-Never copy ignored files between worktrees by hand.
-The adopter declares the inputs, sources, commands and manifest patterns in its own worker-setup configuration.
-
-Each worker outcome starts from the base branch, not from a moving candidate, and ends as one scoped commit.
-
-- If the base moves, run `git rebase <base>`.
-- If a candidate was squashed, run `git rebase --onto <base> <old candidate tip>`.
+Before long work and integration, run the freshness check. It changes no files. It names each stale item and its
+remedy. It checks base movement, locks, LFS pointers, absent or old inputs and undeclared manifests. Do not copy
+ignored files between worktrees by hand. Declare inputs, sources, commands and manifest patterns in the
+project's worker-setup configuration. Each worker outcome starts from the base branch and ends as one scoped
+commit. If the base moves, run `git rebase <base>`. If a candidate was squashed, run `git rebase --onto <base>
+<old candidate tip>`.
 
 ## Integration
 
-The outcome assignment grants its worker scoped self-landing unless it explicitly withholds it.
-Complete self-review and any OWNER-required review before landing. CEO acceptance is not a routine source-landing prerequisite.
+An assignment grants scoped integration unless it withholds it. Complete self-review and any OWNER-required
+review before integration. Routine source integration needs no CEO product acceptance.
 
-Select checks by changed file. The adopter declares groups of path patterns with their specs and checks.
-The landing tool runs only the groups that the candidate touches, plus any explicit selection.
-If no group owns a path, use an explicit selection or the adopter's full-gate flag. No tool silently runs everything.
-Use focused checks while editing. Qualify the combined candidate once for a shared-contract change or release claim.
-Do not repeat that qualification before and during landing. Repeat only for a relevant change or an unresolved failure.
+Select checks by changed file. The project declares path groups with their specifications and checks. The
+landing tool runs the groups the candidate touches, plus explicit selections. If no group owns a path, use an
+explicit selection or the project's full-gate flag. No tool silently runs everything. Use focused checks during
+edits. Qualify the combined candidate once for a shared-contract change or release claim. Repeat only for a
+relevant change or unresolved failure.
 
 For direct solo integration:
 
@@ -115,68 +98,67 @@ For direct solo integration:
 2. Run its declared checks on those bytes.
 3. Push and verify remote equality.
 
-No temporary branch or worktree is required.
+This route requires no temporary branch or worktree. For a worker branch, follow these steps directly or use the
+optional landing tool. The candidate must be one commit on a branch in a worktree. Without that worktree, the
+tool refuses before checks. It gives the remedy: `git worktree add <path> <branch>`.
 
-For a worker branch, follow these steps directly or use the optional landing tool. Land a candidate that is a single commit on a branch checked out in a worktree.
-Without that worktree, the landing tool refuses before it runs any check. The refusal names the `git worktree add <path> <branch>` remedy.
+1. Acquire exclusive integration control.
+2. Confirm shared main is clean and equal to its remote.
+3. Review and freeze the scoped candidate.
+4. If the base moved, rebase onto current main.
+5. Inspect the final diff.
+6. Refresh native proof where the rebase changes behavior or evidence bindings.
+7. Run the declared gate on final committed bytes.
+8. Fast-forward main.
+9. Push and prove exact remote equality.
+10. Release integration control.
 
-1. Acquire exclusive integration control. Confirm that shared main is clean and equal to its remote.
-2. Review and freeze the scoped candidate. Rebase it onto current main if the base moved.
-3. Inspect the final diff. Refresh required native proof where the rebase affects behavior or its evidence bindings.
-4. Run the declared gate on final committed bytes.
-5. Fast-forward main, push and prove exact remote equality. Release integration control.
-
-A failing tool step refuses with the failing check names, a bounded output tail and the path of the complete log.
-Diagnose from that log, not from a second run.
+A failed tool step reports failing check names, a bounded output tail and the complete log path. Diagnose from
+that log before another run.
 
 - Serialize shared main.
-- Refuse a failed gate, a moved base or candidate, an unrelated diff, missing required proof or missing authority.
-- When candidates landing together conflict with each other, stack them before landing: rebase each onto the previous, resolve every conflict in its own worktree and analyze the stacked result. A combined landing then applies each member cleanly.
-- If main moves, rebase and recheck affected changes before a new landing attempt. After a passed gate, the landing tool fast-forwards without rerunning it when main moved only on paths that the candidate does not touch.
-- If a push is rejected or ambiguous, reconcile local and remote commits before retrying. Keep unresolved integration discoverable in STATE.
-- Record the commit, the gate result, the review, the clean status and the evidence paths.
-- Source landing requires the assigned native proof but needs no CEO product acceptance and does not authorize publication.
-- Retire the worktree only after its commits land, its remaining work is preserved or disposed, and no live task owns it.
+- Refuse a failed gate, moved base or candidate, unrelated diff, missing proof or missing authority.
+- If candidates conflict, stack them before a combined integration.
+  Rebase each onto the previous candidate. Resolve conflicts in its own worktree. Analyze the stacked result.
+- If main moves, rebase and recheck affected changes before another attempt.
+  After a passed gate, disjoint path changes on main need no gate rerun in the landing tool.
+- If a push is rejected or ambiguous, reconcile local and remote commits before another attempt.
+  Keep unresolved integration in STATE.
+- Record the commit, gate result, review, clean status and evidence paths.
+- Source integration requires the assigned native proof. It grants no publication authority.
+- Remove a worktree only after its commits land, remaining work is preserved or disposed, and no live task owns it.
 
 ## Worker hygiene
 
-Run every check batch, run, render or landing as one background command with a hard deadline from the host's bounded-run mechanism.
-After starting it, end the turn. The completion resumes the worker. Use no sleep loops and no status-only turns.
-Keep every file that a worker makes under its worktree or the primary checkout. Installing a host tool needs the CEO's go.
-A runner that can disturb shared sessions, such as a multi-client cohort, runs only at a gate that the CEO calls.
-A lane changes hands at an outcome boundary under [lane rotation](TASKS.md#lane-rotation).
+Run each check batch, test, render or integration as one background command. Use the host's bounded-run
+mechanism with a hard deadline. After launch, end the turn. Completion resumes the worker. Use no sleep loops or
+turns that only report status. Keep worker files under its worktree or primary checkout. Host tool installation
+needs CEO approval. A runner that can disturb shared sessions runs only at a gate the CEO calls. Transfer a lane
+only at an outcome boundary under [lane rotation](TASKS.md#lane-rotation).
 
 ## Upload route
 
-Beside each file to upload, the CEO writes a review record with the digest, the reviewer, the verdict and what the CEO inspected personally, and lands it.
-The CEO then runs the adopter's upload command from the primary checkout at a main equal to its remote.
-The command's receipt carries the resulting ids. The owning worker records them in the manifest with the receipt paths, the content hash and the provenance.
+Beside each file to upload, the CEO records its digest, reviewer, verdict and personal inspection. Land that
+record before upload. The CEO runs the project's upload command from the primary checkout at main equal to its
+remote. The receipt contains the resulting IDs. The worker records them in the manifest with receipt paths,
+content hash and source history.
 
 ## External actions
 
-Before an external action, record these items:
+Before an external action, record authority, operator, source or artifact identity, destination, recovery plan
+and acceptance readback. If a required binding is absent, refuse the action. Perform one authorized attempt.
+Read the destination back. A warning, rejection or ambiguity holds the affected action. Keep its journal.
+Reconcile the original transaction before a decision to retry.
 
-- the exact authority and the operator
-- the source or artifact identity
-- the destination
-- the rollback or recovery plan
-- the acceptance readback
+Before the first request, record the write-ahead in the existing operation journal. Close it after readback.
+Keep one current transaction line in STATE:
 
-If any required binding is absent, refuse. Perform one authorized attempt and read the destination back.
-A warning, a rejection or an ambiguity holds the affected action. Keep its journal.
-Reconcile its original transaction before you decide whether a retry is authorized.
+- Open: `- Write-ahead: publishing <channel> <targets> at <sha> by <command>; one attempt per target.`
+- Closed: `- Write-ahead: none. <Channel> <sha> live (<versions and outcome>).`
+- No attempt: `- Write-ahead: none. <act> held before any request (<reason>).`
 
-Record the write-ahead in the existing operation journal before the first request. Close it after the readback.
-Keep the active transaction discoverable from STATE:
-
-- open: `- Write-ahead: publishing <channel> <targets> at <sha> by <command>; one attempt per target.`
-- close: `- Write-ahead: none. <Channel> <sha> live (<versions and outcome>).`, or
-  `- Write-ahead: none. <act> held before any request (<reason>).` when nothing was attempted.
-
-Keep one current transaction line in STATE. Keep closed transactions and original journals in their evidence packets.
-Link unresolved consequences from STATE. Do not copy the closed history.
-
-Never run a mutating tool only to learn what it does.
-Keep the source identities, rights and notices, original evidence and recovery records that you need to verify the current delivery and to reconcile unresolved actions.
-
-Ask the Owner one reserved decision at a time, with a recommended default. Do not make the Owner the routine tester.
+Keep closed transactions and original journals in their evidence packets. Link unresolved consequences from
+STATE. Do not copy closed history. Do not run a mutating tool only to learn its behavior. Keep source
+identities, rights, notices, original evidence and recovery records needed for current delivery or unresolved
+actions. Ask the Owner one reserved decision at a time, with a recommended default. Do not make the Owner the
+routine tester.
