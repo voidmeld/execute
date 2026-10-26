@@ -2,6 +2,7 @@
 
 local ScopedChecks = require("./scoped-checks")
 local Verify = require("../../.lute/dependencies/verify/src/core")
+local Bdd = require("../../.lute/dependencies/verify/src/bdd")
 
 local groups: { ScopedChecks.Group } = {
 	{
@@ -19,44 +20,53 @@ local groups: { ScopedChecks.Group } = {
 }
 
 return function(suite: Verify.Harness)
-	suite:case("matches path patterns", function(context)
-		context:expect(ScopedChecks.matches("assets/a.png", { "^docs/", "^assets/" })):toBeTruthy()
-		context:expect(ScopedChecks.matches("src/a.luau", { "^docs/", "^assets/" })):toBeFalsy()
-	end)
+	local test = Bdd.create(suite)
+	local describe, it, expect = test.describe, test.it, test.expect
 
-	suite:case("selects touched and unowned paths", function(context)
-		local touched = ScopedChecks.touched({ "world/zone/a.luau", "README.md" }, groups)
-		context:expect(#touched):toBe(1)
-		context:expect(touched[1].name):toBe("zone")
-		context:expect(#ScopedChecks.touched({ "README.md" }, groups)):toBe(0)
-		local unowned = ScopedChecks.unowned({ "world/zone/a.luau", "README.md", "src/b.luau" }, groups)
-		context:expect(#unowned):toBe(2)
-		context:expect(unowned[1]):toBe("README.md")
-		context:expect(unowned[2]):toBe("src/b.luau")
-	end)
-
-	suite:case("selects specs and checks by owning group", function(context)
-		local candidates =
-			{ "tests/ZoneB.verify.luau", "tests/Art.verify.luau", "tests/ZoneA.verify.luau", "tests/Other.verify.luau" }
-		local selection = ScopedChecks.select({ "world/zone/a.luau" }, groups, candidates, nil)
-		context:expect(#selection.specs):toBe(2)
-		context:expect(selection.specs[1]):toBe("tests/ZoneA.verify.luau")
-		context:expect(#selection.checks):toBe(1)
-		context:expect(selection.checks[1][1]):toBe("tools/audit.luau")
-
-		local both = ScopedChecks.select({ "world/zone/a.luau", "assets/b.png" }, groups, candidates, nil)
-		context:expect(#both.specs):toBe(3)
-		context:expect(#both.checks):toBe(2)
-
-		local dropped = ScopedChecks.select({ "world/zone/a.luau" }, groups, candidates, function(spec: string)
-			return spec ~= "tests/ZoneB.verify.luau"
+	describe("scoped checks", function()
+		it("matches path patterns", function()
+			expect(ScopedChecks.matches("assets/a.png", { "^docs/", "^assets/" })):toBeTruthy()
+			expect(ScopedChecks.matches("src/a.luau", { "^docs/", "^assets/" })):toBeFalsy()
 		end)
-		context:expect(#dropped.specs):toBe(1)
-		context:expect(dropped.specs[1]):toBe("tests/ZoneA.verify.luau")
 
-		local none = ScopedChecks.select({ "README.md" }, groups, candidates, nil)
-		context:expect(#none.groups):toBe(0)
-		context:expect(#none.specs):toBe(0)
-		context:expect(#none.checks):toBe(0)
+		it("selects touched and unowned paths", function()
+			local touched = ScopedChecks.touched({ "world/zone/a.luau", "README.md" }, groups)
+			expect(#touched):toBe(1)
+			expect(touched[1].name):toBe("zone")
+			expect(#ScopedChecks.touched({ "README.md" }, groups)):toBe(0)
+			local unowned = ScopedChecks.unowned({ "world/zone/a.luau", "README.md", "src/b.luau" }, groups)
+			expect(#unowned):toBe(2)
+			expect(unowned[1]):toBe("README.md")
+			expect(unowned[2]):toBe("src/b.luau")
+		end)
+
+		it("selects specs and checks by owning group", function()
+			local candidates = {
+				"tests/ZoneB.verify.luau",
+				"tests/Art.verify.luau",
+				"tests/ZoneA.verify.luau",
+				"tests/Other.verify.luau",
+			}
+			local selection = ScopedChecks.select({ "world/zone/a.luau" }, groups, candidates, nil)
+			expect(#selection.specs):toBe(2)
+			expect(selection.specs[1]):toBe("tests/ZoneA.verify.luau")
+			expect(#selection.checks):toBe(1)
+			expect(selection.checks[1][1]):toBe("tools/audit.luau")
+
+			local both = ScopedChecks.select({ "world/zone/a.luau", "assets/b.png" }, groups, candidates, nil)
+			expect(#both.specs):toBe(3)
+			expect(#both.checks):toBe(2)
+
+			local dropped = ScopedChecks.select({ "world/zone/a.luau" }, groups, candidates, function(spec: string)
+				return spec ~= "tests/ZoneB.verify.luau"
+			end)
+			expect(#dropped.specs):toBe(1)
+			expect(dropped.specs[1]):toBe("tests/ZoneA.verify.luau")
+
+			local none = ScopedChecks.select({ "README.md" }, groups, candidates, nil)
+			expect(#none.groups):toBe(0)
+			expect(#none.specs):toBe(0)
+			expect(#none.checks):toBe(0)
+		end)
 	end)
 end
