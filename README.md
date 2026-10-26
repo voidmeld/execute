@@ -61,7 +61,7 @@ local groups: { ScopedChecks.Group } = {
 }
 
 local changed = { "tools/check-comments.luau", "docs/STATE.md", "notes.txt" }
-local candidates = { "tools/check-comments.verify.luau", "tools/other.verify.luau" }
+local candidates = { "tools/first.verify.luau", "tools/other.verify.luau" }
 
 local selection = ScopedChecks.select(changed, groups, candidates, nil)
 for _, group in selection.groups do
