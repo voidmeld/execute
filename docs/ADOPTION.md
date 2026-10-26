@@ -1,13 +1,13 @@
 # Adoption record
 
-The adoption record holds the current upstream relationship between a project and Execute.
+Record the current relationship between this project and Execute.
 
 - Template repository: FILL
 - Exact Execute commit and tree: FILL
-- Upstream license: MIT; preserve the Execute copyright and permission notice
-- Selected harness and model routes: FILL
+- Upstream license: MIT; keep the Execute copyright and permission notice
+- Selected harnesses and models: FILL
 - Selected extensions: FILL
-- Generic files adopted unchanged: FILL
+- Generic files copied without changes: FILL
 
 ## Intentional differences
 
@@ -15,4 +15,4 @@ The adoption record holds the current upstream relationship between a project an
 | --- | --- | --- |
 | FILL | FILL | FILL |
 
-Update this record when an integration adopts and validates new upstream bytes, or records a local difference.
+After you adopt and validate an upstream change, update this record. Record each local difference here.

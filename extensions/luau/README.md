@@ -1,48 +1,62 @@
 # Luau extension
 
-The Luau extension is a set of optional, host-neutral Luau modules for adopter tooling.
-They implement reusable contracts for landing, check selection, authority, retention and worktree setup.
-The host injects Git, filesystem, clock and process operations. The modules do not access those services directly.
+These optional modules supply common operations for project tools. The host supplies Git, file, clock and
+process operations. The modules do not access those services directly. Execute's operating rules remain in
+Markdown. Copy only the modules that a current consumer needs. Keep product values and rules in that consumer.
 
-The operating contract of Execute remains in Markdown. Adopt only the modules that a current consumer needs.
-Keep product names, identities, destinations, paths, risk rules and milestones in that consumer.
-The [API reference](../../docs/api.md) names every exported runtime member.
+The [API reference](../../docs/api.md) describes each exported runtime member. The
+[example](../../examples/scoped-checks.luau) selects checks for changed paths.
 
-| Module | Contract |
+| Module | Operation |
 | --- | --- |
-| [landing](landing.luau) | Lands one branch, or a train of several branches as one integration, from the primary checkout. A candidate must be checked out in a worktree. Without one, the refusal names the `git worktree add` remedy. The module rebases in worktrees, fast-forwards without rerunning the gate when the base moved after a pass only on paths that the candidate does not touch, resolves registered conflicts, runs the host setup, prepare, guard and verify steps, fast-forwards, proves remote equality and cleans up. `runStep` runs one gate command. On failure it refuses with the failing names, an output tail and a log path. An aborted train resets its members. |
-| [scoped-checks](scoped-checks.luau) | Selects the specs and checks that own the changed paths, from groups of path patterns that the caller supplies. |
-| [worker-setup](worker-setup.luau) | `ensureWorktree` creates or reuses a worktree on a named branch from a named base. `prepareCheckout` hydrates LFS, syncs dependencies if the lock changed, materializes declared generated inputs (fresh, verified copy or regeneration) and deletes undeclared generated manifests. `freshness` reports what is stale and changes nothing. Step primitives report PASS, SKIP, WARN or FAIL. |
-| [commit-policy](commit-policy.luau) | Checks the author, the committer and the trailers against rules that the caller supplies. |
-| [guarded-surface](guarded-surface.luau) | Checks path or section tiers and the acting identity against authority that the caller supplies. |
-| [retention](retention.luau) | Plans deletion by receipt family. It keeps the required newest records and terminal-state records. |
+| [landing](landing.luau) | Integrates one branch or several branches as a train. |
+| [scoped-checks](scoped-checks.luau) | Selects specifications and checks from supplied path patterns. |
+| [worker-setup](worker-setup.luau) | Creates or reuses a worktree and prepares its inputs. |
+| [commit-policy](commit-policy.luau) | Checks authors, committers and trailers against supplied rules. |
+| [guarded-surface](guarded-surface.luau) | Checks path and section rules against supplied authority. |
+| [retention](retention.luau) | Plans or applies deletion for supplied record families. |
 
-For `retained-terminal` families, a superseded reason takes priority over a nonterminal reason. Both reasons preserve the row's group and detail.
+## Landing
+
+Run landing from the primary checkout. Each candidate branch must have a worktree. If a worktree is absent, the
+refusal gives a `git worktree add` command. The module rebases candidates in their worktrees. It resolves
+registered conflicts and runs the host's preparation, guard and verification steps. It fast-forwards the
+destination and proves remote equality before cleanup. If a train aborts, it resets the members.
+
+After a passed gate, a base move on disjoint paths does not require another gate run. `runStep` runs one
+command. On failure, it reports failing lines, an output tail and a log path.
 
 ## Worker-setup configuration
 
-The adopter's command builds a `Config` and a `Host`, and calls the module. `Config` declares these fields:
+The host builds a `Config` and a `Host`. `Config` has these fields:
 
-- `base`: the shared base ref for the base-moved check.
-- `lfs`: hydrate LFS pointer files.
-- `lock`: the lock file, a marker file that records the blob hash of the lock after a sync, and the sync command.
-- `inputs`: each generated or git-ignored input, with its `outputs`, its tracked `sources` (git pathspecs), its `regenerate` command and an optional `copyFromReference`.
-- `manifests`: a git pathspec and the names that the current sources declare. The module deletes ignored files that match the pathspec but are not declared.
+- `base`: the shared base ref for the check for base movement.
+- `directories`: directories to create if absent.
+- `lfs`: whether to fetch LFS file content.
+- `lock`: the lock path, marker path and sync command.
+- `inputs`: generated inputs, with `outputs`, tracked `sources` and a `regenerate` command.
+- `manifests`: a Git pathspec and the file names that current sources declare.
 
-An input is fresh when every output exists and no output is older than a source.
-A copy happens only from `reference`, and only when the source tree and status match byte for byte. Otherwise the command regenerates.
-Freshness uses file modification times. A source that is touched without a content change reads as stale and regenerates once.
+The lock marker records the lock's blob hash after a sync. Setup deletes ignored manifests that match the
+pathspec but have no declaration. `prepareCheckout` runs the appended steps after preparation. Step results are
+PASS, SKIP, WARN or FAIL. `freshness` reports stale items without file changes.
 
-## Verification
+An input is fresh if each output exists and no source is newer. If an input is absent or stale, setup regenerates it. Freshness uses file modification
+times. Touching a source can cause one regeneration without a content change.
 
-Each module has an adjacent `*.verify.luau` specification. The specs use the Verify testing library. An adopter who copies a module does not need it.
-`worktree.lute.verify.luau` exercises setup and landing against temporary git repositories and removes them through its case context.
-Run `lute run tools/gate.luau` for the whole repository gate. Run one spec with `lute run tools/gate.luau --file extensions/luau/<name>.verify.luau`.
-Follow [Validate](../../README.md#validate).
+## Retention
 
-## Adoption
+For `newest-per-group`, the module keeps the newest record in each group. For `retained-terminal`, a superseded
+reason takes priority over a nonterminal reason. Both reasons keep the row's group and detail. Only `apply`
+calls the host's remove function.
 
-1. Copy the selected modules into the adopter.
-2. Bind the host operations of the adopter.
+## Verification and adoption
+
+Each module has an adjacent `*.verify.luau` specification. `worktree.lute.verify.luau` tests setup and landing
+with temporary Git repositories. Its case context removes those repositories. Follow
+[Validation](../../docs/VALIDATE.md) for setup and checks.
+
+1. Copy the selected modules.
+2. Bind the project's host operations.
 3. Record the exact source in [ADOPTION](../../docs/ADOPTION.md).
-4. When you update, validate the real consumer of the adopter.
+4. After an update, validate the project's actual consumer.

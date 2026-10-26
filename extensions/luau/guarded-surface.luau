@@ -61,55 +61,6 @@ local function pushUnique(into: { string }, seen: { [string]: boolean }, value: 
 	table.insert(into, value)
 end
 
-local function sectionText(document: string, headingPattern: string): string?
-	local collected: { string } = {}
-	local capturing = false
-	for line in (document .. "\n"):gmatch("([^\n]*)\n") do
-		if string.match(line, "^##%s") ~= nil then
-			if string.match(line, headingPattern) ~= nil then
-				capturing = true
-			elseif capturing then
-				break
-			end
-		end
-		if capturing then
-			table.insert(collected, line)
-		end
-	end
-	if not capturing then
-		return nil
-	end
-	return table.concat(collected, "\n")
-end
-
-local function withoutAsides(text: string): string
-	local stripped = text
-	for _ = 1, 8 do
-		local reduced = (string.gsub(stripped, "%b()", " "))
-		if reduced == stripped then
-			break
-		end
-		stripped = reduced
-	end
-	return stripped
-end
-
-local function pathsFromSection(section: string): ({ string }, { string })
-	local body = withoutAsides(section)
-	local prefixes: { string } = {}
-	local prefixSeen: { [string]: boolean } = {}
-	for token in string.gmatch(body, "[%w%.][%w%.%-_/]*/%*%*") do
-		pushUnique(prefixes, prefixSeen, token)
-	end
-	local remainder = (string.gsub(body, "[%w%.][%w%.%-_/]*/%*%*", " "))
-	local exactFiles: { string } = {}
-	local exactSeen: { [string]: boolean } = {}
-	for token in string.gmatch(remainder, "[%w][%w%.%-_/]*%.[%w]+") do
-		pushUnique(exactFiles, exactSeen, token)
-	end
-	return exactFiles, prefixes
-end
-
 local function matchedRule(path: string, tier: Tier): string?
 	for _, exact in tier.exactFiles do
 		if path == exact then
@@ -263,9 +214,6 @@ local function withOverride(verdict: Verdict, requested: boolean, label: string,
 end
 
 return {
-	sectionText = sectionText,
-	withoutAsides = withoutAsides,
-	pathsFromSection = pathsFromSection,
 	matchedRule = matchedRule,
 	parseHunks = parseHunks,
 	headingIndex = headingIndex,

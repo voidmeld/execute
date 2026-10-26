@@ -4,19 +4,6 @@ local Guarded = require("./guarded-surface")
 local Verify = require("../../.lute/dependencies/verify/src/core")
 local Bdd = require("../../.lute/dependencies/verify/src/bdd")
 
-local DOCUMENT = table.concat({
-	"# Constitution",
-	"",
-	"## Sealed",
-	"",
-	"Sealed surfaces are docs/SEALED.md, tools/gate.luau, and everything under policy/** (aside).",
-	"",
-	"## Open",
-	"",
-	"Everything else is open.",
-	"",
-}, "\n")
-
 local TIER: Guarded.Tier = {
 	name = "Sealed",
 	exactFiles = { "docs/SEALED.md", "tools/gate.luau" },
@@ -69,32 +56,6 @@ return function(suite: Verify.Harness)
 	local describe, it, expect = test.describe, test.it, test.expect
 
 	describe("guarded surface", function()
-		it("extracts a section", function()
-			local section = Guarded.sectionText(DOCUMENT, "^##%s+Sealed")
-			expect(section):toBeTruthy()
-			expect(section :: string):toContain("docs/SEALED.md")
-			expect(section :: string).never:toContain("Everything else is open")
-			expect(Guarded.sectionText(DOCUMENT, "^##%s+Absent")):toBeNil()
-		end)
-
-		it("strips parenthesized asides", function()
-			expect(Guarded.withoutAsides("keep (drop (nested)) keep")):toBe("keep   keep")
-		end)
-
-		it("reads guarded paths from a section", function()
-			local section = Guarded.sectionText(DOCUMENT, "^##%s+Sealed") :: string
-			local exactFiles, prefixes = Guarded.pathsFromSection(section)
-			expect(#prefixes):toBe(1)
-			expect(prefixes[1]):toBe("policy/**")
-			local found: { [string]: boolean } = {}
-			for _, path in exactFiles do
-				found[path] = true
-			end
-			expect(found["docs/SEALED.md"]):toBeTruthy()
-			expect(found["tools/gate.luau"]):toBeTruthy()
-			expect(found["aside"]):toBeFalsy()
-		end)
-
 		it("matches the rule of a path", function()
 			expect(Guarded.matchedRule("docs/SEALED.md", TIER)):toBe("docs/SEALED.md")
 			expect(Guarded.matchedRule("policy/anything/deep.md", TIER)):toBe("policy/**")

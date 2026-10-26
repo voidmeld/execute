@@ -252,6 +252,33 @@ return function(suite: Verify.Harness)
 			expect((outcome :: Landing.Success).filesChanged):toBe(2)
 		end)
 
+		it("keeps train identity refusal detail and cleanup", function()
+			local prepared, removed = false, false
+			local outcome = Landing.landTrain({ "feature" }, {
+				git = stubGit({
+					revParse = function(): Landing.CommandResult
+						return if prepared then bad(1, "unreadable") else ok(string.rep("a", 40))
+					end,
+					worktreeRemove = function(): Landing.CommandResult
+						removed = true
+						return ok("")
+					end,
+				}),
+				plan = stubPlan({
+					prepare = function(): Landing.Refusal?
+						prepared = true
+						return nil
+					end,
+				}),
+			})
+			expect(outcome.ok):toBeFalsy()
+			expect((outcome :: Landing.Refusal).reason):toBe("candidate_unresolved")
+			expect((outcome :: Landing.Refusal).detail):toContain(
+				"train commit could not be resolved before verification"
+			)
+			expect(removed):toBeTruthy()
+		end)
+
 		it("fast-forwards a gated candidate after a disjoint base move without rerunning the gate", function()
 			local gateRuns, merges = 0, 0
 			local outcome = Landing.landOne("feature", {

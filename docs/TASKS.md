@@ -1,90 +1,93 @@
 # Operating contract
 
-[AGENTS](../AGENTS.md) owns repository rules. [OWNER](OWNER.md) owns authority and staffing.
-[STATE](STATE.md) holds current work. The adopter keeps one product plan for priorities and acceptance.
+[AGENTS](../AGENTS.md) owns repository rules. [OWNER](OWNER.md) owns authority and staffing. [STATE](STATE.md)
+holds current work. The project keeps one product plan for priorities and acceptance.
 
 ## Communication
 
-Send an assignment, a completed result, or a decision that needs the recipient to act.
-Keep each worker's current result in one replaceable record: outcome, commit, checks, limits and next dependency.
-Replace superseded status. Link retained evidence instead of copying logs or appending a diary.
-Do not create separate standing, pending and history prompt systems.
+Send an assignment, a result or a decision that requires action. Keep each worker's current result in one
+replaceable record. Include the outcome, commit, checks, limits and next dependency. Replace old status. Link
+retained evidence instead of copying logs or adding a diary. Do not create separate queues for standing, pending
+and historical prompts.
 
 ## CEO
 
-One accountable CEO chooses priorities, assigns outcomes, removes dependencies and accepts integrated product quality.
-The CEO owns reserved external acts within OWNER's grants. Workers own scoped implementation, self-review, verification and landing.
-The adopter chooses the worker count, identities, models, harnesses and rights in OWNER and ADOPTION.
-A staffing choice grants no release or external-action authority.
+One CEO is accountable for priorities, assignments, dependencies and integrated product quality. The CEO
+performs reserved external acts within OWNER's grants. Workers own scoped implementation, self-review,
+verification and integration. The project declares worker counts, identities, models, harnesses and rights in
+OWNER and ADOPTION. Staffing grants no authority for release or external actions.
 
-- Inspect actual work and new results before choosing the next action.
-- Inspect integrated product quality and evidence. Routine code changes and assigned follow-on work need no CEO approval.
-- Exercise user-visible work on its required surface before claiming product acceptance.
-- Integrate under [PLAYBOOK](PLAYBOOK.md#integration); keep source readiness separate from product acceptance.
-- Preserve healthy setup and hand off each shared resource before changing its driver.
-- Report a completed delivery or a decision that needs Owner action. Keep routine diagnostics in the evidence.
+- Inspect actual work and new results before you select the next action.
+- Inspect integrated quality and evidence. Routine assigned work needs no CEO approval.
+- Exercise user-visible work on its required surface before you claim product acceptance.
+- Integrate under [PLAYBOOK](PLAYBOOK.md#integration). Report source readiness and product acceptance separately.
+- Keep healthy setup. Transfer control of each shared resource before its driver changes.
+- Report completed delivery or a decision that needs Owner action. Keep routine diagnostics in the evidence.
 
 ### Delivery control
 
-Resume only for a useful authorized action: a new assignment, a result to review, a cleared dependency,
-a recovery step or an explicit Owner request. Read the changed current state, then act on that event.
-If no useful action is available, record the dependency and stop. Do not schedule an empty resume loop.
-A resume never grants authority or resets a repair budget.
+Resume only for a useful authorized action. Valid events are an assignment, a result, a cleared dependency, a
+recovery step or an explicit Owner request. Read the changed state before you act. If no useful action is
+available, record the dependency and stop. Do not schedule an empty resume loop. A resume grants no authority
+and resets no repair limit.
 
-Assign exclusive runtimes for independent native work. Serialize only resources that are actually shared: desktop input or capture and resource-heavy qualification.
-Record each shared resource's holder, command, source and release condition in STATE. Other workers continue authorized independent work.
-Use the harness's background task and completion notification. Do not add shell polling supervisors or timer agents.
-A completion signal means the task ended; inspect the actual result before claiming success.
+Assign separate runtimes for independent work. Serialize shared desktop input, capture and qualification that
+requires substantial resources. Record the holder, command, source and release condition of each shared resource
+in STATE. Other workers continue authorized independent work. Use native background tasks and completion
+notifications. Do not add shell polling supervisors or timer agents. After a completion signal, inspect the
+result before you claim success.
 
 ## Workers
 
-Workers are persistent assigned sessions. They may use the same harness as the CEO or an adopter-approved different harness.
-Native subagents are an available transport, not a required role definition.
-Reuse the declared sessions and worktrees. Do not create replacements or additional agents without authority.
+Workers are persistent assigned sessions. OWNER can approve a different harness for a worker. Native subagents
+are optional transport. Reuse declared sessions and worktrees. Do not create replacements or more agents without
+authority.
 
 ### Assignment
 
-Give each worker one bounded assignment: a coherent outcome or an ordered sequence of outcomes.
-Name exclusive paths and runtime, the source base, acceptance criteria, focused checks and required native evidence for each outcome.
-Name integration rights, dependencies, repair limits and the return boundary. Assign follow-on work explicitly; a priority list grants no scope.
-An assignment supersedes its prior brief. Preserve any unfinished candidate before starting incompatible work.
-Prepare the worktree through the adopter's [setup route](PLAYBOOK.md#worktrees-and-setup).
-Delegate only when it saves more than the briefing, review and integration cost.
+Give each worker one bounded assignment: one outcome or an ordered sequence. For each outcome, name exclusive
+paths, runtime, base, acceptance criteria, checks and required native evidence. Name integration rights,
+dependencies, repair limits and the return boundary. Assign subsequent work explicitly. A priority list grants
+no scope. An assignment replaces its prior brief. Before incompatible work, preserve any unfinished candidate.
+Use the project's [setup route](PLAYBOOK.md#worktrees-and-setup). Delegate only if it saves more than the cost
+of briefing, review and integration.
 
 ### Return
 
-Resolve routine details, self-review and run the required success, failure and native checks for each outcome.
-Land each scoped candidate under [PLAYBOOK](PLAYBOOK.md#integration), then continue the assigned sequence without a CEO round-trip.
-Return once at its boundary or a genuine block with commits, results, exact evidence, retained work, limits and the clearing event.
-Keep that result in the replaceable record until the CEO accepts, rejects or supersedes it.
-The CEO consumes the result to judge integrated quality and choose a new assignment.
-A returned worker stops; it does not refill itself or repeat its previous brief.
-While OWNER staffs a worker, the CEO gives it its next assignment as soon as it returns; idle staffed capacity is lost work.
+Resolve routine details and review your exact candidate. Run the required success, failure and native checks for
+each outcome. Land each scoped candidate under [PLAYBOOK](PLAYBOOK.md#integration). Continue the assigned
+sequence without routine CEO approval. At the assignment boundary or a block, return once. Include commits,
+results, exact evidence, retained work, limits and the event that clears the block. Keep the result until the
+CEO accepts, rejects or replaces it. The CEO uses the result to judge quality and select the next assignment. A
+returned worker stops. It does not select more work or repeat its brief. While OWNER staffs a worker, the CEO
+assigns its next work when it returns.
 
 ### Capacity
 
 - Keep at most one active assignment per worker.
-- Progress only through the ordered outcomes in the active assignment. Do not expand scope, self-spawn or select unassigned work.
-- A worker operates only its assigned runtime and only with the rights in its brief.
-- The assignment grants scoped integration unless it withholds it. Publication, credentials, accounts and rights remain under OWNER's grants.
-- Use focused checks during iteration. Reserve combined qualification for actual shared-contract risk or release evidence.
-- A sandboxed worker that cannot write a dependency repository's version-control metadata leaves that change uncommitted and returns. The CEO reviews, commits and publishes it under that repository's rules; the worker then repins and adopts it.
-- On a block, preserve the candidate and evidence. Continue independent assigned work if its order permits; otherwise return with the clearing event.
+- Follow the assigned order. Do not expand scope, create agents or select unassigned work.
+- Operate only the assigned runtime within the brief's rights.
+- The assignment grants scoped integration unless it withholds it. OWNER controls other external acts.
+- Use focused checks during edits. Use combined qualification for a shared-contract risk or release evidence.
+- If a sandbox blocks writes to a dependency's version-control metadata, leave that change uncommitted and return.
+  The CEO reviews, commits and publishes under that repository's rules. The worker then updates the pin and adopts it.
+- On a block, preserve the candidate and evidence. Continue independent assigned work if its order permits.
+  Otherwise, return with the event that clears the block.
 
 ### Lane rotation
 
-A lane is a worker role with its worktree and exclusive paths, and it outlasts its agents.
-At each outcome boundary the CEO may hand a lane to a fresh agent so that none carries a long context.
-The outgoing agent leaves a hand-over file with the landed commits, what passes, what breaks and the next step.
-The fresh agent starts from that file and from current STATE. Two agents never hold one lane at once.
-A rotation grants no scope. The [adapters](../adapters/README.md) name the model for each role.
+A lane is a worker role with its worktree and exclusive paths. At an outcome boundary, the CEO can transfer a
+lane to a fresh agent. The outgoing agent records landed commits, passed checks, failures and the next step in a
+hand-over file. The new agent reads that file and current STATE. Two agents must not hold one lane at the same
+time. A rotation grants no scope. The [adapters](../adapters/README.md) name each role's model.
 
 ### Review
 
-Each worker reviews its exact candidate and evidence before landing. The CEO accepts integrated product quality.
-OWNER may require an independent review for a named risk, artifact or reserved act.
-The reviewer requirement, if any, comes from that grant; the template does not require a separate reviewer or authorize another session.
-Retain exact source and artifact bindings, rights, refusal reasons and recovery evidence.
-Never tune content to a test fixture. Build a fixture to match the brief's intended level and equipment, and cite the brief for a difficulty change.
-Run the changed-file analysis and the adopter's static policy checks before every landing. A red whole tree on shared main belongs to the owner of its last landing, who fixes it with the next one.
-Hold acceptance for a concrete failure, missing required proof or missing authority. A passing source gate never replaces required running-product evidence.
+Each worker reviews the exact candidate and evidence before integration. The CEO accepts integrated product
+quality. OWNER can require independent review for a named risk, artifact or reserved act. That grant defines the
+review scope. The template authorizes no extra session. Keep exact source and artifact identities, rights,
+refusal reasons and recovery evidence. Do not adjust content to fit a test fixture. Make the fixture match the
+brief's intended level and equipment. For a difficulty change, cite the brief. Before each integration, run
+changed-file analysis and the project's static policy checks. If an integration breaks shared main, its owner
+fixes it with the next integration. Hold acceptance for a concrete failure, missing proof or missing authority.
+A passed source gate does not replace required evidence from the running product.

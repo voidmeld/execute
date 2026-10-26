@@ -1,21 +1,23 @@
 # Product quality
 
-Product quality defines the bar that a candidate must clear. The Owner can override it.
+This page defines the product quality criteria. The Owner can override them.
 
 ## Quality bar
 
-FILL: the user experience that makes this product worth choosing over its alternatives.
+FILL: the user experience that makes people choose this product.
 
 ## Dimensions
 
-- FILL: four to eight user-visible dimensions, such as first use, responsiveness, correctness, writing and emotional payoff.
+- FILL: four to eight user-visible dimensions, such as first use, response speed, correct results, writing and emotional effect.
 
 ## Review method
 
 1. Judge the artifact before you read a summary.
-2. Mark an essential dimension that nobody verified as FAIL.
-3. Judge the weakest user-visible moment. Average quality can hide a broken core flow.
+2. Mark an essential dimension with no verification as FAIL.
+3. Judge the weakest user-visible moment.
 4. Move repeatable quality checks into automated tests.
+
+Average quality can hide a broken core flow.
 
 ## Known defect classes
 
@@ -27,7 +29,6 @@ FILL: the user experience that makes this product worth choosing over its altern
 
 ## Reviewer format
 
-Start with `SURFACES: <what you observed>`.
-For each dimension, write `PASS|FAIL: one observable sentence`.
-Then name the weakest moment, the strongest moment and the unknowns.
-End with `SHIP|HOLD: <the one change that most improves the result>`.
+Start with `SURFACES: <what you observed>`. For each dimension, write `PASS|FAIL: one observable sentence`. Name
+the weakest moment, strongest moment and unknowns. End with `SHIP|HOLD: <the one change that most improves the
+result>`.

@@ -1,11 +1,11 @@
 # Owner authority
 
-Record the current grants, directions and reserved questions of the Owner here.
-Write operative rules, not quotations or history. Other documents link here. They do not copy grants.
+Record the Owner's current grants, directions and reserved questions here. Write current rules. Keep quotations
+and history elsewhere. Other documents link here for grants.
 
 ## Staffing
 
-FILL: the CEO, worker domains and maximum workers (zero is valid), with their authority limits.
+FILL: name the CEO, worker domains, maximum worker count and authority limits. Zero workers is valid.
 
 ## Standing grants
 
