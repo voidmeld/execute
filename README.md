@@ -115,6 +115,7 @@ It is one declared [Verify](https://github.com/voidmeld/verify) gate. It checks 
 - strict types with no explicit `any` under both Luau solvers across all maintained Luau
 - the executable extension contracts
 - the test manifest against the specifications on disk and the Verify consumer rules
+- compact spec style through Verify's `Checks.specStyle`
 - host-neutral module boundaries, dependency provenance and consumer leakage
 - the [documented public API](docs/api.md) against the exported module tables
 - a fresh clone of HEAD running the fast gate without working-tree state
@@ -136,6 +137,10 @@ Explicit `any`, `--!nonstrict` and `--!nocheck` fail. Use concrete types, correl
 
 Run `lute run tools/check-comments.luau` to check all maintained Luau and Lua source comments.
 Tool directives and required license notices stay. Code review covers other languages.
+
+Run `lute run tools/check-spec-style.luau` to check compact spec style, or select the gate's fast `spec-style` producer.
+Specs use `Bdd.create` and bind `local describe, it, expect = ...` once.
+`tools/checks-config.luau` selects tracked and untracked specs. It can exclude paths that test Verify's raw harness API.
 
 ## License
 
