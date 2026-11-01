@@ -42,8 +42,8 @@ local function split(value: string, separator: string): { string }
 			table.insert(out, string.sub(value, start))
 			break
 		end
-		table.insert(out, string.sub(value, start, (first :: number) - 1))
-		start = (last :: number) + 1
+		table.insert(out, string.sub(value, start, (assert(first)) - 1))
+		start = (assert(last)) + 1
 	end
 	return out
 end
@@ -128,9 +128,9 @@ local function runRange(base: string, head: string, rules: Rules, git: Git): Ver
 	end
 	local commits, parseError = parseLog(result.stdout)
 	if commits == nil then
-		return { status = "refuse", reason = "candidate_commit_log_malformed", detail = parseError :: string }
+		return { status = "refuse", reason = "candidate_commit_log_malformed", detail = assert(parseError) }
 	end
-	return evaluate(commits :: { Commit }, rules)
+	return evaluate(assert(commits), rules)
 end
 
 return {

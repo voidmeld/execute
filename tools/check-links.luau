@@ -48,7 +48,7 @@ end
 local function decodeFragment(fragment: string): string
 	return (
 		string.gsub(fragment, "%%(%x%x)", function(hex: string): string
-			return string.char(tonumber(hex, 16) :: number)
+			return string.char(assert(tonumber(hex, 16)))
 		end)
 	)
 end
@@ -97,7 +97,7 @@ local function checkDestination(source: string, raw: string, cache: { [string]: 
 	fragment = fragment or ""
 	local destination = source
 	if filePart ~= "" then
-		destination = normalize((if dirname(source) == "" then "" else dirname(source) .. "/") .. (filePart :: string))
+		destination = normalize((if dirname(source) == "" then "" else dirname(source) .. "/") .. (assert(filePart)))
 		if fs.exists(destination) and fs.type(destination) == "dir" then
 			if fragment == "" then
 				return
@@ -105,16 +105,16 @@ local function checkDestination(source: string, raw: string, cache: { [string]: 
 			destination ..= "/README.md"
 		end
 		if not fs.exists(destination) or fs.type(destination) ~= "file" then
-			fail(("%s links to missing path %q"):format(source, target :: string))
+			fail(("%s links to missing path %q"):format(source, assert(target)))
 		end
 	end
 	if fragment ~= "" then
 		if not string.match(destination, "%.md$") then
-			fail(("%s links to an anchor in non-Markdown file %q"):format(source, target :: string))
+			fail(("%s links to an anchor in non-Markdown file %q"):format(source, assert(target)))
 		end
-		local wanted = string.lower(decodeFragment(fragment :: string))
+		local wanted = string.lower(decodeFragment(assert(fragment)))
 		if not anchors(destination, cache)[wanted] then
-			fail(("%s links to missing anchor %q in %s"):format(source, fragment :: string, destination))
+			fail(("%s links to missing anchor %q in %s"):format(source, assert(fragment), destination))
 		end
 	end
 end

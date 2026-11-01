@@ -39,7 +39,7 @@ The [Verify](https://github.com/voidmeld/verify) gate checks:
 
 - the license and relative Markdown links and anchors
 - source comments, format and lint
-- strict types under both Luau solvers
+- strict types under the current Luau solver
 - executable module contracts
 - the test manifest and Verify consumer rules
 - compact specification style through `Checks.specStyle`
@@ -47,7 +47,8 @@ The [Verify](https://github.com/voidmeld/verify) gate checks:
 - the [public API](api.md) against the exported tables
 - a fresh clone of HEAD that runs the fast gate
 
-Every maintained Luau file must start with `--!strict`. Explicit `any`, `--!nonstrict` and `--!nocheck` fail.
+Every maintained Luau file must start with `--!strict`. Explicit `any`, every type assertion (`::`),
+`--!nonstrict` and `--!nocheck` fail without baselines or exemptions.
 Use concrete types and correlated generics. Validate `unknown` values at external boundaries. The gate ignores
 diagnostics in the SDK implementation outside this repository.
 

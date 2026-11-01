@@ -25,17 +25,17 @@ return function(suite: Verify.Harness)
 				seen = command
 				return { exitcode = 0, stdout = "synced\nextra", stderr = "" }
 			end)
-			expect(outcome.status):toBe("PASS")
+			assert(outcome.status == "PASS")
 			expect(outcome.detail):toBe("synced")
-			expect(seen):toBeTruthy()
-			expect((seen :: { string })[2]):toBe("sync")
+			assert(seen)
+			expect((assert(seen))[2]):toBe("sync")
 		end)
 
 		it("fails a command step with stderr", function()
 			local outcome = WorkerSetup.commandStep("sync", { "tool" }, function()
 				return { exitcode = 3, stdout = "out", stderr = "boom\ndetail" }
 			end)
-			expect(outcome.status):toBe("FAIL")
+			assert(outcome.status == "FAIL")
 			expect(outcome.detail):toBe("exit 3: boom")
 		end)
 
@@ -43,7 +43,7 @@ return function(suite: Verify.Harness)
 			local outcome = WorkerSetup.commandStep("sync", { "tool" }, function()
 				return { exitcode = 3, stdout = "fallback", stderr = "" }
 			end)
-			expect(outcome.status):toBe("FAIL")
+			assert(outcome.status == "FAIL")
 			expect(outcome.detail):toBe("exit 3: fallback")
 		end)
 
@@ -51,7 +51,7 @@ return function(suite: Verify.Harness)
 			local outcome = WorkerSetup.commandStep("sync", { "tool" }, function(): WorkerSetup.CommandResult
 				error("spawn failed")
 			end)
-			expect(outcome.status):toBe("FAIL")
+			assert(outcome.status == "FAIL")
 			expect(outcome.detail):toContain("spawn failed")
 		end)
 
@@ -63,7 +63,7 @@ return function(suite: Verify.Harness)
 			end, function(path: string)
 				table.insert(created, path)
 			end)
-			expect(skipped.status):toBe("SKIP")
+			assert(skipped.status == "SKIP")
 			expect(#created):toBe(0)
 
 			local made = WorkerSetup.directoryStep("build/generated", function(path: string): boolean
@@ -71,7 +71,7 @@ return function(suite: Verify.Harness)
 			end, function(path: string)
 				table.insert(created, path)
 			end)
-			expect(made.status):toBe("PASS")
+			assert(made.status == "PASS")
 			expect(created[1]):toBe("build/generated")
 		end)
 
@@ -81,7 +81,7 @@ return function(suite: Verify.Harness)
 			end, function()
 				error("read-only filesystem")
 			end)
-			expect(failed.status):toBe("FAIL")
+			assert(failed.status == "FAIL")
 			expect(failed.detail):toContain("read-only filesystem")
 		end)
 
@@ -94,14 +94,14 @@ return function(suite: Verify.Harness)
 
 		it("passes a clean tree", function()
 			local clean = WorkerSetup.cleanTreeStep("tree", { exitcode = 0, stdout = "", stderr = "" }, warning)
-			expect(clean.status):toBe("PASS")
+			assert(clean.status == "PASS")
 			expect(clean.detail):toBe("clean")
 		end)
 
 		it("warns about dirty paths", function()
 			local dirty =
 				WorkerSetup.cleanTreeStep("tree", { exitcode = 0, stdout = " M a\n M b\n", stderr = "" }, warning)
-			expect(dirty.status):toBe("WARN")
+			assert(dirty.status == "WARN")
 			expect(dirty.detail):toBe("dirty: a, b")
 		end)
 
@@ -115,7 +115,7 @@ return function(suite: Verify.Harness)
 				{ exitcode = 0, stdout = table.concat(lines, "\n"), stderr = "" },
 				warning
 			)
-			expect(many.status):toBe("WARN")
+			assert(many.status == "WARN")
 			expect(many.detail):toContain("and 2 more")
 			expect(many.detail).never:toContain("file11")
 		end)
@@ -123,7 +123,7 @@ return function(suite: Verify.Harness)
 		it("warns when git is unavailable", function()
 			local unavailable =
 				WorkerSetup.cleanTreeStep("tree", { exitcode = 127, stdout = "", stderr = "git missing" }, warning)
-			expect(unavailable.status):toBe("WARN")
+			assert(unavailable.status == "WARN")
 			expect(unavailable.detail):toContain("git missing")
 		end)
 
