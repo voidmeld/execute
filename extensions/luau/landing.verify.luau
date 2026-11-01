@@ -198,15 +198,15 @@ return function(suite: Verify.Harness)
 			expect(reason):toBeNil()
 			local missing, missingReason = Landing.findWorktreeForBranch(WORKTREE_LIST, "absent")
 			expect(missing):toBeNil()
-			expect(missingReason):toBeTruthy()
-			expect(missingReason :: string):toContain("refs/heads/absent")
+			assert(missingReason)
+			expect(assert(missingReason)):toContain("refs/heads/absent")
 		end)
 
 		it("classifies fast-forward output", function()
 			expect(Landing.classifyFastForward(ok("3 files changed, 5 insertions(+)")).status):toBe("ok")
 			local counted = Landing.classifyFastForward(ok("1 file changed, 2 insertions(+)"))
-			expect(counted.status):toBe("ok")
-			expect((counted :: { status: "ok", filesChanged: number }).filesChanged):toBe(1)
+			assert(counted.status == "ok")
+			expect((assert(counted)).filesChanged):toBe(1)
 			expect(Landing.classifyFastForward(ok("Already up to date.\n")).status):toBe("ok")
 			expect(Landing.classifyFastForward(ok("Updating aaa..bbb\n")).status):toBe("ok")
 			expect(Landing.classifyFastForward(bad(1, "not something we can merge")).status):toBe("failed")
@@ -247,9 +247,9 @@ return function(suite: Verify.Harness)
 
 		it("lands one branch", function()
 			local outcome = Landing.landOne("feature", { git = stubGit({}), plan = stubPlan({}) })
-			expect(outcome.ok):toBeTruthy()
-			expect((outcome :: Landing.Success).sha):toBe("cafecafecafecafecafecafecafecafecafecafe")
-			expect((outcome :: Landing.Success).filesChanged):toBe(2)
+			assert(outcome.ok)
+			expect((outcome).sha):toBe("cafecafecafecafecafecafecafecafecafecafe")
+			expect((outcome).filesChanged):toBe(2)
 		end)
 
 		it("keeps train identity refusal detail and cleanup", function()
@@ -271,12 +271,10 @@ return function(suite: Verify.Harness)
 					end,
 				}),
 			})
-			expect(outcome.ok):toBeFalsy()
-			expect((outcome :: Landing.Refusal).reason):toBe("candidate_unresolved")
-			expect((outcome :: Landing.Refusal).detail):toContain(
-				"train commit could not be resolved before verification"
-			)
-			expect(removed):toBeTruthy()
+			assert(not outcome.ok)
+			expect((outcome).reason):toBe("candidate_unresolved")
+			expect((outcome).detail):toContain("train commit could not be resolved before verification")
+			assert(removed)
 		end)
 
 		it("fast-forwards a gated candidate after a disjoint base move without rerunning the gate", function()
@@ -298,7 +296,7 @@ return function(suite: Verify.Harness)
 					end,
 				}),
 			})
-			expect(outcome.ok):toBeTruthy()
+			assert(outcome.ok)
 			expect(gateRuns):toBe(1)
 		end)
 
@@ -324,8 +322,8 @@ return function(suite: Verify.Harness)
 					end,
 				}),
 			})
-			expect(outcome.ok):toBeFalsy()
-			expect((outcome :: Landing.Refusal).reason):toBe("merge_failed")
+			assert(not outcome.ok)
+			expect((outcome).reason):toBe("merge_failed")
 			expect(gateRuns):toBe(1)
 		end)
 
@@ -338,8 +336,8 @@ return function(suite: Verify.Harness)
 				}),
 				plan = stubPlan({}),
 			})
-			expect(outcome.ok):toBeFalsy()
-			expect((outcome :: Landing.Refusal).reason):toBe("not_primary_checkout")
+			assert(not outcome.ok)
+			expect((outcome).reason):toBe("not_primary_checkout")
 		end)
 
 		it("refuses when verification fails", function()
@@ -351,8 +349,8 @@ return function(suite: Verify.Harness)
 					end,
 				}),
 			})
-			expect(outcome.ok):toBeFalsy()
-			expect((outcome :: Landing.Refusal).reason):toBe("test_red")
+			assert(not outcome.ok)
+			expect((outcome).reason):toBe("test_red")
 		end)
 
 		it("refuses an unproven merge without pushing", function()
@@ -372,8 +370,8 @@ return function(suite: Verify.Harness)
 				}),
 				plan = stubPlan({}),
 			})
-			expect(outcome.ok):toBeFalsy()
-			expect((outcome :: Landing.Refusal).reason):toBe("merge_unproven")
+			assert(not outcome.ok)
+			expect((outcome).reason):toBe("merge_unproven")
 			expect(pushed):toBeFalsy()
 		end)
 
@@ -386,8 +384,8 @@ return function(suite: Verify.Harness)
 				}),
 				plan = stubPlan({}),
 			})
-			expect(outcome.ok):toBeFalsy()
-			expect((outcome :: Landing.Refusal).reason):toBe("remote_mismatch")
+			assert(not outcome.ok)
+			expect((outcome).reason):toBe("remote_mismatch")
 		end)
 
 		it("resolves a registered conflict", function()
@@ -427,10 +425,10 @@ return function(suite: Verify.Harness)
 					},
 				}),
 			})
-			expect(outcome.ok):toBeTruthy()
+			assert(outcome.ok)
 			expect(resolved):toBe(1)
 			expect(continued):toBe(1)
-			expect(afterRan):toBeTruthy()
+			assert(afterRan)
 		end)
 
 		it("refuses a hand-authored conflict", function()
@@ -451,9 +449,9 @@ return function(suite: Verify.Harness)
 					},
 				}),
 			})
-			expect(outcome.ok):toBeFalsy()
-			expect((outcome :: Landing.Refusal).reason):toBe("rebase_failed")
-			expect((outcome :: Landing.Refusal).detail):toContain("hand authored")
+			assert(not outcome.ok)
+			expect((outcome).reason):toBe("rebase_failed")
+			expect((outcome).detail):toContain("hand authored")
 		end)
 
 		it("lands a train through one integration branch", function()
@@ -490,7 +488,7 @@ return function(suite: Verify.Harness)
 					end,
 				}),
 			})
-			expect(outcome.ok):toBeTruthy()
+			assert(outcome.ok)
 			expect(addedBranch):toBe("train-abcdef1-abcdef1")
 			expect(setupPath):toBe("/repo/.worktrees/train-abcdef1-abcdef1")
 		end)
@@ -520,10 +518,10 @@ return function(suite: Verify.Harness)
 					end,
 				}),
 			})
-			expect(outcome.ok):toBeFalsy()
-			expect((outcome :: Landing.Refusal).reason):toBe("test_red")
+			assert(not outcome.ok)
+			expect((outcome).reason):toBe("test_red")
 			expect(#resets):toBe(2)
-			expect((outcome :: Landing.Refusal).detail):toContain("was reset and removed")
+			expect((outcome).detail):toContain("was reset and removed")
 		end)
 
 		it("bounds resolver attempts", function()
@@ -556,10 +554,10 @@ return function(suite: Verify.Harness)
 					},
 				}),
 			})
-			expect(outcome.ok):toBeFalsy()
-			expect((outcome :: Landing.Refusal).reason):toBe("rebase_resolve_failed")
+			assert(not outcome.ok)
+			expect((outcome).reason):toBe("rebase_resolve_failed")
 			expect(resolveCalls):toBe(1)
-			expect((outcome :: Landing.Refusal).detail):toContain("after its resolver ran 1 time(s)")
+			expect((outcome).detail):toContain("after its resolver ran 1 time(s)")
 		end)
 
 		it("proves the merge by exact commit", function()
@@ -574,7 +572,7 @@ return function(suite: Verify.Harness)
 					}),
 					plan = stubPlan({}),
 				})
-				expect(result.status):toBe("ok")
+				assert(result.status == "ok")
 			end
 			for _, mode in { "moved", "missing", "failed_read", "failed_merge" } do
 				local merged = false
@@ -628,8 +626,8 @@ return function(suite: Verify.Harness)
 					end,
 				}),
 			})
-			expect(outcome.ok):toBeFalsy()
-			expect((outcome :: Landing.Refusal).reason):toBe("merge_unproven")
+			assert(not outcome.ok)
+			expect((outcome).reason):toBe("merge_unproven")
 			expect(merged):toBeFalsy()
 		end)
 	end)

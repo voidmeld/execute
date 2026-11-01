@@ -12,7 +12,7 @@ local TemporaryDirectory = require("../../.lute/dependencies/verify/src/checks")
 local function sh(cwd: string, command: { string }): string
 	local result = process.run(command, { cwd = cwd })
 	assert(result.ok, table.concat(command, " ") .. ": " .. result.stderr)
-	return string.gsub(result.stdout, "%s+$", "") :: string
+	return (string.gsub(result.stdout, "%s+$", ""))
 end
 
 local function write(path: string, contents: string)
@@ -210,16 +210,16 @@ return function(suite: Verify.Harness)
 			local spec: WorkerSetup.WorktreeSpec = { repo = primary, path = path, branch = "helper/a", base = "main" }
 
 			local created = WorkerSetup.ensureWorktree(spec, host)
-			expect(created.status):toBe("PASS")
+			assert(created.status == "PASS")
 			expect(created.detail):toContain("new branch helper/a from main")
 			expect(sh(path, { "git", "rev-parse", "--abbrev-ref", "HEAD" })):toBe("helper/a")
 
 			local reused = WorkerSetup.ensureWorktree(spec, host)
-			expect(reused.status):toBe("SKIP")
+			assert(reused.status == "SKIP")
 
 			local wrong =
 				WorkerSetup.ensureWorktree({ repo = primary, path = path, branch = "helper/b", base = "main" }, host)
-			expect(wrong.status):toBe("FAIL")
+			assert(wrong.status == "FAIL")
 			expect(wrong.detail):toContain("holds helper/a")
 
 			sh(primary, { "git", "branch", "helper/c", "main" })
@@ -227,14 +227,14 @@ return function(suite: Verify.Harness)
 				{ repo = primary, path = root .. "/c", branch = "helper/c", base = "main" },
 				host
 			)
-			expect(existing.status):toBe("PASS")
+			assert(existing.status == "PASS")
 			expect(existing.detail):toContain("existing branch")
 
 			local occupied = WorkerSetup.ensureWorktree(
 				{ repo = primary, path = root .. "/d", branch = "helper/c", base = "main" },
 				host
 			)
-			expect(occupied.status):toBe("FAIL")
+			assert(occupied.status == "FAIL")
 
 			local config: WorkerSetup.Config = { base = "main", inputs = {} }
 			expect(#WorkerSetup.freshness(config, checkoutHost(path, recorder()))):toBe(0)
@@ -309,7 +309,7 @@ return function(suite: Verify.Harness)
 					run = function(name: string): WorkerSetup.StepOutcome
 						expect(fs.exists(primary .. "/build/generated")):toBeTruthy()
 						table.insert(order, name)
-						return { name = name, status = status :: WorkerSetup.StepStatus, detail = "appended step" }
+						return { name = name, status = status, detail = "appended step" }
 					end,
 				})
 			end
@@ -469,9 +469,9 @@ return function(suite: Verify.Harness)
 					error("the gate must not run without a worktree")
 				end),
 			})
-			expect(absent.ok):toBeFalsy()
-			expect((absent :: Landing.Refusal).reason):toBe("worktree_missing")
-			expect((absent :: Landing.Refusal).detail):toContain("git worktree add <path> no-worktree")
+			assert(not absent.ok)
+			expect((absent).reason):toBe("worktree_missing")
+			expect((absent).detail):toContain("git worktree add <path> no-worktree")
 
 			local candidate = root .. "/candidate"
 			sh(primary, { "git", "worktree", "add", "-q", "-b", "candidate", candidate, "main" })
@@ -498,16 +498,16 @@ return function(suite: Verify.Harness)
 					}, stepHost, policy)
 				end),
 			})
-			expect(failed.ok):toBeFalsy()
+			assert(not failed.ok)
 			expect(gateRuns):toBe(1)
-			local refusal = failed :: Landing.Refusal
+			local refusal = failed
 			expect(refusal.reason):toBe("test_red")
 			expect(#refusal.failingLines):toBe(2)
 			expect(refusal.failingLines[1]):toBe("✗ Inventory stacks items")
 			expect(refusal.detail):toContain("✗ Quest resets")
 			expect(refusal.logPath):toBe(root .. "/scoped-specs.log")
 			assert(
-				string.find(fs.readFileToString(refusal.logPath :: string), "noise", 1, true) ~= nil,
+				string.find(fs.readFileToString(assert(refusal.logPath)), "noise", 1, true) ~= nil,
 				"the full output is retained"
 			)
 			expect(sh(primary, { "git", "rev-parse", "main" })):toBe(sh(primary, { "git", "rev-parse", "origin/main" }))
@@ -525,9 +525,9 @@ return function(suite: Verify.Harness)
 					}, stepHost, policy)
 				end),
 			})
-			expect(landed.ok):toBeTruthy()
+			assert(landed.ok)
 			expect(gateRuns):toBe(2)
-			expect(sh(primary, { "git", "rev-parse", "origin/main" })):toBe((landed :: Landing.Success).sha)
+			expect(sh(primary, { "git", "rev-parse", "origin/main" })):toBe((landed).sha)
 			expect(sh(primary, { "git", "rev-list", "--count", "main" })):toBe("3")
 			expect(fs.exists(candidate)):toBeFalsy()
 
@@ -541,10 +541,10 @@ return function(suite: Verify.Harness)
 				},
 				policy
 			)
-			expect(unreadable):toBeTruthy()
-			expect((unreadable :: Landing.Refusal).detail):toContain("last output: a | b")
-			expect((unreadable :: Landing.Refusal).detail):toContain("no log could be written")
-			expect((unreadable :: Landing.Refusal).logPath):toBeNil()
+			assert(unreadable)
+			expect((unreadable).detail):toContain("last output: a | b")
+			expect((unreadable).detail):toContain("no log could be written")
+			expect((unreadable).logPath):toBeNil()
 		end)
 	end)
 end

@@ -8,6 +8,8 @@ Changes to Execute use a pull request to `main` and the required `Gate` check.
 Do not push directly to `main` or bypass a failing check.
 
 Keep the machinery that current consumers need. Remove duplication without weakening authority or evidence.
+Every maintained Luau file requires strict typing, zero explicit `any` and zero type assertions (`::`).
+The required gate enforces this without baselines or exemptions.
 This file owns the repository rules. The [agentic standard](docs/AGENTIC-STANDARD.md) governs conflicts and changed workflows.
 
 ## Roles

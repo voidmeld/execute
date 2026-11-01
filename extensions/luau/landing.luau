@@ -212,7 +212,7 @@ local function classifyFastForward(result: CommandResult): FastForward
 		return { status = "failed", detail = detail }
 	end
 	local filesChanged = string.match(result.stdout, "(%d+) files? changed")
-	return { status = "ok", filesChanged = tonumber(filesChanged or "0") :: number }
+	return { status = "ok", filesChanged = assert(tonumber(filesChanged or "0")) }
 end
 
 local function resolvedSha(result: CommandResult): string?
@@ -275,7 +275,7 @@ local function handAuthoredDetail(paths: { string }, policy: ConflictPolicy): st
 	for _, path in sorted do
 		local note = policy.handAuthored[path]
 		if note ~= nil then
-			table.insert(notes, ("%s: %s"):format(path, note :: string))
+			table.insert(notes, ("%s: %s"):format(path, assert(note)))
 		end
 	end
 	return table.concat(notes, "; ")
@@ -315,7 +315,7 @@ local function resolveConflicts(
 		deps.plan.log(("resolving conflicted paths in %s: %s"):format(worktreePath, table.concat(sorted, ", ")))
 		local afterContinue: { (worktreePath: string) -> (boolean, string?) } = {}
 		for _, path in sorted do
-			local resolver = policy.resolvers[path] :: Resolver
+			local resolver = policy.resolvers[path]
 			local attempt = (attempts[path] or 0) + 1
 			attempts[path] = attempt
 			if attempt > (resolver.maxAttempts or policy.maxIterations) then
@@ -337,7 +337,7 @@ local function resolveConflicts(
 				return false, "rebase_resolve_failed", "git add " .. path .. " failed after resolving it", nil
 			end
 			if resolver.afterContinue ~= nil then
-				table.insert(afterContinue, resolver.afterContinue :: (string) -> (boolean, string?))
+				table.insert(afterContinue, resolver.afterContinue)
 			end
 		end
 		local continued = deps.git.rebaseContinue(worktreePath)
@@ -405,26 +405,26 @@ local function rebaseOnto(worktreePath: string, onto: string, deps: Dependencies
 
 	local classification: ConflictClass = "real"
 	if conflictedPaths ~= nil then
-		classification = classifyConflict(conflictedPaths :: { string }, deps.plan.conflicts)
+		classification = classifyConflict(assert(conflictedPaths), deps.plan.conflicts)
 		if classification == "resolvable" then
 			local repaired, reason, detail, resolvedPaths =
-				resolveConflicts(worktreePath, conflictedPaths :: { string }, deps)
+				resolveConflicts(worktreePath, assert(conflictedPaths), deps)
 			if repaired then
 				return nil, resolvedPaths
 			end
 			if reason ~= nil then
-				return refusal(reason :: string, detail :: string), nil
+				return refusal(assert(reason), assert(detail)), nil
 			end
 		end
 	end
 
 	local conflictDetail = ""
 	if conflictedPaths ~= nil then
-		local sorted = table.clone(conflictedPaths :: { string })
+		local sorted = table.clone(assert(conflictedPaths))
 		table.sort(sorted)
 		conflictDetail = (" -- conflicting paths: %s"):format(table.concat(sorted, ", "))
 		if classification == "hand_authored" then
-			conflictDetail ..= " -- " .. handAuthoredDetail(conflictedPaths :: { string }, deps.plan.conflicts)
+			conflictDetail ..= " -- " .. handAuthoredDetail(assert(conflictedPaths), deps.plan.conflicts)
 		end
 	end
 	return refusal(
@@ -539,7 +539,7 @@ end
 local function trainGuidance(trainBranch: string, trainPath: string, branches: { string }, culprit: string?): string
 	if culprit ~= nil then
 		return (" -- bisect member %s; train %s at %s was reset and removed, each member restored to its own head"):format(
-			culprit :: string,
+			assert(culprit),
 			trainBranch,
 			trainPath
 		)
@@ -606,7 +606,7 @@ local function landAfterBaseMoved(branch: string, worktreePath: string, deps: De
 	if baseSha == nil then
 		return nil
 	end
-	local moved = git.pathsBetween(baseSha :: string, plan.base)
+	local moved = git.pathsBetween(assert(baseSha), plan.base)
 	if moved.exitcode ~= 0 or git.rebase(worktreePath, plan.base).exitcode ~= 0 then
 		return nil
 	end
@@ -628,18 +628,18 @@ local function landAfterBaseMoved(branch: string, worktreePath: string, deps: De
 	end
 	local sha, pushRefusal = pushAndVerify(deps)
 	if pushRefusal ~= nil then
-		return pushRefusal :: Refusal
+		return pushRefusal
 	end
-	local cleanupRefusal = cleanupOne(worktreePath, branch, sha :: string, deps)
+	local cleanupRefusal = cleanupOne(worktreePath, branch, assert(sha), deps)
 	if cleanupRefusal ~= nil then
-		return cleanupRefusal :: Refusal
+		return cleanupRefusal
 	end
-	return { ok = true, sha = sha :: string, filesChanged = classified.filesChanged }
+	return { ok = true, sha = assert(sha), filesChanged = classified.filesChanged }
 end
 
 local function logRebase(deps: Dependencies, label: string, resolvedPaths: { string }?)
-	if resolvedPaths ~= nil and #(resolvedPaths :: { string }) > 0 then
-		deps.plan.log(("PASS rebase %s resolved=%s"):format(label, table.concat(resolvedPaths :: { string }, ",")))
+	if resolvedPaths ~= nil and #(assert(resolvedPaths)) > 0 then
+		deps.plan.log(("PASS rebase %s resolved=%s"):format(label, table.concat(assert(resolvedPaths), ",")))
 	else
 		deps.plan.log("PASS rebase " .. label)
 	end
@@ -683,7 +683,7 @@ local function landOne(branch: string, deps: Dependencies): Outcome
 	local plan = deps.plan
 	local primaryRefusal = requirePrimary(deps)
 	if primaryRefusal ~= nil then
-		return primaryRefusal :: Refusal
+		return primaryRefusal
 	end
 
 	plan.log(("verifying branch %s exists"):format(branch))
@@ -699,18 +699,18 @@ local function landOne(branch: string, deps: Dependencies): Outcome
 	end
 	local worktreePath, notFound = findWorktreeForBranch(worktrees.stdout, branch)
 	if worktreePath == nil then
-		return refusal("worktree_missing", notFound :: string)
+		return refusal("worktree_missing", assert(notFound))
 	end
-	plan.log(("PASS worktree=%s"):format(worktreePath :: string))
+	plan.log(("PASS worktree=%s"):format(assert(worktreePath)))
 
-	plan.log(("rebasing %s onto %s inside %s"):format(branch, plan.base, worktreePath :: string))
-	local rebaseRefusal, resolvedPaths = rebaseOnto(worktreePath :: string, plan.base, deps)
+	plan.log(("rebasing %s onto %s inside %s"):format(branch, plan.base, assert(worktreePath)))
+	local rebaseRefusal, resolvedPaths = rebaseOnto(assert(worktreePath), plan.base, deps)
 	if rebaseRefusal ~= nil then
-		return rebaseRefusal :: Refusal
+		return rebaseRefusal
 	end
 	logRebase(deps, branch, resolvedPaths)
 
-	local verifiedCandidate, candidateRefusal = verifyCandidate(worktreePath :: string, branch, deps, "candidate")
+	local verifiedCandidate, candidateRefusal = verifyCandidate(assert(worktreePath), branch, deps, "candidate")
 	if candidateRefusal ~= nil then
 		return candidateRefusal
 	end
@@ -718,7 +718,7 @@ local function landOne(branch: string, deps: Dependencies): Outcome
 	plan.log(("fast-forward merging %s from the primary checkout"):format(branch))
 	local classified = mergeVerified(branch, plan.base, nil, deps, verifiedCandidate)
 	if classified.status == "failed" then
-		local landed = landAfterBaseMoved(branch, worktreePath :: string, deps)
+		local landed = landAfterBaseMoved(branch, assert(worktreePath), deps)
 		if landed ~= nil then
 			return landed
 		end
@@ -730,24 +730,24 @@ local function landOne(branch: string, deps: Dependencies): Outcome
 
 	local sha, pushRefusal = pushAndVerify(deps)
 	if pushRefusal ~= nil then
-		return pushRefusal :: Refusal
+		return pushRefusal
 	end
 
-	plan.log(("cleaning up worktree %s and branch %s"):format(worktreePath :: string, branch))
-	local cleanupRefusal = cleanupOne(worktreePath :: string, branch, sha :: string, deps)
+	plan.log(("cleaning up worktree %s and branch %s"):format(assert(worktreePath), branch))
+	local cleanupRefusal = cleanupOne(assert(worktreePath), branch, assert(sha), deps)
 	if cleanupRefusal ~= nil then
-		return cleanupRefusal :: Refusal
+		return cleanupRefusal
 	end
 	plan.log("PASS cleanup")
 
-	return { ok = true, sha = sha :: string, filesChanged = classified.filesChanged }
+	return { ok = true, sha = assert(sha), filesChanged = classified.filesChanged }
 end
 
 local function landTrain(branches: { string }, deps: Dependencies): Outcome
 	local plan = deps.plan
 	local primaryRefusal = requirePrimary(deps)
 	if primaryRefusal ~= nil then
-		return primaryRefusal :: Refusal
+		return primaryRefusal
 	end
 
 	plan.log(("resolving worktree paths for %d train members"):format(#branches))
@@ -766,9 +766,9 @@ local function landTrain(branches: { string }, deps: Dependencies): Outcome
 		end
 		local path, notFound = findWorktreeForBranch(worktrees.stdout, branch)
 		if path == nil then
-			return attributed("worktree_missing", notFound :: string, branch)
+			return attributed("worktree_missing", assert(notFound), branch)
 		end
-		table.insert(memberPaths, path :: string)
+		table.insert(memberPaths, assert(path))
 		table.insert(memberShas, trimmed(branchRef.stdout))
 	end
 	plan.log("PASS resolved all member worktrees")
@@ -790,14 +790,14 @@ local function landTrain(branches: { string }, deps: Dependencies): Outcome
 		abortTrain(trainPath, trainBranch, memberPaths, memberShas, deps)
 		local guided = detail .. trainGuidance(trainBranch, trainPath, branches, culprit)
 		if culprit ~= nil then
-			return attributed(reason, guided, culprit :: string)
+			return attributed(reason, guided, assert(culprit))
 		end
 		return refusal(reason, guided)
 	end
 
 	local setupRefusal = plan.setup(trainPath)
 	if setupRefusal ~= nil then
-		local refused = setupRefusal :: Refusal
+		local refused = setupRefusal
 		return abortWith(refused.reason, refused.detail, nil)
 	end
 
@@ -806,7 +806,7 @@ local function landTrain(branches: { string }, deps: Dependencies): Outcome
 		plan.log(("rebasing member %s onto train %s inside %s"):format(branch, trainBranch, memberPath))
 		local rebaseRefusal, resolvedPaths = rebaseOnto(memberPath, trainBranch, deps)
 		if rebaseRefusal ~= nil then
-			local refused = rebaseRefusal :: Refusal
+			local refused = rebaseRefusal
 			return abortWith(refused.reason, refused.detail, branch)
 		end
 		logRebase(deps, branch, resolvedPaths)
@@ -836,25 +836,25 @@ local function landTrain(branches: { string }, deps: Dependencies): Outcome
 
 	local sha, pushRefusal = pushAndVerify(deps)
 	if pushRefusal ~= nil then
-		local refused = pushRefusal :: Refusal
+		local refused = pushRefusal
 		return refusal(refused.reason, refused.detail .. trainGuidance(trainBranch, trainPath, branches, nil))
 	end
 
 	plan.log("cleaning up train members")
 	for index, branch in branches do
-		local cleanupRefusal = cleanupOne(memberPaths[index], branch, sha :: string, deps)
+		local cleanupRefusal = cleanupOne(memberPaths[index], branch, assert(sha), deps)
 		if cleanupRefusal ~= nil then
-			return cleanupRefusal :: Refusal
+			return cleanupRefusal
 		end
 	end
 	plan.log(("cleaning up train %s"):format(trainBranch))
-	local trainCleanupRefusal = cleanupOne(trainPath, trainBranch, sha :: string, deps)
+	local trainCleanupRefusal = cleanupOne(trainPath, trainBranch, assert(sha), deps)
 	if trainCleanupRefusal ~= nil then
-		return trainCleanupRefusal :: Refusal
+		return trainCleanupRefusal
 	end
 	plan.log("PASS cleanup")
 
-	return { ok = true, sha = sha :: string, filesChanged = classified.filesChanged }
+	return { ok = true, sha = assert(sha), filesChanged = classified.filesChanged }
 end
 
 return {

@@ -32,24 +32,24 @@ return function(suite: Verify.Harness)
 		it("parses a clean log", function()
 			local commits, parseError = CommitPolicy.parseLog(CLEAN)
 			expect(parseError):toBeNil()
-			expect(commits):toBeTruthy()
-			expect(#(commits :: { CommitPolicy.Commit })):toBe(1)
-			expect((commits :: { CommitPolicy.Commit })[1].sha):toBe("aaa")
-			expect((commits :: { CommitPolicy.Commit })[1].message):toBe("Add a thing")
+			assert(commits)
+			expect(#(assert(commits))):toBe(1)
+			expect((assert(commits))[1].sha):toBe("aaa")
+			expect((assert(commits))[1].message):toBe("Add a thing")
 		end)
 
 		it("refuses a malformed log", function()
 			local commits, parseError =
 				CommitPolicy.parseLog("only" .. CommitPolicy.FIELD .. "two" .. CommitPolicy.RECORD)
 			expect(commits):toBeNil()
-			expect(parseError):toBeTruthy()
+			assert(parseError)
 		end)
 
 		it("parses an empty log", function()
 			local commits, parseError = CommitPolicy.parseLog("")
 			expect(parseError):toBeNil()
-			expect(commits):toBeTruthy()
-			expect(#(commits :: { CommitPolicy.Commit })):toBe(0)
+			assert(commits)
+			expect(#(assert(commits))):toBe(0)
 		end)
 
 		it("detects trailers only as trailers", function()
@@ -61,33 +61,33 @@ return function(suite: Verify.Harness)
 
 		it("refuses an empty candidate", function()
 			local verdict = CommitPolicy.evaluate({}, RULES)
-			expect(verdict.status):toBe("refuse")
-			expect((verdict :: CommitPolicy.Refuse).reason):toBe("candidate_commits_empty")
+			assert(verdict.status == "refuse")
+			expect((verdict).reason):toBe("candidate_commits_empty")
 		end)
 
 		it("passes a clean candidate", function()
-			local commits = CommitPolicy.parseLog(CLEAN) :: { CommitPolicy.Commit }
+			local commits = assert(CommitPolicy.parseLog(CLEAN))
 			local verdict = CommitPolicy.evaluate(commits, RULES)
-			expect(verdict.status):toBe("pass")
-			expect((verdict :: CommitPolicy.Pass).count):toBe(1)
+			assert(verdict.status == "pass")
+			expect((verdict).count):toBe(1)
 		end)
 
 		it("refuses a wrong author", function()
 			local wrongAuthor =
 				record("bbb", "other", "other@example.invalid", "author", "author@example.invalid", "Subject")
-			local commits = CommitPolicy.parseLog(wrongAuthor) :: { CommitPolicy.Commit }
+			local commits = assert(CommitPolicy.parseLog(wrongAuthor))
 			local verdict = CommitPolicy.evaluate(commits, RULES)
-			expect(verdict.status):toBe("refuse")
-			expect((verdict :: CommitPolicy.Refuse).reason):toBe("candidate_author_mismatch")
+			assert(verdict.status == "refuse")
+			expect((verdict).reason):toBe("candidate_author_mismatch")
 		end)
 
 		it("refuses a wrong committer", function()
 			local wrongCommitter =
 				record("ccc", "author", "author@example.invalid", "other", "other@example.invalid", "Subject")
-			local commits = CommitPolicy.parseLog(wrongCommitter) :: { CommitPolicy.Commit }
+			local commits = assert(CommitPolicy.parseLog(wrongCommitter))
 			local verdict = CommitPolicy.evaluate(commits, RULES)
-			expect(verdict.status):toBe("refuse")
-			expect((verdict :: CommitPolicy.Refuse).reason):toBe("candidate_committer_mismatch")
+			assert(verdict.status == "refuse")
+			expect((verdict).reason):toBe("candidate_committer_mismatch")
 		end)
 
 		it("refuses a forbidden trailer", function()
@@ -99,10 +99,10 @@ return function(suite: Verify.Harness)
 				"author@example.invalid",
 				"Subject\n\nCo-authored-by: helper"
 			)
-			local commits = CommitPolicy.parseLog(trailered) :: { CommitPolicy.Commit }
+			local commits = assert(CommitPolicy.parseLog(trailered))
 			local verdict = CommitPolicy.evaluate(commits, RULES)
-			expect(verdict.status):toBe("refuse")
-			expect((verdict :: CommitPolicy.Refuse).reason):toBe("candidate_forbidden_trailer")
+			assert(verdict.status == "refuse")
+			expect((verdict).reason):toBe("candidate_forbidden_trailer")
 		end)
 
 		it("reads the range through the injected command", function()
@@ -111,17 +111,17 @@ return function(suite: Verify.Harness)
 				seen = argv
 				return { exitcode = 0, stdout = CLEAN, stderr = "" }
 			end)
-			expect(verdict.status):toBe("pass")
-			expect(seen):toBeTruthy()
-			expect((seen :: { string })[4]):toBe("main..feature")
+			assert(verdict.status == "pass")
+			assert(seen)
+			expect((assert(seen))[4]):toBe("main..feature")
 		end)
 
 		it("refuses an unreadable log", function()
 			local verdict = CommitPolicy.runRange("main", "feature", RULES, function()
 				return { exitcode = 128, stdout = "", stderr = "bad revision" }
 			end)
-			expect(verdict.status):toBe("refuse")
-			expect((verdict :: CommitPolicy.Refuse).reason):toBe("candidate_commit_log_unreadable")
+			assert(verdict.status == "refuse")
+			expect((verdict).reason):toBe("candidate_commit_log_unreadable")
 		end)
 
 		it("refuses a malformed range log", function()
@@ -132,8 +132,8 @@ return function(suite: Verify.Harness)
 					stderr = "",
 				}
 			end)
-			expect(verdict.status):toBe("refuse")
-			expect((verdict :: CommitPolicy.Refuse).reason):toBe("candidate_commit_log_malformed")
+			assert(verdict.status == "refuse")
+			expect((verdict).reason):toBe("candidate_commit_log_malformed")
 		end)
 	end)
 end

@@ -82,10 +82,10 @@ local function parseHunks(diffText: string): { Hunk }
 		local oldStart, oldCount, newStart, newCount = string.match(line, "^@@%s+%-(%d+),?(%d*)%s+%+(%d+),?(%d*)%s+@@")
 		if oldStart ~= nil then
 			table.insert(hunks, {
-				oldStart = tonumber(oldStart) :: number,
-				oldCount = if oldCount == "" then 1 else tonumber(oldCount) :: number,
-				newStart = tonumber(newStart) :: number,
-				newCount = if newCount == "" then 1 else tonumber(newCount) :: number,
+				oldStart = assert(tonumber(oldStart)),
+				oldCount = if oldCount == "" then 1 else assert(tonumber(oldCount)),
+				newStart = assert(tonumber(newStart)),
+				newCount = if newCount == "" then 1 else assert(tonumber(newCount)),
 			})
 		end
 	end
@@ -147,7 +147,7 @@ local function mixedOffence(mixed: MixedRule, deps: Dependencies): string?
 			mixed.path
 		) .. " revision of the file could not be read, so the guard refuses closed)"
 	end
-	local touched = sectionsTouched(diffText :: string, baseText :: string, headText :: string, mixed.sectionPattern)
+	local touched = sectionsTouched(assert(diffText), assert(baseText), assert(headText), mixed.sectionPattern)
 	if #touched == 0 then
 		return nil
 	end
@@ -161,7 +161,7 @@ local function offendingPaths(changedPaths: { string }, policy: Policy, deps: De
 		for _, tier in policy.tiers do
 			local rule = matchedRule(path, tier)
 			if rule ~= nil then
-				pushUnique(offending, seen, ("%s (%s rule: %s)"):format(path, tier.name, rule :: string))
+				pushUnique(offending, seen, ("%s (%s rule: %s)"):format(path, tier.name, assert(rule)))
 				break
 			end
 		end
@@ -169,10 +169,10 @@ local function offendingPaths(changedPaths: { string }, policy: Policy, deps: De
 	local mixed = policy.mixed
 	if mixed ~= nil then
 		for _, path in changedPaths do
-			if path == (mixed :: MixedRule).path then
-				local offence = mixedOffence(mixed :: MixedRule, deps)
+			if path == (mixed).path then
+				local offence = mixedOffence(mixed, deps)
 				if offence ~= nil then
-					pushUnique(offending, seen, offence :: string)
+					pushUnique(offending, seen, assert(offence))
 				end
 			end
 		end
@@ -186,7 +186,7 @@ local function evaluate(changedPaths: { string }, policy: Policy, authority: Aut
 		return { status = "pass", detail = policy.passDetail }
 	end
 	if authority.actual ~= nil and authority.recorded == authority.actual then
-		return { status = "pass", detail = policy.authorizedDetail(authority.actual :: string) }
+		return { status = "pass", detail = policy.authorizedDetail(assert(authority.actual)) }
 	end
 	return {
 		status = "refuse",
@@ -200,7 +200,7 @@ local function withOverride(verdict: Verdict, requested: boolean, label: string,
 	if not requested or verdict.status ~= "refuse" then
 		return verdict
 	end
-	local refused = verdict :: Refuse
+	local refused = verdict
 	return {
 		status = "pass_override",
 		bypassed = refused.reason,

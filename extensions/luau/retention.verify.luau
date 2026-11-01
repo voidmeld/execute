@@ -96,7 +96,7 @@ return function(suite: Verify.Harness)
 			local outcome = Retention.run("plan", FAMILIES, function(): Retention.CommandResult
 				error("plan must not remove anything")
 			end)
-			expect(outcome.ok):toBeTruthy()
+			assert(outcome.ok)
 			expect(#outcome.deletions):toBe(2)
 		end)
 
@@ -104,17 +104,15 @@ return function(suite: Verify.Harness)
 			local outcome = Retention.run("check", FAMILIES, function(): Retention.CommandResult
 				error("check must not remove anything")
 			end)
-			expect(outcome.ok):toBeFalsy()
-			expect((outcome :: { ok: false, reason: string, deletions: { Retention.Deletion } }).reason):toBe(
-				"retention_violation"
-			)
+			assert(not outcome.ok)
+			expect((assert(outcome)).reason):toBe("retention_violation")
 		end)
 
 		it("passes the check of an empty plan", function()
 			local outcome = Retention.run("check", {}, function(): Retention.CommandResult
 				error("check must not remove anything")
 			end)
-			expect(outcome.ok):toBeTruthy()
+			assert(outcome.ok)
 			expect(#outcome.deletions):toBe(0)
 		end)
 
@@ -124,20 +122,18 @@ return function(suite: Verify.Harness)
 				removed = paths
 				return { exitcode = 0, stdout = "", stderr = "" }
 			end)
-			expect(outcome.ok):toBeTruthy()
-			expect(removed):toBeTruthy()
-			expect(#(removed :: { string })):toBe(2)
-			expect((removed :: { string })[1]):toBe("journal/m.json")
+			assert(outcome.ok)
+			assert(removed)
+			expect(#(assert(removed))):toBe(2)
+			expect((assert(removed))[1]):toBe("journal/m.json")
 		end)
 
 		it("reports a failed removal", function()
 			local outcome = Retention.run("apply", FAMILIES, function(): Retention.CommandResult
 				return { exitcode = 128, stdout = "", stderr = "failed" }
 			end)
-			expect(outcome.ok):toBeFalsy()
-			expect((outcome :: { ok: false, reason: string, deletions: { Retention.Deletion } }).reason):toBe(
-				"remove_failed:128"
-			)
+			assert(not outcome.ok)
+			expect((assert(outcome)).reason):toBe("remove_failed:128")
 		end)
 
 		it("does not remove for an empty plan", function()
@@ -146,7 +142,7 @@ return function(suite: Verify.Harness)
 				calls += 1
 				return { exitcode = 0, stdout = "", stderr = "" }
 			end)
-			expect(outcome.ok):toBeTruthy()
+			assert(outcome.ok)
 			expect(calls):toBe(0)
 		end)
 
@@ -154,8 +150,8 @@ return function(suite: Verify.Harness)
 			local outcome = Retention.run("nonsense", FAMILIES, function(): Retention.CommandResult
 				error("unknown mode must not remove anything")
 			end)
-			expect(outcome.ok):toBeFalsy()
-			expect((outcome :: { ok: false, reason: string, deletions: { Retention.Deletion } }).reason):toBe("usage")
+			assert(not outcome.ok)
+			expect((assert(outcome)).reason):toBe("usage")
 		end)
 
 		it("takes reason labels from the family data", function()

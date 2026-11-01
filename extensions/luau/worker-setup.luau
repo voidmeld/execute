@@ -81,7 +81,7 @@ local function commandStep(name: string, command: { string }, run: ({ string }) 
 	if not ok then
 		return { name = name, status = "FAIL", detail = tostring(result) }
 	end
-	local completed = result :: CommandResult
+	local completed = result
 	if completed.exitcode ~= 0 then
 		return { name = name, status = "FAIL", detail = ("exit %d: %s"):format(completed.exitcode, detailOf(completed)) }
 	end
@@ -226,7 +226,7 @@ local function lfsPointers(host: Host): ({ string }?, string?)
 	for _, line in lines(listed.stdout) do
 		local marker, path = string.match(line, "^%x+ ([%*%-]) (.+)$")
 		if marker == "-" then
-			table.insert(pointers, path :: string)
+			table.insert(pointers, assert(path))
 		end
 	end
 	return pointers, nil
@@ -235,7 +235,7 @@ end
 local function lfsStep(name: string, host: Host): StepOutcome
 	local pointers, problem = lfsPointers(host)
 	if pointers == nil then
-		return { name = name, status = "FAIL", detail = "git lfs ls-files: " .. (problem :: string) }
+		return { name = name, status = "FAIL", detail = "git lfs ls-files: " .. (assert(problem)) }
 	end
 	if #pointers == 0 then
 		return { name = name, status = "SKIP", detail = "no LFS pointer files" }
@@ -325,7 +325,7 @@ local function inputProblem(input: Input, host: Host): (("input_missing" | "inpu
 	end
 	local source, sourceTime = newestSource(input, host)
 	if source ~= nil and sourceTime > oldestTime then
-		return "input_stale", ("%s is older than source %s"):format(oldest :: string, source)
+		return "input_stale", ("%s is older than source %s"):format(assert(oldest), source)
 	end
 	return nil, nil
 end
@@ -344,7 +344,7 @@ local function inputStep(input: Input, host: Host): StepOutcome
 			return {
 				name = input.name,
 				status = "FAIL",
-				detail = "regeneration left the input unusable: " .. (remainingProblem :: string),
+				detail = "regeneration left the input unusable: " .. (assert(remainingProblem)),
 			}
 		end
 	end
@@ -433,7 +433,7 @@ local function freshness(config: Config, host: Host): { Finding }
 		table.insert(findings, finding)
 	end
 	if config.lock ~= nil then
-		local lock = config.lock :: Lock
+		local lock = config.lock
 		if lockStale(lock, host) ~= nil then
 			local finding: Finding = {
 				kind = "lock_changed",
@@ -460,9 +460,9 @@ local function freshness(config: Config, host: Host): { Finding }
 		local kind, detail = inputProblem(input, host)
 		if kind ~= nil then
 			local finding: Finding = {
-				kind = kind :: "input_missing" | "input_stale",
+				kind = kind,
 				subject = input.name,
-				detail = detail :: string,
+				detail = assert(detail),
 				remedy = table.concat(input.regenerate, " "),
 			}
 			table.insert(findings, finding)
