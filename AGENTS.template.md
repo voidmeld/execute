@@ -3,7 +3,7 @@
 FILL: product, users and complete success outcome.
 
 This is an adoption template. Fill the project values before you use it to govern a product.
-To change Execute itself, follow the [Validate](README.md#validate) section of the README.
+To change Execute itself, follow [Validation](docs/VALIDATE.md).
 Changes to Execute use a pull request to `main` and the required `Gate` check.
 Do not push directly to `main` or bypass a failing check.
 
@@ -65,4 +65,4 @@ Keep this file short. Add an irreversible-loss rule only for a concrete risk, an
 Run focused checks while editing with `lute run tools/gate.luau --tier fast`, `--file <spec>` or `--name <text>`.
 After a specification changes, run `lute run tools/check-test-manifest.luau --write`.
 Commit the candidate. Run `lute run tools/gate.luau` on the clean HEAD, including its fresh-clone check.
-Do not change verified bytes before integration. See [Validate](README.md#validate).
+Do not change verified bytes before integration. See [Validation](docs/VALIDATE.md).

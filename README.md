@@ -1,64 +1,109 @@
 # Execute
 
-Execute is a template for work that agents do in a project. Its documents define roles, authority, checks,
-integration and recovery. The agent harness runs the work and sends messages. Execute has no manager process or
-task system. Optional Luau modules supply common tool operations.
+Reusable project instructions and Luau workflow tools for coding agents.
 
-First, run the [quickstart](docs/quickstart.md) to select checks without host effects.
-To adopt the documents, follow its [adoption steps](docs/quickstart.md#adopt-the-operating-documents).
-`AGENTS.template.md` becomes the adopter's `AGENTS.md`; this repository's `AGENTS.md` governs maintainers.
-Copying documents grants no authority. Resume existing operations from the adopter's STATE.
+Execute helps development teams, including Roblox developers, give coding agents clear
+assignments, permissions, review steps and recovery procedures. It provides Markdown
+templates for running a project and optional Luau modules for selecting checks, preparing
+worktrees, checking commit rules and integrating verified branches. Your project supplies
+its decisions and the Git, filesystem and process operations. Execute does not run agents
+or schedule their work; your agent application does that.
 
-## Terms
+First, run one fixture with the [quickstart](docs/quickstart.md).
 
-- **Adopter:** the project that uses this template.
-- **Owner:** the human who holds authority.
-- **CEO:** the one agent accountable for the work.
-- **Worker:** a persistent session with a bounded assignment from the CEO.
-- **Reviewer:** a reviewer of exact candidate bytes, when OWNER requires independent review.
-- **Appointment:** the Owner's act that names the CEO.
-- **Gate:** the command that checks a change.
+## What is inside
+
+| Family | Tools | Entry |
+| --- | --- | --- |
+| Check selection | Select specifications and commands by changed paths; report paths without a matching rule | [`scoped-checks`](docs/api.md#scoped-checks) |
+| Commit rules | Parse Git logs and check author, committer and trailer requirements | [`commit-policy`](docs/api.md#commit-policy) |
+| Edit permissions | Check which identities may change particular paths or document sections | [`guarded-surface`](docs/api.md#guarded-surface) |
+| Integration | Run verification steps, classify conflicts and integrate one branch or a batch | [`landing`](docs/api.md#landing) |
+| Record cleanup | Plan which records to keep and apply requested deletions | [`retention`](docs/api.md#retention) |
+| Checkout preparation | Create or reuse worktrees, prepare dependencies and generated inputs, report stale inputs | [`worker-setup`](docs/api.md#worker-setup) |
+
+The project templates cover assignments, permissions, current status, quality criteria,
+integration and recovery. Adapters describe the controls available in Codex and Claude;
+optional extensions add Luau tooling, interface testing and Roblox procedures. The
+[documentation table](#documentation) links to each template and guide.
+
+## Example
+
+Select checks for a changed module and identify a path that needs a separate rule:
+
+```luau
+local ScopedChecks = require(path.to.execute["scoped-checks"])
+
+local groups: { ScopedChecks.Group } = {
+    { name = "records", paths = { "^src/records/" }, specs = { "^tests/records" }, checks = {} },
+}
+local changed = { "src/records/read.luau", "README.md" }
+local selection = ScopedChecks.select(changed, groups, { "tests/records.verify.luau" })
+
+assert(selection.groups[1].name == "records")
+assert(ScopedChecks.unowned(changed, groups)[1] == "README.md")
+```
+
+Selection returns data without running commands. Handle unmatched paths before deciding
+which checks to run. The [API reference](docs/api.md) covers each module's inputs,
+results and failures. In this example, `path.to.execute` is the copied Luau module directory.
+
+## How it fits together
+
+| Surface | Purpose |
+| --- | --- |
+| `AGENTS.template.md`, `docs` | Project instructions and templates for permissions, assignments, status and procedures. |
+| `adapters` | Agent application controls for Codex and Claude. |
+| `extensions/luau` | Optional workflow modules with supplied Git, filesystem, clock and process functions. |
+| `extensions/interactive-qa` | Procedures for testing interfaces with captures and input. |
+| `extensions/roblox` | Roblox development and asset procedures. |
+| `examples` | Runnable fixtures that demonstrate the Luau API. |
+
+Copy only the templates and modules your project needs. Fill project values and permissions
+before using the instructions. This repository's `AGENTS.md` governs maintenance;
+`AGENTS.template.md` is the starting point for your project's instructions.
+
+## Install
+
+Execute is pinned by commit, not by version. Choose a commit of
+`https://github.com/voidmeld/execute.git`, record its commit and tree in your project's
+[adoption record](docs/ADOPTION.md), and copy the selected documents, one adapter and any
+required extensions. The [quickstart](docs/quickstart.md#adopt-the-operating-documents)
+lists the steps. After a pin change, review local template changes and run checks for any
+tools that use the updated modules.
 
 ## Documentation
 
-Each page owns the subject in this map. Read the procedure or reference only when the task needs it.
-
-| Task or page | Subject |
+| Task | Document |
 | --- | --- |
-| [Quickstart](docs/quickstart.md) | First fixture and document adoption. |
-| [Maintainer guide](AGENTS.md) | Repository rules and first action. |
-| [Adopter template](AGENTS.template.md) | The AGENTS file to copy into a project. |
-| [OWNER](docs/OWNER.md) | Grants, staffing and reserved decisions. |
-| [TASKS](docs/TASKS.md) | Roles, assignments, results and review. |
-| [STATE](docs/STATE.md) | Current facts and recovery. |
-| [PLAYBOOK](docs/PLAYBOOK.md) | Work procedures and evidence. |
-| [TASTE](docs/TASTE.md) | Product quality criteria. |
-| [ADOPTION](docs/ADOPTION.md) | Source identity and local differences. |
-| [SUCCESSION](docs/SUCCESSION.md) | CEO appointment and replacement. |
-| [Agentic standard](docs/AGENTIC-STANDARD.md) | Writing, execution and review rules. |
-| [Validation](docs/VALIDATE.md) | Setup and checks for changes to Execute. |
-| [Luau API](docs/api.md) | Public calls, return values, failures and examples. |
-| [Adapters](adapters/README.md) | Harness selection and shared controls. |
-| [Codex adapter](adapters/codex/README.md) | Codex task controls. |
-| [Claude adapter](adapters/claude/README.md) | Claude session controls. |
-| [Extensions](extensions/README.md) | Extension selection and adoption. |
-| [Luau extension](extensions/luau/README.md) | Module configuration. |
-| [Interactive QA extension](extensions/interactive-qa/README.md) | Adoption for products with an interface. |
-| [Interactive QA](extensions/interactive-qa/docs/INTERACTIVE-QA.md) | Captures, scenarios and input. |
-| [Roblox extension](extensions/roblox/README.md) | Roblox rules and references. |
-| [Roblox adoption](extensions/roblox/INTEGRATION.md) | Required project values. |
-| [Roblox operations](extensions/roblox/docs/ROBLOX.md) | Accounts, Studio, persistence and assets. |
-| [Generative assets](extensions/roblox/docs/ROBLOX-GENERATIVE-ASSETS.md) | Asset generation and acceptance. |
-| [Operating skill](.agents/skills/execute-operate/SKILL.md) | The delivery procedure for an assigned outcome. |
-| [Claude entry](CLAUDE.md) | Claude instruction discovery. |
-| [Claude skill entry](.claude/skills/execute-operate/SKILL.md) | The route to the operating skill. |
+| Run the first fixture and adopt the templates | [Quickstart](docs/quickstart.md) |
+| Find public calls, returns and failures | [API reference](docs/api.md) |
+| Start a project's agent instructions | [Adopter template](AGENTS.template.md) |
+| Define permissions and staffing | [OWNER](docs/OWNER.md) |
+| Assign work and review results | [TASKS](docs/TASKS.md) |
+| Record current status and recovery facts | [STATE](docs/STATE.md) |
+| Follow work and integration procedures | [PLAYBOOK](docs/PLAYBOOK.md) |
+| Define quality criteria | [TASTE](docs/TASTE.md) |
+| Record the source pin and local changes | [ADOPTION](docs/ADOPTION.md) |
+| Appoint or replace the lead agent | [SUCCESSION](docs/SUCCESSION.md) |
+| Apply writing and execution rules | [Agentic standard](docs/AGENTIC-STANDARD.md) |
+| Choose agent application controls | [Adapters](adapters/README.md), [Codex](adapters/codex/README.md), [Claude](adapters/claude/README.md) |
+| Select optional procedures and tools | [Extensions](extensions/README.md) |
+| Connect Git, filesystem and process functions | [Luau extension](extensions/luau/README.md) |
+| Test interfaces | [Interactive QA extension](extensions/interactive-qa/README.md) |
+| Adopt Roblox procedures | [Roblox extension](extensions/roblox/README.md), [integration](extensions/roblox/INTEGRATION.md) |
+| Set up tools or diagnose checks | [Validation](docs/VALIDATE.md) |
+| Change this repository | [Maintainer guide](AGENTS.md) |
 
-## Validate
+## Compatibility
 
-To change Execute, follow [Validation](docs/VALIDATE.md). The placeholders in the template govern an adopting
-project after appointment.
-
+The supported unit is an exact commit and tree; there is no semantic-version promise.
+Public module exports, configuration records and documented failure behavior are
+contracts. Update affected tools with a contract change. Project templates require local
+values and permissions; copying or updating them grants no authority. Internal helpers and
+verification fixtures are not public APIs.
 
 ## License
 
-[MIT License](LICENSE). Keep the copyright and permission notice in copies or substantial portions.
+Execute is [MIT licensed](LICENSE). Its own development dependencies are pinned in
+[dependencies.lock.luau](dependencies.lock.luau).
