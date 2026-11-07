@@ -82,6 +82,8 @@ local config: {
 		},
 		publicSurface = {
 			docs = "docs/api.md",
+			codeReferences = true,
+			includeTypes = true,
 			packages = {
 				{
 					prefix = "CommitPolicy",
