@@ -21,6 +21,7 @@ First, run one fixture with the [quickstart](docs/quickstart.md).
 | Integration | Run verification steps, classify conflicts and integrate one branch or a batch | [`landing`](docs/api.md#landing) |
 | Record cleanup | Plan which records to keep and apply requested deletions | [`retention`](docs/api.md#retention) |
 | Checkout preparation | Create or reuse worktrees, prepare dependencies and generated inputs, report stale inputs | [`worker-setup`](docs/api.md#worker-setup) |
+| Source rules | Scan Luau source for calls and silent fallbacks, compile at the register limit, reconcile findings with a supplied allowlist | [`source-scan`](docs/api.md#source-scan), [`call-scanner`](docs/api.md#call-scanner), [`silent-fallbacks`](docs/api.md#silent-fallbacks), [`register-limit`](docs/api.md#register-limit) |
 
 The project templates cover assignments, permissions, current status, quality criteria,
 integration and recovery. Adapters describe the controls available in Codex and Claude;
