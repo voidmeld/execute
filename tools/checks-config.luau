@@ -86,6 +86,13 @@ local config: {
 			includeTypes = true,
 			packages = {
 				{
+					prefix = "CallScanner",
+					entry = "extensions/luau/call-scanner.luau",
+					load = function(): unknown
+						return require("../extensions/luau/call-scanner")
+					end,
+				},
+				{
 					prefix = "CommitPolicy",
 					entry = "extensions/luau/commit-policy.luau",
 					load = function(): unknown
@@ -107,6 +114,13 @@ local config: {
 					end,
 				},
 				{
+					prefix = "RegisterLimit",
+					entry = "extensions/luau/register-limit.luau",
+					load = function(): unknown
+						return require("../extensions/luau/register-limit")
+					end,
+				},
+				{
 					prefix = "Retention",
 					entry = "extensions/luau/retention.luau",
 					load = function(): unknown
@@ -118,6 +132,20 @@ local config: {
 					entry = "extensions/luau/scoped-checks.luau",
 					load = function(): unknown
 						return require("../extensions/luau/scoped-checks")
+					end,
+				},
+				{
+					prefix = "SilentFallbacks",
+					entry = "extensions/luau/silent-fallbacks.luau",
+					load = function(): unknown
+						return require("../extensions/luau/silent-fallbacks")
+					end,
+				},
+				{
+					prefix = "SourceScan",
+					entry = "extensions/luau/source-scan.luau",
+					load = function(): unknown
+						return require("../extensions/luau/source-scan")
 					end,
 				},
 				{

@@ -14,7 +14,11 @@ The [API reference](../../docs/api.md) owns public signatures, configuration, re
 | [worker-setup](worker-setup.luau) | Creates or reuses a worktree and prepares its inputs. |
 | [commit-policy](commit-policy.luau) | Checks authors, committers and trailers against supplied rules. |
 | [guarded-surface](guarded-surface.luau) | Checks path and section rules against supplied authority. |
+| [call-scanner](call-scanner.luau) | Finds calls, arguments and member references in Luau source. |
 | [retention](retention.luau) | Plans or applies deletion for supplied record families. |
+| [silent-fallbacks](silent-fallbacks.luau) | Finds silent fallbacks in source against a supplied allowlist. |
+| [register-limit](register-limit.luau) | Compiles supplied modules at the engine register limit. |
+| [source-scan](source-scan.luau) | Lists source files and reconciles findings with an allowlist. |
 
 ## Verification and adoption
 

@@ -5,11 +5,15 @@ The public-surface check requires an entry here for every exported member and ty
 
 | Task | Reference |
 | --- | --- |
+| Scan Luau source for calls, arguments and member references | [Call scanner](#call-scanner) |
 | Select checks for changed files | [Scoped checks](#scoped-checks) |
 | Check commit identity and trailers | [Commit policy](#commit-policy) |
 | Check authority over paths and sections | [Guarded surface](#guarded-surface) |
 | Integrate a verified candidate | [Landing](#landing) |
+| Compile shipped modules at the engine register limit | [Register limit](#register-limit) |
 | Plan retention and apply authorized deletion | [Retention](#retention) |
+| Find silent fallbacks against a reviewed allowlist | [Silent fallbacks](#silent-fallbacks) |
+| List source files and reconcile findings with an allowlist | [Source scan](#source-scan) |
 | Prepare an isolated checkout | [Worker setup](#worker-setup) |
 
 ## Shared setup
@@ -17,11 +21,15 @@ The public-surface check requires an entry here for every exported member and ty
 Examples are fragments. Replace `path.to.execute` with the copied `extensions/luau` directory:
 
 ```luau
+local CallScanner = require(path.to.execute["call-scanner"])
 local ScopedChecks = require(path.to.execute["scoped-checks"])
 local CommitPolicy = require(path.to.execute["commit-policy"])
 local GuardedSurface = require(path.to.execute["guarded-surface"])
 local Landing = require(path.to.execute.landing)
+local RegisterLimit = require(path.to.execute["register-limit"])
 local Retention = require(path.to.execute.retention)
+local SilentFallbacks = require(path.to.execute["silent-fallbacks"])
+local SourceScan = require(path.to.execute["source-scan"])
 local WorkerSetup = require(path.to.execute["worker-setup"])
 ```
 
@@ -35,6 +43,91 @@ Malformed Luau patterns can raise. Selection does not execute a check.
 
 The [quickstart](quickstart.md) runs a complete fixture.
 Adjacent [specifications](../extensions/luau) exercise every module, including refusals and recovery.
+
+## Call scanner
+
+The scanner reads Luau source as text and skips quoted text, long brackets and comments. It does not parse the
+language. A position is a one-based byte offset. `findCalls` takes a needle such as `:Mark(`: a leading `:` or `.`,
+a name and a closing parenthesis. It returns each call with its `start`, its `stop` and its top-level argument
+texts, and skips a function declaration of that name. `findReferences` returns the positions of `.name` that are
+neither a declaration nor the operand of a type query. `wholeCall` returns the arguments only when one call spans
+the entire expression. The consumer owns the rules that judge what the scanner finds.
+
+```luau
+for _, call in CallScanner.findCalls(source, ":Mark(") do
+	local line = CallScanner.lineOf(source, call.start)
+end
+```
+
+See the [executable contract](../extensions/luau/call-scanner.verify.luau).
+
+Exported types: `CallScanner.Call`.
+
+### `CallScanner.skipQuoted`
+
+`skipQuoted(source: string, index: number) -> number`
+
+Returns the position after the quoted text that begins at `index`, or past the end if it never closes.
+
+### `CallScanner.skipLong`
+
+`skipLong(source: string, index: number) -> number?`
+
+Returns the position after the long bracket that begins at `index`, or `nil` if none begins there.
+
+### `CallScanner.skipComment`
+
+`skipComment(source: string, index: number) -> number`
+
+Returns the position after the line or block comment that begins at `index`.
+
+### `CallScanner.literalBytes`
+
+`literalBytes(body: string) -> number`
+
+Counts the bytes that a quoted literal body produces, resolving escapes.
+
+### `CallScanner.splitTop`
+
+`splitTop(text: string) -> { string }`
+
+Splits argument text at commas outside quotes and brackets.
+
+### `CallScanner.topLevel`
+
+`topLevel(expression: string) -> string`
+
+Reduces an expression to its top-level operators, with nested text removed and each quoted string as `S`.
+
+### `CallScanner.wholeCall`
+
+`wholeCall(expression: string, prefix: string) -> { string }?`
+
+Returns the argument texts when the expression is exactly one call that starts with the prefix.
+
+### `CallScanner.functionDefinitions`
+
+`functionDefinitions(source: string) -> { [number]: boolean }`
+
+Marks the positions of the `.` or `:` in each function declaration name.
+
+### `CallScanner.findCalls`
+
+`findCalls(source: string, needle: string) -> { Call }`
+
+Finds the calls that match the needle outside strings and comments.
+
+### `CallScanner.findReferences`
+
+`findReferences(source: string, member: string) -> { number }`
+
+Finds the positions of `.member` outside strings and comments that are not declarations or type queries.
+
+### `CallScanner.lineOf`
+
+`lineOf(source: string, position: number) -> number`
+
+Returns the line number of a position.
 
 ## Commit policy
 
@@ -267,6 +360,40 @@ integrates serially and proves remote equality before cleanup.
 Combines the supplied candidates as one integration. Runs the train checks and resets members when the train
 aborts.
 
+## Register limit
+
+A `Config` has a report `label`, the `roots` to walk, `include` and `exclude` Luau patterns for file names, and an
+injected `compile(source)` that raises if the engine refuses the source. The module prefixes each source with
+`UNOPTIMIZED`, so the compiler cannot fold away the registers a module needs.
+`check` compiles every listed file, reports each refusal and returns zero only if none was refused.
+It keeps checking after a refusal. The consumer owns the roots, the patterns and the compiler binding.
+
+```luau
+local files = RegisterLimit.shipped(config, host)
+local code = RegisterLimit.check(files, host.read, config, print)
+```
+
+See the [executable contract](../extensions/luau/register-limit.verify.luau).
+
+Exported types: `RegisterLimit.Config`.
+
+### `RegisterLimit.UNOPTIMIZED`
+
+The source prefix that disables compiler optimization.
+
+### `RegisterLimit.shipped`
+
+`shipped(config: Config, host: SourceScan.Host) -> { string }`
+
+Lists the files under the roots that match `include` and not `exclude`, sorted by path. Absent roots add nothing.
+
+### `RegisterLimit.check`
+
+`check(files: { string }, read: (string) -> string, config: Config, report: (string) -> ()) -> number`
+
+Compiles each file through `config.compile`. Reports `<label>: FAIL <path>: <first line>` for a refusal and a
+summary line. Returns 1 if any file was refused.
+
 ## Retention
 
 A `Row` contains `path`, `group`, numeric `rank`, `retained`, `terminal` and `detail`.
@@ -357,6 +484,116 @@ Finds changed paths that no supplied group owns.
 
 Selects owning groups, matching specifications and distinct commands for the changed paths and optional
 selection.
+
+## Silent fallbacks
+
+The check finds three silent fallbacks in Luau source: `lookup-or-literal`, a keyed lookup that falls back to a
+string literal; `discarded-pcall`, a protected call whose result nothing reads; and `display-empty-fallback`,
+an empty string that stands in for a missing value in a display field. A `Config` supplies the report `label`,
+the `displayFields` names, the `bestEffortWords` that mark a callee as best-effort, the `skipPaths` patterns of
+files that are never scanned and the `teardownPaths` patterns where a discarded protected call is allowed.
+An `Entry` allowlists one finding by `path`, `rule` and `snippet`, with a `disposition` of `authored` or
+`pending` and a `reason` of at least twenty characters. The consumer owns every entry and every `Config` value.
+`check` fails on an entry without a reason or a known disposition, on an entry that matches nothing and on any
+finding that no entry allows. With `selected`, only entries under the `roots` take part.
+Pending entries print and do not fail. `check` takes the listed `paths` and a `read` function from the host.
+
+```luau
+local code = SilentFallbacks.check({
+	config = config,
+	roots = roots,
+	selected = false,
+	entries = entries,
+	paths = SourceScan.collect(roots, host, "%.luau$"),
+	read = host.read,
+}, print)
+```
+
+See the [executable contract](../extensions/luau/silent-fallbacks.verify.luau).
+
+Exported types: `SilentFallbacks.Hit`, `SilentFallbacks.Entry`, `SilentFallbacks.Config`, `SilentFallbacks.File`, `SilentFallbacks.Input`.
+
+### `SilentFallbacks.normalize`
+
+`normalize(text: string) -> string`
+
+Collapses whitespace and bounds a snippet to 160 bytes.
+
+### `SilentFallbacks.lintFile`
+
+`lintFile(path: string, contents: string, config: Config) -> { Hit }`
+
+Finds the fallbacks in one file, in line order. Comment lines are ignored.
+
+### `SilentFallbacks.lint`
+
+`lint(files: { File }, entries: { Entry }, config: Config) -> ({ Hit }, { Entry })`
+
+Returns the findings that no entry allows, sorted by path, line and rule, and the entries that matched nothing.
+
+### `SilentFallbacks.unreasoned`
+
+`unreasoned(entries: { Entry }) -> { Entry }`
+
+Returns the entries with a short reason or an unknown disposition.
+
+### `SilentFallbacks.pending`
+
+`pending(entries: { Entry }) -> { Entry }`
+
+Returns the entries whose disposition is `pending`.
+
+### `SilentFallbacks.selectEntries`
+
+`selectEntries(entries: { Entry }, roots: { string }, selected: boolean) -> { Entry }`
+
+Returns every entry, or only the entries under the roots when `selected` is true.
+
+### `SilentFallbacks.check`
+
+`check(input: Input, report: (string) -> ()) -> number`
+
+Runs the allowlist and scan checks and reports each failure. Returns 0 if clean and 1 otherwise.
+
+## Source scan
+
+A `Host` supplies `exists`, `kind` and `children` for a path. `kind` returns `file`, `dir` or another value that
+the scan skips. `collect` walks the roots depth first in name order, adds each file whose path matches the Luau
+pattern, accepts a file as a root and skips an absent root.
+`reconcile` splits findings into those that no allowlist entry covers and the entries that cover nothing, using
+the supplied key functions. The consumer owns the host, the roots and the allowlist.
+
+```luau
+local files = SourceScan.collect({ "src" }, host, "%.luau$")
+```
+
+See the [executable contract](../extensions/luau/source-scan.verify.luau).
+
+Exported types: `SourceScan.Host`, `SourceScan.Reconciled`.
+
+### `SourceScan.normalize`
+
+`normalize(text: string, limit: number) -> string`
+
+Trims text, collapses whitespace runs to one space and cuts it to `limit` bytes.
+
+### `SourceScan.inRoots`
+
+`inRoots(path: string, roots: { string }) -> boolean`
+
+Checks whether a path equals a root or lies under it.
+
+### `SourceScan.collect`
+
+`collect(roots: { string }, host: Host, pattern: string) -> { string }`
+
+Lists the matching files under the roots.
+
+### `SourceScan.reconcile`
+
+`reconcile<Hit, Entry>(hits: { Hit }, entries: { Entry }, hitKey: (Hit) -> string, entryKey: (Entry) -> string) -> Reconciled<Hit, Entry>`
+
+Returns the findings no entry covers, in input order, and the entries no finding matched.
 
 ## Worker setup
 
