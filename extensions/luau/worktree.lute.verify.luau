@@ -154,9 +154,6 @@ local function realGit(primary: string): Landing.Git
 		changedPaths = function(worktreePath)
 			return git({ "diff", "--name-only", "main..HEAD" }, worktreePath)
 		end,
-		resetHard = function(worktreePath, sha)
-			return git({ "reset", "--hard", sha }, worktreePath)
-		end,
 		push = function()
 			return git({ "push", "origin", "main" })
 		end,
@@ -443,6 +440,63 @@ return function(suite: Verify.Harness)
 			expect(silent[1].status):toBe("FAIL")
 			expect(silent[1].detail):toContain("absent")
 		end)
+
+		for _, stage in { "setup", "rebase", "verify" } do
+			case("preserves work and evidence after a train " .. stage .. " refusal", function(directory)
+				local root, primary = initRepository(directory)
+				local members = { root .. "/one", root .. "/two" }
+				local heads: { string } = {}
+				for index, member in members do
+					local branch = if index == 1 then "one" else "two"
+					sh(primary, { "git", "worktree", "add", "-q", "-b", branch, member, "main" })
+					write(member .. "/" .. branch .. ".txt", branch .. "\n")
+					commit(member, branch)
+					heads[index] = sh(member, { "git", "rev-parse", "HEAD" })
+					fs.createDirectory(member .. "/build")
+					write(member .. "/build/evidence.bin", "original\0evidence")
+				end
+				local function dirtyMembers()
+					for index, member in members do
+						heads[index] = sh(member, { "git", "rev-parse", "HEAD" })
+						write(member .. "/source.txt", "unfinished tracked work\n")
+					end
+				end
+				if stage ~= "verify" then
+					dirtyMembers()
+				end
+				local trainPath = ""
+				local trainRef = ""
+				local plan = landingPlan(root, function()
+					dirtyMembers()
+					return { ok = false, reason = "verify_red", detail = "verification refused", failingLines = {} }
+				end)
+				plan.setup = function(path: string): Landing.Refusal?
+					trainPath = path
+					trainRef = sh(path, { "git", "branch", "--show-current" })
+					fs.createDirectory(path .. "/build")
+					write(path .. "/build/evidence.bin", "failed train\0evidence")
+					if stage == "setup" then
+						return { ok = false, reason = "setup_red", detail = "setup refused", failingLines = {} }
+					end
+					return nil
+				end
+				local outcome = Landing.landTrain({ "one", "two" }, { git = realGit(primary), plan = plan })
+				assert(not outcome.ok)
+				expect(outcome.reason):toBe(if stage == "rebase" then "rebase_failed" else stage .. "_red")
+				for index, member in members do
+					expect(fs.readFileToString(member .. "/source.txt")):toBe("unfinished tracked work\n")
+					expect(fs.readFileToString(member .. "/build/evidence.bin")):toBe("original\0evidence")
+					expect(sh(member, { "git", "rev-parse", "HEAD" })):toBe(heads[index])
+				end
+				expect(fs.readFileToString(trainPath .. "/build/evidence.bin")):toBe("failed train\0evidence")
+				expect(sh(primary, { "git", "rev-parse", trainRef })):toBe(
+					sh(trainPath, { "git", "rev-parse", "HEAD" })
+				)
+				expect(sh(primary, { "git", "rev-parse", "main" })):toBe(
+					sh(primary, { "git", "rev-parse", "origin/main" })
+				)
+			end)
+		end
 
 		case("lands a candidate through real git and refuses a red gate", function(directory)
 			local root, primary = initRepository(directory)

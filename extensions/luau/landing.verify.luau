@@ -43,7 +43,6 @@ type GitOverrides = {
 	mergeBase: ((a: string, b: string) -> CommandResult)?,
 	pathsBetween: ((from: string, to: string) -> CommandResult)?,
 	changedPaths: ((worktreePath: string) -> CommandResult)?,
-	resetHard: ((worktreePath: string, sha: string) -> CommandResult)?,
 	push: (() -> CommandResult)?,
 	fetch: (() -> CommandResult)?,
 	revParse: ((ref: string) -> CommandResult)?,
@@ -93,9 +92,6 @@ local function stubGit(overrides: GitOverrides): Landing.Git
 		changedPaths = function(): Landing.CommandResult
 			return ok("src/feature.luau\n")
 		end,
-		resetHard = function(): Landing.CommandResult
-			return ok("")
-		end,
 		push = function(): Landing.CommandResult
 			return ok("")
 		end,
@@ -120,7 +116,6 @@ local function stubGit(overrides: GitOverrides): Landing.Git
 	base.mergeBase = overrides.mergeBase or base.mergeBase
 	base.pathsBetween = overrides.pathsBetween or base.pathsBetween
 	base.changedPaths = overrides.changedPaths or base.changedPaths
-	base.resetHard = overrides.resetHard or base.resetHard
 	base.push = overrides.push or base.push
 	base.fetch = overrides.fetch or base.fetch
 	base.revParse = overrides.revParse or base.revParse
@@ -252,7 +247,7 @@ return function(suite: Verify.Harness)
 			expect((outcome).filesChanged):toBe(2)
 		end)
 
-		it("keeps train identity refusal detail and cleanup", function()
+		it("keeps train identity refusal detail and evidence", function()
 			local prepared, removed = false, false
 			local outcome = Landing.landTrain({ "feature" }, {
 				git = stubGit({
@@ -274,7 +269,7 @@ return function(suite: Verify.Harness)
 			assert(not outcome.ok)
 			expect((outcome).reason):toBe("candidate_unresolved")
 			expect((outcome).detail):toContain("train commit could not be resolved before verification")
-			assert(removed)
+			expect(removed):toBe(false)
 		end)
 
 		it("fast-forwards a gated candidate after a disjoint base move without rerunning the gate", function()
@@ -493,8 +488,9 @@ return function(suite: Verify.Harness)
 			expect(setupPath):toBe("/repo/.worktrees/train-abcdef1-abcdef1")
 		end)
 
-		it("resets and removes the members of a failed train", function()
-			local resets: { string } = {}
+		it("preserves failed train checkouts and branch references", function()
+			local removed: { string } = {}
+			local deleted: { string } = {}
 			local outcome = Landing.landTrain({ "one", "two" }, {
 				git = stubGit({
 					worktreeList = function(): Landing.CommandResult
@@ -507,8 +503,12 @@ return function(suite: Verify.Harness)
 							"",
 						}, "\n"))
 					end,
-					resetHard = function(path: string): Landing.CommandResult
-						table.insert(resets, path)
+					worktreeRemove = function(path: string): Landing.CommandResult
+						table.insert(removed, path)
+						return ok("")
+					end,
+					branchDelete = function(branch: string): Landing.CommandResult
+						table.insert(deleted, branch)
 						return ok("")
 					end,
 				}),
@@ -520,8 +520,9 @@ return function(suite: Verify.Harness)
 			})
 			assert(not outcome.ok)
 			expect((outcome).reason):toBe("test_red")
-			expect(#resets):toBe(2)
-			expect((outcome).detail):toContain("was reset and removed")
+			expect(#removed):toBe(0)
+			expect(#deleted):toBe(0)
+			expect((outcome).detail):toContain("all worktrees retain their current state")
 		end)
 
 		it("bounds resolver attempts", function()
