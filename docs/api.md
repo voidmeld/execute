@@ -357,8 +357,10 @@ integrates serially and proves remote equality before cleanup.
 
 `landTrain(branches: { string }, deps: Dependencies) -> Outcome`
 
-Combines the supplied candidates as one integration. Runs the train checks and resets members when the train
-aborts.
+Combines the supplied candidates as one integration. A refusal preserves the train, member worktrees and
+branches at their current state, including conflicts and verification evidence. Inspect the reported paths
+before retrying or explicitly retiring the failed train. The Git host does not supply a reset operation.
+Successful integration still runs the host's cleanup callbacks after proving remote equality.
 
 ## Register limit
 

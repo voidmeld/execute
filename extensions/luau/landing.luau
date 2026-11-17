@@ -75,7 +75,6 @@ export type Git = {
 	mergeBase: (a: string, b: string) -> CommandResult,
 	pathsBetween: (from: string, to: string) -> CommandResult,
 	changedPaths: (worktreePath: string) -> CommandResult,
-	resetHard: (worktreePath: string, sha: string) -> CommandResult,
 	push: () -> CommandResult,
 	fetch: () -> CommandResult,
 	revParse: (ref: string) -> CommandResult,
@@ -538,54 +537,17 @@ end
 
 local function trainGuidance(trainBranch: string, trainPath: string, branches: { string }, culprit: string?): string
 	if culprit ~= nil then
-		return (" -- bisect member %s; train %s at %s was reset and removed, each member restored to its own head"):format(
+		return (" -- inspect member %s; train %s at %s and member worktrees retain their current state"):format(
 			assert(culprit),
 			trainBranch,
 			trainPath
 		)
 	end
-	return (" -- bisect across train %s members [%s] at %s was reset and removed, each member restored to its own head"):format(
+	return (" -- inspect train %s members [%s] at %s; all worktrees retain their current state"):format(
 		trainBranch,
 		table.concat(branches, ", "),
 		trainPath
 	)
-end
-
-local function abortTrain(
-	trainPath: string,
-	trainBranch: string,
-	memberPaths: { string },
-	memberShas: { string },
-	deps: Dependencies
-)
-	for index, memberPath in memberPaths do
-		local sha = memberShas[index]
-		local reset = deps.git.resetHard(memberPath, sha)
-		if reset.exitcode ~= 0 then
-			deps.plan.log(
-				("bisect cleanup: git reset --hard %s in %s exited %d; restore it by hand"):format(
-					sha,
-					memberPath,
-					reset.exitcode
-				)
-			)
-		end
-	end
-	local removed = deps.git.worktreeRemove(trainPath)
-	if removed.exitcode ~= 0 then
-		deps.plan.log(
-			("bisect cleanup: git worktree remove --force %s exited %d; remove it by hand"):format(
-				trainPath,
-				removed.exitcode
-			)
-		)
-	end
-	local deleted = deps.git.branchDelete(trainBranch)
-	if deleted.exitcode ~= 0 then
-		deps.plan.log(
-			("bisect cleanup: git branch -D %s exited %d; delete it by hand"):format(trainBranch, deleted.exitcode)
-		)
-	end
 end
 
 local function pathSet(output: string): { [string]: boolean }
@@ -787,7 +749,6 @@ local function landTrain(branches: { string }, deps: Dependencies): Outcome
 	plan.log("PASS train worktree created")
 
 	local function abortWith(reason: string, detail: string, culprit: string?): Refusal
-		abortTrain(trainPath, trainBranch, memberPaths, memberShas, deps)
 		local guided = detail .. trainGuidance(trainBranch, trainPath, branches, culprit)
 		if culprit ~= nil then
 			return attributed(reason, guided, assert(culprit))
