@@ -1,0 +1,134 @@
+--!strict
+
+local WorkerSetup = require("./worker-setup")
+local Verify = require("@verify/src/core")
+local Bdd = require("@verify/src/bdd")
+
+local function warning(paths: string): string
+	return "dirty: " .. paths
+end
+
+return function(suite: Verify.Harness)
+	local test = Bdd.create(suite)
+	local describe, it, expect = test.describe, test.it, test.expect
+
+	describe("worker setup", function()
+		it("reads the first line", function()
+			expect(WorkerSetup.firstLine("first  \nsecond")):toBe("first")
+			expect(WorkerSetup.firstLine("only")):toBe("only")
+			expect(WorkerSetup.firstLine("")):toBe("")
+		end)
+
+		it("passes a command step", function()
+			local seen: { string }? = nil
+			local outcome = WorkerSetup.commandStep("sync", { "tool", "sync" }, function(command: { string })
+				seen = command
+				return { exitcode = 0, stdout = "synced\nextra", stderr = "" }
+			end)
+			assert(outcome.status == "PASS")
+			expect(outcome.detail):toBe("synced")
+			assert(seen)
+			expect((assert(seen))[2]):toBe("sync")
+		end)
+
+		it("fails a command step with stderr", function()
+			local outcome = WorkerSetup.commandStep("sync", { "tool" }, function()
+				return { exitcode = 3, stdout = "out", stderr = "boom\ndetail" }
+			end)
+			assert(outcome.status == "FAIL")
+			expect(outcome.detail):toBe("exit 3: boom")
+		end)
+
+		it("fails a command step with stdout fallback", function()
+			local outcome = WorkerSetup.commandStep("sync", { "tool" }, function()
+				return { exitcode = 3, stdout = "fallback", stderr = "" }
+			end)
+			assert(outcome.status == "FAIL")
+			expect(outcome.detail):toBe("exit 3: fallback")
+		end)
+
+		it("fails a command step that throws", function()
+			local outcome = WorkerSetup.commandStep("sync", { "tool" }, function(): WorkerSetup.CommandResult
+				error("spawn failed")
+			end)
+			assert(outcome.status == "FAIL")
+			expect(outcome.detail):toContain("spawn failed")
+		end)
+
+		it("skips an existing directory and creates a missing one", function()
+			local created: { string } = {}
+			local existing: { [string]: boolean } = { build = true }
+			local skipped = WorkerSetup.directoryStep("build", function(path: string): boolean
+				return existing[path] == true
+			end, function(path: string)
+				table.insert(created, path)
+			end)
+			assert(skipped.status == "SKIP")
+			expect(#created):toBe(0)
+
+			local made = WorkerSetup.directoryStep("build/generated", function(path: string): boolean
+				return existing[path] == true
+			end, function(path: string)
+				table.insert(created, path)
+			end)
+			assert(made.status == "PASS")
+			expect(created[1]):toBe("build/generated")
+		end)
+
+		it("fails a directory step that throws", function()
+			local failed = WorkerSetup.directoryStep("build", function(): boolean
+				return false
+			end, function()
+				error("read-only filesystem")
+			end)
+			assert(failed.status == "FAIL")
+			expect(failed.detail):toContain("read-only filesystem")
+		end)
+
+		it("parses dirty paths", function()
+			local paths = WorkerSetup.dirtyPaths(" M src/main.luau\n?? new.txt\ngarbage\n")
+			expect(#paths):toBe(2)
+			expect(paths[1]):toBe("src/main.luau")
+			expect(paths[2]):toBe("new.txt")
+		end)
+
+		it("passes a clean tree", function()
+			local clean = WorkerSetup.cleanTreeStep("tree", { exitcode = 0, stdout = "", stderr = "" }, warning)
+			assert(clean.status == "PASS")
+			expect(clean.detail):toBe("clean")
+		end)
+
+		it("warns about dirty paths", function()
+			local dirty =
+				WorkerSetup.cleanTreeStep("tree", { exitcode = 0, stdout = " M a\n M b\n", stderr = "" }, warning)
+			assert(dirty.status == "WARN")
+			expect(dirty.detail):toBe("dirty: a, b")
+		end)
+
+		it("truncates a long dirty list", function()
+			local lines: { string } = {}
+			for index = 1, 12 do
+				table.insert(lines, (" M file%d"):format(index))
+			end
+			local many = WorkerSetup.cleanTreeStep(
+				"tree",
+				{ exitcode = 0, stdout = table.concat(lines, "\n"), stderr = "" },
+				warning
+			)
+			assert(many.status == "WARN")
+			expect(many.detail):toContain("and 2 more")
+			expect(many.detail).never:toContain("file11")
+		end)
+
+		it("warns when git is unavailable", function()
+			local unavailable =
+				WorkerSetup.cleanTreeStep("tree", { exitcode = 127, stdout = "", stderr = "git missing" }, warning)
+			assert(unavailable.status == "WARN")
+			expect(unavailable.detail):toContain("git missing")
+		end)
+
+		it("counts no failures for an empty plan", function()
+			expect(WorkerSetup.failureCount({})):toBe(0)
+		end)
+	end)
+end
