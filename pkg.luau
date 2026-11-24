@@ -3,7 +3,7 @@
 return {
 	package = {
 		name = "voidmeld/execute",
-		version = "0.1.0",
+		version = "0.1.1",
 		files = {
 			"/AGENTS.template.md",
 			"/adapters/**",
@@ -34,7 +34,11 @@ return {
 			},
 		},
 		dev_dependencies = {
-			verify = { sourceKind = "github", source = "https://github.com/voidmeld/verify", rev = "35c5590efa9fdb9fc12319a7bc9455a81c2d1970" },
+			verify = {
+				sourceKind = "github",
+				source = "https://github.com/voidmeld/verify",
+				rev = "2e8cedeb260dd61d29b6f4be51a5fc250254e80b",
+			},
 		},
 	},
 }
