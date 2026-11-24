@@ -3,12 +3,13 @@
 return {
 	package = {
 		name = "voidmeld/execute",
-		version = "0.1.1",
+		version = "0.1.2",
 		files = {
 			"/AGENTS.template.md",
 			"/adapters/**",
 			"/docs/**",
 			"/extensions/**",
+			"/tools/check-links.luau",
 			"/.agents/**",
 			"/.claude/**",
 			"/README.md",
@@ -31,6 +32,9 @@ return {
 				SilentFallbacks = "extensions/luau/silent-fallbacks.luau",
 				SourceScan = "extensions/luau/source-scan.luau",
 				WorkerSetup = "extensions/luau/worker-setup.luau",
+			},
+			commands = {
+				CheckLinks = "tools/check-links.luau",
 			},
 		},
 		dev_dependencies = {
