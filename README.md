@@ -82,8 +82,11 @@ return {
 Run `lute pkg install --vendor`, commit `pkg.lock.luau` and ignore `.lpm/`. Alias the vendored
 copy in `.config.luau` with `execute = "./.lpm/execute@<commit>"`, then
 `require("@execute/extensions/luau/scoped-checks")`. The package ships the templates, `docs`,
-`adapters`, `extensions` and the agent skills, without specifications; the operating skill installs at
-`.lpm/execute@<commit>/.agents/skills/execute-operate/SKILL.md` (and `.claude/skills/execute-operate`). Record the commit in your
+`adapters`, `extensions`, the agent skills and the link checker, without specifications; the operating skill installs at
+`.lpm/execute@<commit>/.agents/skills/execute-operate/SKILL.md` (and `.claude/skills/execute-operate`).
+To check a repository's Markdown links and anchors, run
+`lute run .lpm/execute@<commit>/tools/check-links.luau` from its root; it reads the files that
+`git` tracks and exits non-zero on the first broken link. Record the commit in your
 [adoption record](docs/ADOPTION.md); the
 [quickstart](docs/quickstart.md#adopt-the-operating-documents) lists the remaining steps. After a
 pin change, review local template changes and run checks for any tools that use the updated modules.
