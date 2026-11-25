@@ -3,6 +3,12 @@
 Execute follows [semantic versioning](https://semver.org). While the version is `0.x`, a minor
 release may change a public contract.
 
+## 0.2.1
+
+- The operating guide and adopter templates frame backlog items as observable user outcomes for any software
+  project. The guide shows how to check changes in a web app, CLI or library. Game-specific procedures live in
+  the [optional platform extension](extensions/roblox/README.md).
+
 ## 0.2.0
 
 **Migrating from 0.1.x.** Move live grants, hard rules and the guardrail and ship commands into the project's
@@ -18,7 +24,7 @@ in the project. Platform capture guidance now lives in the [platform operations 
 
 - The operating skill routes assignments, returns and landing through the adopter's grants. The playbook covers
   interrupted landings, original evidence, receipt closure and external transactions. Succession records custody transfers.
-- The Roblox extension documents Quick Sign-in recovery for Studio automation and Windows profile requirements.
+- The [platform extension](extensions/roblox/README.md) added sign-in recovery and profile requirements.
 
 ## 0.1.3
 

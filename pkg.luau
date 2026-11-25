@@ -3,7 +3,7 @@
 return {
 	package = {
 		name = "voidmeld/execute",
-		version = "0.2.0",
+		version = "0.2.1",
 		files = {
 			"/AGENTS.template.md",
 			"/BACKLOG.template.md",
@@ -21,7 +21,7 @@ return {
 			"!*.verify.luau",
 		},
 		metadata = {
-			description = "A backlog, guardrails and optional Luau tools for agents working on a game.",
+			description = "A backlog, guardrails and optional Luau tools for agents improving a software project.",
 			license = "MIT",
 			repository = "https://github.com/voidmeld/execute",
 			exports = {

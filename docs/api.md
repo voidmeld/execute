@@ -7,7 +7,7 @@ The public-surface check requires an entry here for every exported member and ty
 | --- | --- |
 | Scan Luau source for calls, arguments and member references | [Call scanner](#call-scanner) |
 | Select checks for changed files | [Scoped checks](#scoped-checks) |
-| Compile shipped modules at the engine register limit | [Register limit](#register-limit) |
+| Check shipped modules against the Luau compiler's register limit | [Register limit](#register-limit) |
 | Find silent fallbacks against a reviewed allowlist | [Silent fallbacks](#silent-fallbacks) |
 | List source files and reconcile findings with an allowlist | [Source scan](#source-scan) |
 | Prepare an isolated checkout | [Worker setup](#worker-setup) |
@@ -123,7 +123,7 @@ Returns the line number of a position.
 ## Register limit
 
 A `Config` has a report `label`, the `roots` to walk, `include` and `exclude` Luau patterns for file names, and an
-injected `compile(source)` that raises if the engine refuses the source. The module prefixes each source with
+injected `compile(source)` that raises if compilation fails. The module prefixes each source with
 `UNOPTIMIZED`, so the compiler cannot fold away the registers a module needs.
 `check` compiles every listed file, reports each refusal and returns zero only if none was refused.
 It keeps checking after a refusal. The consumer owns the roots, the patterns and the compiler binding.
