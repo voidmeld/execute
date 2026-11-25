@@ -7,42 +7,33 @@ The public-surface check requires an entry here for every exported member and ty
 | --- | --- |
 | Scan Luau source for calls, arguments and member references | [Call scanner](#call-scanner) |
 | Select checks for changed files | [Scoped checks](#scoped-checks) |
-| Check commit identity and trailers | [Commit policy](#commit-policy) |
-| Check authority over paths and sections | [Guarded surface](#guarded-surface) |
-| Integrate a verified candidate | [Landing](#landing) |
 | Compile shipped modules at the engine register limit | [Register limit](#register-limit) |
-| Plan retention and apply authorized deletion | [Retention](#retention) |
 | Find silent fallbacks against a reviewed allowlist | [Silent fallbacks](#silent-fallbacks) |
 | List source files and reconcile findings with an allowlist | [Source scan](#source-scan) |
 | Prepare an isolated checkout | [Worker setup](#worker-setup) |
 
 ## Shared setup
 
-Examples are fragments. Replace `path.to.execute` with the copied `extensions/luau` directory:
+The examples use the `execute` alias from the [package install instructions](../README.md#optional-package-install).
 
 ```luau
-local CallScanner = require(path.to.execute["call-scanner"])
-local ScopedChecks = require(path.to.execute["scoped-checks"])
-local CommitPolicy = require(path.to.execute["commit-policy"])
-local GuardedSurface = require(path.to.execute["guarded-surface"])
-local Landing = require(path.to.execute.landing)
-local RegisterLimit = require(path.to.execute["register-limit"])
-local Retention = require(path.to.execute.retention)
-local SilentFallbacks = require(path.to.execute["silent-fallbacks"])
-local SourceScan = require(path.to.execute["source-scan"])
-local WorkerSetup = require(path.to.execute["worker-setup"])
+local CallScanner = require("@execute/extensions/luau/call-scanner")
+local ScopedChecks = require("@execute/extensions/luau/scoped-checks")
+local RegisterLimit = require("@execute/extensions/luau/register-limit")
+local SilentFallbacks = require("@execute/extensions/luau/silent-fallbacks")
+local SourceScan = require("@execute/extensions/luau/source-scan")
+local WorkerSetup = require("@execute/extensions/luau/worker-setup")
 ```
 
-Each area names the consumer records that its fragment assumes, such as `rules`, `policy`, `config` and `host`.
-Calls use dots. A module does no ambient Git, filesystem, clock or process work.
-The consumer injects those effects and binds authority before invoking them.
+The caller supplies the configuration and any Git, filesystem, clock or process operations.
+Check the project's grants before invoking those operations.
 Types in each signature belong to that module. `CommandResult` has `exitcode`, `stdout` and `stderr`.
 Callers must inspect the returned verdict or outcome before continuing.
 Host exceptions propagate unless a call explicitly catches them below.
 Malformed Luau patterns can raise. Selection does not execute a check.
 
-The [quickstart](quickstart.md) runs a complete fixture.
-Adjacent [specifications](../extensions/luau) exercise every module, including refusals and recovery.
+Run `lute run examples/scoped-checks.luau` in the Execute source checkout for a complete example.
+Each module has an adjacent specification in the source checkout.
 
 ## Call scanner
 
@@ -129,239 +120,6 @@ Finds the positions of `.member` outside strings and comments that are not decla
 
 Returns the line number of a position.
 
-## Commit policy
-
-`Verdict` is `{ status = "pass", count }` or `{ status = "refuse", reason, detail }`.
-An empty range, mismatched identity or forbidden trailer refuses.
-`parseLog` returns `nil, reason` for a record with the wrong field count; an empty log returns an empty list.
-`hasTrailer` matches case-insensitive trailer lines. It does not change a commit.
-
-```luau
-local commits, failure = CommitPolicy.parseLog(logOutput)
-assert(commits, failure)
-local verdict = CommitPolicy.evaluate(commits, rules)
-assert(verdict.status == "pass")
-```
-
-Use `LOG_FORMAT` with Git before parsing. `FIELD` and `RECORD` delimit the six fields and each record.
-See the executable contract in the Execute source checkout (`extensions/luau/commit-policy.verify.luau`).
-
-Exported types: `CommitPolicy.Identity`, `CommitPolicy.Rules`, `CommitPolicy.Commit`, `CommitPolicy.Pass`, `CommitPolicy.Refuse`, `CommitPolicy.Verdict`, `CommitPolicy.CommandResult`, `CommitPolicy.Git`.
-
-### `CommitPolicy.FIELD`
-
-`FIELD: string = string.char(31)`
-
-The commit log format and parser use this field separator.
-
-### `CommitPolicy.RECORD`
-
-`RECORD: string = string.char(30)`
-
-The commit log format and parser use this record separator.
-
-### `CommitPolicy.LOG_FORMAT`
-
-`LOG_FORMAT: string = "%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%B%x1e"`
-
-This Git log format carries commit identity, author, committer and body for policy checks.
-
-### `CommitPolicy.parseLog`
-
-`parseLog(output: string) -> ({ Commit }?, string?)`
-
-Parses formatted Git log output into commits. Returns a parse error when a record is malformed.
-
-### `CommitPolicy.hasTrailer`
-
-`hasTrailer(message: string, trailer: string) -> boolean`
-
-Checks whether a commit body contains an attribution trailer covered by the policy.
-
-### `CommitPolicy.evaluate`
-
-`evaluate(commits: { Commit }, rules: Rules) -> Verdict`
-
-Checks commits against the supplied author, committer and trailer rules. Returns a policy verdict.
-
-### `CommitPolicy.runRange`
-
-`runRange(base: string, head: string, rules: Rules, git: Git) -> Verdict`
-
-Reads the candidate range through the supplied Git function, parses it and evaluates its commits. Refuses
-unreadable or malformed logs.
-
-## Guarded surface
-
-`Verdict` is `pass`, `refuse` or `pass_override`. A refusal includes `reason`, `detail` and `paths`.
-`matchedRule` returns the first exact or prefix rule, or nil. A prefix rule ends in `/**`.
-`headingIndex` indexes second-level Markdown headings; `headingAt` returns nil before the first heading.
-`parseHunks` returns an empty list when no unified-diff headers match.
-`sectionsTouched` checks old and new changed lines and returns unique matching headings.
-Missing mixed-section evidence refuses closed.
-Authority passes guarded changes only when `actual` is present and equals `recorded`.
-`withOverride` preserves all results except an explicitly requested override of a refusal.
-An override records the bypass, warning and supplied banking text. It grants no authority itself.
-
-```luau
-local verdict = GuardedSurface.evaluate(changedPaths, policy, authority, dependencies)
-assert(verdict.status == "pass")
-```
-
-See the executable contract in the Execute source checkout (`extensions/luau/guarded-surface.verify.luau`).
-
-Exported types: `GuardedSurface.Tier`, `GuardedSurface.MixedRule`, `GuardedSurface.Authority`, `GuardedSurface.Policy`, `GuardedSurface.Dependencies`, `GuardedSurface.Pass`, `GuardedSurface.PassOverride`, `GuardedSurface.Refuse`, `GuardedSurface.Verdict`, `GuardedSurface.Hunk`, `GuardedSurface.Heading`.
-
-### `GuardedSurface.matchedRule`
-
-`matchedRule(path: string, tier: Tier) -> string?`
-
-Finds the supplied surface rule that matches a path.
-
-### `GuardedSurface.parseHunks`
-
-`parseHunks(diffText: string) -> { Hunk }`
-
-Parses changed line ranges from a diff.
-
-### `GuardedSurface.headingIndex`
-
-`headingIndex(text: string) -> { Heading }`
-
-Indexes Markdown headings for section checks.
-
-### `GuardedSurface.headingAt`
-
-`headingAt(index: { Heading }, lineNumber: number) -> string?`
-
-Finds the heading that owns a line.
-
-### `GuardedSurface.sectionsTouched`
-
-`sectionsTouched(diffText: string, baseText: string, headText: string, headingPattern: string) -> { string }`
-
-Finds the sections that the changed line ranges affect.
-
-### `GuardedSurface.offendingPaths`
-
-`offendingPaths(changedPaths: { string }, policy: Policy, deps: Dependencies) -> { string }`
-
-Collects paths that violate the supplied surface rules.
-
-### `GuardedSurface.evaluate`
-
-`evaluate(changedPaths: { string }, policy: Policy, authority: Authority, deps: Dependencies) -> Verdict`
-
-Evaluates the acting identity and changed paths or sections against the supplied authority rules.
-
-### `GuardedSurface.withOverride`
-
-`withOverride(verdict: Verdict, requested: boolean, label: string, banking: string) -> Verdict`
-
-Applies an explicit override to a refusal. Returns a warning with the bypassed refusal and banking result.
-
-## Landing
-
-`Outcome` is `{ ok = true, sha, filesChanged }` or a `Refusal`.
-A refusal has `ok = false`, `reason`, `detail`, `failingLines`, and optional `member` and `logPath`.
-Run landing from the primary checkout. Each candidate requires its own worktree.
-The plan supplies setup, preparation, authority checks, verification, conflict policy and logging.
-Landing can rebase, commit conflict resolutions, merge, push and remove worktrees through the injected Git host.
-Call it only under grants for those effects. The module proves remote equality before cleanup.
-
-`runStep` returns nil on exit zero. It catches runner exceptions and reports bounded output and a log path.
-`findWorktreeForBranch` returns a path, or `nil, reason` with a worktree setup remedy.
-`classifyFastForward` returns `ok`, `failed` or `unproven`; `ok` includes the changed-file count.
-`mergeVerified` also checks exact destination identity. A successful merge command alone is insufficient.
-`classifyConflict` returns `resolvable`, `hand_authored` or `real` from the supplied rules.
-`shortSha` returns up to seven characters after trimming whitespace. `trainBranchName` binds the ordered member identities.
-
-```luau
-local outcome = Landing.landOne("fixture-change", dependencies)
-assert(outcome.ok, if outcome.ok then nil else outcome.detail)
-```
-
-The landing specification in the Execute source checkout (`extensions/luau/landing.verify.luau`) supplies a fake host.
-The local integration specification in the Execute source checkout (`extensions/luau/worktree.lute.verify.luau`) exercises temporary repositories.
-
-Exported types: `Landing.CommandResult`, `Landing.Refusal`, `Landing.Success`, `Landing.Outcome`, `Landing.FastForward`, `Landing.Resolver`, `Landing.ConflictPolicy`, `Landing.ConflictClass`, `Landing.FailurePolicy`, `Landing.StepHost`, `Landing.Step`, `Landing.Git`, `Landing.Plan`, `Landing.Dependencies`.
-
-### `Landing.extractFailingLines`
-
-`extractFailingLines(output: string, policy: FailurePolicy) -> { string }`
-
-Extracts failure summaries from gate output.
-
-### `Landing.runStep`
-
-`runStep(step: Step, host: StepHost, policy: FailurePolicy) -> Refusal?`
-
-Runs a named command through the host. Reports a failed command with an output tail and a log path.
-
-### `Landing.isPrimaryCheckout`
-
-`isPrimaryCheckout(commonDirOutput: string) -> boolean`
-
-Checks whether the current checkout is the primary checkout.
-
-### `Landing.findWorktreeForBranch`
-
-`findWorktreeForBranch(porcelain: string, branch: string) -> (string?, string?)`
-
-Finds the worktree that holds the named branch from Git worktree output.
-
-### `Landing.classifyFastForward`
-
-`classifyFastForward(result: CommandResult) -> FastForward`
-
-Reads a merge command result. Returns `failed` on a nonzero exit, or `ok` with the parsed changed-file count.
-
-### `Landing.mergeVerified`
-
-`mergeVerified(branch: string, target: string, cwd: string?, deps: Dependencies, verifiedCandidate: string?) -> FastForward`
-
-Fast-forwards a verified candidate and proves the resulting identity.
-
-### `Landing.classifyConflict`
-
-`classifyConflict(paths: { string }, policy: ConflictPolicy) -> ConflictClass`
-
-Classifies a conflict against the registered conflict rules.
-
-### `Landing.handAuthoredDetail`
-
-`handAuthoredDetail(paths: { string }, policy: ConflictPolicy) -> string`
-
-Builds the refusal detail for a conflict that needs a manual resolution.
-
-### `Landing.shortSha`
-
-`shortSha(sha: string) -> string`
-
-Returns the short display form of a commit identity.
-
-### `Landing.trainBranchName`
-
-`trainBranchName(prefix: string, memberShas: { string }) -> string`
-
-Builds the branch name for an integration train.
-
-### `Landing.landOne`
-
-`landOne(branch: string, deps: Dependencies) -> Outcome`
-
-Lands one candidate through host setup, preparation, guard and verification. Requires a candidate worktree,
-integrates serially and proves remote equality before cleanup.
-
-### `Landing.landTrain`
-
-`landTrain(branches: { string }, deps: Dependencies) -> Outcome`
-
-Combines the supplied candidates as one integration. A refusal preserves the train, member worktrees and
-branches at their current state, including conflicts and verification evidence. Inspect the reported paths
-before retrying or explicitly retiring the failed train. The Git host does not supply a reset operation.
-Successful integration still runs the host's cleanup callbacks after proving remote equality.
-
 ## Register limit
 
 A `Config` has a report `label`, the `roots` to walk, `include` and `exclude` Luau patterns for file names, and an
@@ -395,53 +153,6 @@ Lists the files under the roots that match `include` and not `exclude`, sorted b
 
 Compiles each file through `config.compile`. Reports `<label>: FAIL <path>: <first line>` for a refusal and a
 summary line. Returns 1 if any file was refused.
-
-## Retention
-
-A `Row` contains `path`, `group`, numeric `rank`, `retained`, `terminal` and `detail`.
-A `Family` chooses `newest-per-group` or `retained-terminal`, with a category and reasons.
-Each `Deletion` contains `path`, `category` and `reason`.
-Equal ranks keep the lexicographically greatest path. Retained-terminal rows need both flags true to survive.
-`plan` sorts combined deletions by path. It does not deduplicate rows.
-`run("plan", ...)` changes nothing. `run("check", ...)` returns `retention_violation` if any deletion is planned.
-Only `run("apply", ...)` calls `remove(paths)`. A nonzero exit returns `remove_failed:<exitcode>`.
-Unknown modes return `usage`. Every outcome includes `deletions`; inspect `ok` before reading `reason`.
-The host owns deletion authority and exception handling. A plan is not permission to delete originals.
-
-```luau
-local outcome = Retention.run("plan", families, remove)
-assert(outcome.ok)
-local deletions = outcome.deletions
-```
-
-See the executable contract in the Execute source checkout (`extensions/luau/retention.verify.luau`).
-
-Exported types: `Retention.Row`, `Retention.FamilyKind`, `Retention.Family`, `Retention.Deletion`, `Retention.Outcome`, `Retention.CommandResult`.
-
-### `Retention.newestPerGroup`
-
-`newestPerGroup(category: string, reason: string, rows: { Row }) -> { Deletion }`
-
-Plans deletion of all rows except the newest row in each group. Breaks equal ranks by path.
-
-### `Retention.retainedTerminal`
-
-`retainedTerminal(category: string, supersededReason: string, nonTerminalReason: string, rows: { Row }) -> { Deletion }`
-
-Plans deletion of superseded or nonterminal rows. A superseded reason takes priority over a nonterminal reason.
-
-### `Retention.plan`
-
-`plan(families: { Family }) -> { Deletion }`
-
-Combines family deletion plans and sorts them by path.
-
-### `Retention.run`
-
-`run(mode: string, families: { Family }, remove: ({ string }) -> CommandResult) -> Outcome`
-
-Runs `plan`, `check` or `apply`. Only `apply` invokes the supplied remove function. Returns a refusal for an
-unknown mode or a failed remove command.
 
 ## Scoped checks
 

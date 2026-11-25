@@ -92,38 +92,10 @@ local config: {
 					end,
 				},
 				{
-					prefix = "CommitPolicy",
-					entry = "extensions/luau/commit-policy.luau",
-					load = function(): unknown
-						return require("../extensions/luau/commit-policy")
-					end,
-				},
-				{
-					prefix = "GuardedSurface",
-					entry = "extensions/luau/guarded-surface.luau",
-					load = function(): unknown
-						return require("../extensions/luau/guarded-surface")
-					end,
-				},
-				{
-					prefix = "Landing",
-					entry = "extensions/luau/landing.luau",
-					load = function(): unknown
-						return require("../extensions/luau/landing")
-					end,
-				},
-				{
 					prefix = "RegisterLimit",
 					entry = "extensions/luau/register-limit.luau",
 					load = function(): unknown
 						return require("../extensions/luau/register-limit")
-					end,
-				},
-				{
-					prefix = "Retention",
-					entry = "extensions/luau/retention.luau",
-					load = function(): unknown
-						return require("../extensions/luau/retention")
 					end,
 				},
 				{

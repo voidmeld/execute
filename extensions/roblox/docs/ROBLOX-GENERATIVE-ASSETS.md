@@ -27,7 +27,7 @@ is low, pause new generation only. Continue with accepted references and other a
 - Use one candidate to test one distinct idea.
 - Never retry a warned or rejected hash. Do not conceal a derivative's source.
 - Before upload, inspect topology, scale, materials, scripts or capabilities, body and deformation risk, and moderation exposure.
-- For humanlike, body-bearing, deforming or uncertain payloads, use the strongest coverage and the review requirements declared by OWNER. If the risk is uncertain, use the higher risk tier.
+- For humanlike, body-bearing, deforming or uncertain payloads, use the strongest coverage and the review requirements in the project’s `AGENTS.md`. If the risk is uncertain, use the higher risk tier.
 - Upload only under exact authority. Read back group ownership, privacy and moderation. Prove the durable ID in the intended runtime consumer.
 
 ## Temporary staging
@@ -51,7 +51,7 @@ objects are not mistaken for defects. Inspect a candidate in clear space before 
 - Reconcile an existing marker with the operation record before another attempt.
 - After a successful create, record its IDs. If you repeat a create call without checking its result, you can produce unused assets.
 - Name the creator explicitly on the first attempt. If you omit the creator fields, the API uses the editor session's user as creator. It gives no failure or warning. It does not use the place's group.
-- Before an unfamiliar create call, read the current API signature. Do not make a live change to test parameters. Follow the [external-action procedure](../../../docs/PLAYBOOK.md#external-actions).
+- Before an unfamiliar create call, read the current API signature. Do not make a live change to test parameters.
 
 ## Acceptance
 

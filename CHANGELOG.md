@@ -3,6 +3,17 @@
 Execute follows [semantic versioning](https://semver.org). While the version is `0.x`, a minor
 release may change a public contract.
 
+## 0.2.0
+
+**Migrating from 0.1.x.** Move live grants, hard rules and the guardrail and ship commands into the project's
+`AGENTS.md`. Move open work into the [backlog](BACKLOG.template.md) in the owner's words.
+Keep any unresolved release, rollback or rights information before retiring the old operating documents.
+Use the [operating guide](docs/OPERATING.md) for new work and helper assignments.
+
+Remove calls to `landing`, `retention`, `guarded-surface` and `commit-policy` before updating the package pin.
+Use a checked push through the project's allowed route. Keep any required access, commit and retention policies
+in the project. Platform capture guidance now lives in the [platform operations guide](extensions/roblox/docs/ROBLOX.md#captures).
+
 ## 0.1.4
 
 - The operating skill routes assignments, returns and landing through the adopter's grants. The playbook covers
