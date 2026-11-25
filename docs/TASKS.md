@@ -1,7 +1,6 @@
 # Operating contract
 
-[AGENTS](../AGENTS.md) owns repository rules. [OWNER](OWNER.md) owns authority and staffing. [STATE](STATE.md)
-holds current work. The project keeps one product plan for priorities and acceptance.
+The adopter's root `AGENTS.md` names its authority, state and command bindings. Its OWNER governs staffing and grants. Its STATE holds current work. The project keeps one product plan for priorities and acceptance.
 
 ## Communication
 
@@ -14,7 +13,7 @@ and historical prompts.
 
 One CEO is accountable for priorities, assignments, dependencies and integrated product quality. The CEO
 performs reserved external acts within OWNER's grants. Workers own scoped implementation, self-review,
-verification and integration. The project declares worker counts, identities, models, harnesses and rights in
+verification and authorized integration. The project declares worker counts, identities, models, harnesses and rights in
 OWNER and ADOPTION. Staffing grants no authority for release or external actions.
 
 - Inspect actual work and new results before you select the next action.
@@ -55,7 +54,7 @@ of briefing, review and integration.
 ### Return
 
 Resolve routine details and review your exact candidate. Run the required success, failure and native checks for
-each outcome. Land each scoped candidate under [PLAYBOOK](PLAYBOOK.md#integration). Continue the assigned
+each outcome. If the adopter grants integration for the assignment, land the candidate under [PLAYBOOK](PLAYBOOK.md#integration). Otherwise return the gated candidate and evidence. Continue the assigned
 sequence without routine CEO approval. At the assignment boundary or a block, return once. Include commits,
 results, exact evidence, retained work, limits and the event that clears the block. Keep the result until the
 CEO accepts, rejects or replaces it. The CEO uses the result to judge quality and select the next assignment. A
@@ -67,7 +66,7 @@ assigns its next work when it returns.
 - Keep at most one active assignment per worker.
 - Follow the assigned order. Do not expand scope, create agents or select unassigned work.
 - Operate only the assigned runtime within the brief's rights.
-- The assignment grants scoped integration unless it withholds it. OWNER controls other external acts.
+- Check the adopter’s integration grant for the assignment before landing. OWNER controls other external acts.
 - Use focused checks during edits. Use combined qualification for a shared-contract risk or release evidence.
 - If a sandbox blocks writes to a dependency's version-control metadata, leave that change uncommitted and return.
   The CEO reviews, commits and publishes under that repository's rules. The worker then updates the pin and adopts it.

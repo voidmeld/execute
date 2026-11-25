@@ -3,7 +3,7 @@
 return {
 	package = {
 		name = "voidmeld/execute",
-		version = "0.1.2",
+		version = "0.1.3",
 		files = {
 			"/AGENTS.template.md",
 			"/adapters/**",

@@ -59,7 +59,7 @@ for _, call in CallScanner.findCalls(source, ":Mark(") do
 end
 ```
 
-See the [executable contract](../extensions/luau/call-scanner.verify.luau).
+See the executable contract in the Execute source checkout (`extensions/luau/call-scanner.verify.luau`).
 
 Exported types: `CallScanner.Call`.
 
@@ -144,7 +144,7 @@ assert(verdict.status == "pass")
 ```
 
 Use `LOG_FORMAT` with Git before parsing. `FIELD` and `RECORD` delimit the six fields and each record.
-See the [executable contract](../extensions/luau/commit-policy.verify.luau).
+See the executable contract in the Execute source checkout (`extensions/luau/commit-policy.verify.luau`).
 
 Exported types: `CommitPolicy.Identity`, `CommitPolicy.Rules`, `CommitPolicy.Commit`, `CommitPolicy.Pass`, `CommitPolicy.Refuse`, `CommitPolicy.Verdict`, `CommitPolicy.CommandResult`, `CommitPolicy.Git`.
 
@@ -208,7 +208,7 @@ local verdict = GuardedSurface.evaluate(changedPaths, policy, authority, depende
 assert(verdict.status == "pass")
 ```
 
-See the [executable contract](../extensions/luau/guarded-surface.verify.luau).
+See the executable contract in the Execute source checkout (`extensions/luau/guarded-surface.verify.luau`).
 
 Exported types: `GuardedSurface.Tier`, `GuardedSurface.MixedRule`, `GuardedSurface.Authority`, `GuardedSurface.Policy`, `GuardedSurface.Dependencies`, `GuardedSurface.Pass`, `GuardedSurface.PassOverride`, `GuardedSurface.Refuse`, `GuardedSurface.Verdict`, `GuardedSurface.Hunk`, `GuardedSurface.Heading`.
 
@@ -281,8 +281,8 @@ local outcome = Landing.landOne("fixture-change", dependencies)
 assert(outcome.ok, if outcome.ok then nil else outcome.detail)
 ```
 
-The [landing specification](../extensions/luau/landing.verify.luau) supplies a fake host.
-The [local integration specification](../extensions/luau/worktree.lute.verify.luau) exercises temporary repositories.
+The landing specification in the Execute source checkout (`extensions/luau/landing.verify.luau`) supplies a fake host.
+The local integration specification in the Execute source checkout (`extensions/luau/worktree.lute.verify.luau`) exercises temporary repositories.
 
 Exported types: `Landing.CommandResult`, `Landing.Refusal`, `Landing.Success`, `Landing.Outcome`, `Landing.FastForward`, `Landing.Resolver`, `Landing.ConflictPolicy`, `Landing.ConflictClass`, `Landing.FailurePolicy`, `Landing.StepHost`, `Landing.Step`, `Landing.Git`, `Landing.Plan`, `Landing.Dependencies`.
 
@@ -375,7 +375,7 @@ local files = RegisterLimit.shipped(config, host)
 local code = RegisterLimit.check(files, host.read, config, print)
 ```
 
-See the [executable contract](../extensions/luau/register-limit.verify.luau).
+See the executable contract in the Execute source checkout (`extensions/luau/register-limit.verify.luau`).
 
 Exported types: `RegisterLimit.Config`.
 
@@ -414,7 +414,7 @@ assert(outcome.ok)
 local deletions = outcome.deletions
 ```
 
-See the [executable contract](../extensions/luau/retention.verify.luau).
+See the executable contract in the Execute source checkout (`extensions/luau/retention.verify.luau`).
 
 Exported types: `Retention.Row`, `Retention.FamilyKind`, `Retention.Family`, `Retention.Deletion`, `Retention.Outcome`, `Retention.CommandResult`.
 
@@ -457,8 +457,8 @@ local selected = ScopedChecks.select(changedPaths, groups, candidateSpecs)
 assert(#ScopedChecks.unowned(changedPaths, groups) == 0)
 ```
 
-Run the [complete example](../examples/scoped-checks.luau).
-See the [executable contract](../extensions/luau/scoped-checks.verify.luau).
+Run the complete example in the Execute source checkout (`examples/scoped-checks.luau`).
+See the executable contract in the Execute source checkout (`extensions/luau/scoped-checks.verify.luau`).
 
 Exported types: `ScopedChecks.Group`, `ScopedChecks.Selection`.
 
@@ -511,7 +511,7 @@ local code = SilentFallbacks.check({
 }, print)
 ```
 
-See the [executable contract](../extensions/luau/silent-fallbacks.verify.luau).
+See the executable contract in the Execute source checkout (`extensions/luau/silent-fallbacks.verify.luau`).
 
 Exported types: `SilentFallbacks.Hit`, `SilentFallbacks.Entry`, `SilentFallbacks.Config`, `SilentFallbacks.File`, `SilentFallbacks.Input`.
 
@@ -569,7 +569,7 @@ the supplied key functions. The consumer owns the host, the roots and the allowl
 local files = SourceScan.collect({ "src" }, host, "%.luau$")
 ```
 
-See the [executable contract](../extensions/luau/source-scan.verify.luau).
+See the executable contract in the Execute source checkout (`extensions/luau/source-scan.verify.luau`).
 
 Exported types: `SourceScan.Host`, `SourceScan.Reconciled`.
 
@@ -621,7 +621,7 @@ assert(WorkerSetup.failureCount(outcomes) == 0)
 local findings = WorkerSetup.freshness(config, host)
 ```
 
-See the [executable contract](../extensions/luau/worker-setup.verify.luau).
+See the executable contract in the Execute source checkout (`extensions/luau/worker-setup.verify.luau`).
 
 Exported types: `WorkerSetup.StepStatus`, `WorkerSetup.StepOutcome`, `WorkerSetup.Step`, `WorkerSetup.CommandResult`, `WorkerSetup.Host`, `WorkerSetup.Input`, `WorkerSetup.Lock`, `WorkerSetup.Config`, `WorkerSetup.WorktreeSpec`, `WorkerSetup.Finding`.
 

@@ -9,6 +9,5 @@ names, build commands and product architecture in the project.
 
 For scenario play and captures, use the [interactive QA extension](../interactive-qa/README.md). Follow the core
 [external-action procedure](../../docs/PLAYBOOK.md#external-actions). An assigned scratch grant can permit
-reversible generation and staging in its exact DataModel. Follow the [project
-authority](../../AGENTS.md#safety-rules). It grants no durable publication, no credentials, no permission
+reversible generation and staging in its exact DataModel. Follow the authority named in the adopter's root `AGENTS.md`. It grants no durable publication, no credentials, no permission
 changes and no new destination.

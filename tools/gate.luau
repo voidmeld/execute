@@ -71,6 +71,7 @@ end
 local producers: { Gate.ProducerDraft } = {
 	script("license", "tools/check-license.luau"),
 	script("links", "tools/check-links.luau"),
+	command("packed-links", { "lute", "run", "tools/check-links.luau", "--packed" }),
 	script("type-policy", "tools/check-no-any.luau"),
 	script("spec-style", "tools/check-spec-style.luau"),
 	command("types", analyze),

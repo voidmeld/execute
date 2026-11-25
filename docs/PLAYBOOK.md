@@ -83,7 +83,7 @@ commit. If the base moves, run `git rebase <base>`. If a candidate was squashed,
 
 ## Integration
 
-An assignment grants scoped integration unless it withholds it. Complete self-review and any OWNER-required
+Before landing, check the adopter's integration grant for the assignment. Without it, return the gated candidate and evidence. Complete self-review and any OWNER-required
 review before integration. Routine source integration needs no CEO product acceptance.
 
 Select checks by changed file. The project declares path groups with their specifications and checks. The

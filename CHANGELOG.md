@@ -3,6 +3,12 @@
 Execute follows [semantic versioning](https://semver.org). While the version is `0.x`, a minor
 release may change a public contract.
 
+## 0.1.3
+
+- Both operating skills and adapters use the adopter's root `AGENTS.md` to find grants, state and commands.
+  Helpers return a verified candidate when the adopter withholds integration.
+- The gate checks relative links against the package file list. Documentation identifies source-only examples and specifications.
+
 ## 0.1.2
 
 - The package publishes `tools/check-links.luau`, the Markdown link and anchor checker, so a

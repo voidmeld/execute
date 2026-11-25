@@ -1,5 +1,6 @@
 # Codex adapter
 
+Read the adopter's worktree-root `AGENTS.md` and the authority, state and command bindings it names.
 Follow the [shared procedure](../README.md#shared-procedure).
 
 ## CEO
@@ -11,7 +12,7 @@ Record the task identity, observed model, reasoning, service tier, approval poli
 Use the persistent sessions that OWNER declares under [TASKS](../../docs/TASKS.md#workers). Give each session
 AGENTS, its bounded assignment, worktree and one result location. Native subagents are optional. Sessions on
 another harness use their declared transport. Record identity, branch, base and current result in
-[STATE](../../docs/STATE.md#recovery). Do not create a second writer for an app-owned thread. Do not replace a
+the adopter's STATE. Do not create a second writer for an app-owned thread. Do not replace a
 declared session without notice. For a lane rotation, start a fresh session that reads the hand-over file.
 Record its observed settings as above. OWNER's staffing names the model for each role.
 
