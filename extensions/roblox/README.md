@@ -1,8 +1,8 @@
 # Roblox extension
 
-Roblox is an experience platform.
-Keep the operator, allowed accounts, places, build commands, ship command and rollback target in the project.
-Use an isolated test destination for development. Confirm the place and account before a save, upload or release.
+People use Roblox to build and run experiences. In your project, record who may operate the experience and
+which accounts and places they may use. List the commands to build and release it, along with the rollback target.
+Use an isolated test destination during development. Before you save, upload, or release, confirm the place and account.
 
-- [Platform operations](docs/ROBLOX.md) covers Studio, persistence and testing in the played client.
-- [Generative assets](docs/ROBLOX-GENERATIVE-ASSETS.md) covers source rights, review, staging and durable asset IDs.
+- Follow the [platform guide](docs/ROBLOX.md) to work in Studio, check that data persists, and test an experience in the same client its users run.
+- Follow the [generative assets guide](docs/ROBLOX-GENERATIVE-ASSETS.md) to check rights to source material, review and stage assets, and get durable asset IDs.

@@ -1,10 +1,11 @@
 # Helper brief
 
-Send one brief for a part of a backlog item that can be checked independently.
+When you assign part of a backlog item to a helper, choose a part you can check on its own and send one brief.
 
-- **Outcome** “[owner's request]”. Your part is [observable result].
-- **Scope** Start at [base commit] in [branch and worktree]. Edit [paths]. Use [assigned runtime].
-- **Check** Run [focused command] and try [action]. Expect [observable result].
-- **Return** Send the commit, what you checked, and what you observed. If blocked, send the last result and what would unblock you. Check in by [time or event].
+- **Outcome.** The owner asked for “[owner's request]”. Your part is complete when [result someone can observe].
+- **Scope.** Start at [base commit] on [branch] in [worktree]. Edit [paths] and use [assigned runtime].
+- **Check.** Run [focused command] and try [action]. You should see [expected result].
+- **Return.** Send the commit and describe what you checked and what you saw. If you're blocked, report the last result and what you need to continue. Check in by [time or event].
 
-The project’s `AGENTS.md` sets push and ship authority. The lead reviews the helper’s change with the rest of the item before running the guardrail.
+The project's `AGENTS.md` says who may push and who may release. Before running the fast check, the lead
+reviews the helper's change together with the rest of the changes for that item.
