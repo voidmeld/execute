@@ -25,6 +25,21 @@ target. For rollback, publish the last accepted source through the same gate and
 
 ## Studio and persistence
 
+### Recover a signed-out Studio
+
+If an automation launch stays absent from the Studio MCP list until its deadline, inspect the newest Studio log.
+Look for `LoginController` and the login dialog before treating the timeout as a sign-in failure.
+
+1. In that Studio, choose Quick Sign-in. Never enter a password.
+2. Move the cursor off the six-character code and read it. Codes expire in about two minutes.
+3. In a browser already signed in as the operator, open the [Roblox confirmation page](https://www.roblox.com/crossdevicelogin/ConfirmCode).
+   Enter the fresh code immediately and confirm. If it expires, take a new code.
+4. After sign-in succeeds, close that Studio. Later launches share the sign-in. Verify the next launch appears in the MCP list.
+
+On Windows, keep the real `HOME` and `USERPROFILE` for Studio runs. The Studio MCP reads sign-in from the
+real profile. Overrides can produce an HTTP 401 with a plain-text response. Computer-use approval cards appear
+only on the machine itself.
+
 ### Source sync
 
 - Keep one source-sync owner for each script tree.

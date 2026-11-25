@@ -4,8 +4,7 @@ The adopter's root `AGENTS.md` names its authority, state and command bindings. 
 
 ## Communication
 
-Send an assignment, a result or a decision that requires action. Keep each worker's current result in one
-replaceable record. Include the outcome, commit, checks, limits and next dependency. Replace old status. Link
+Send an assignment, a result or a decision that requires action. Use the [return record](#return) for the worker's result. Link
 retained evidence instead of copying logs or adding a diary. Do not create separate queues for standing, pending
 and historical prompts.
 
@@ -38,15 +37,19 @@ result before you claim success.
 
 ## Workers
 
-Workers are persistent assigned sessions. OWNER can approve a different harness for a worker. Native subagents
+OWNER determines whether to reuse a session or appoint a fresh worker for the next assignment. OWNER can approve a different harness for a worker. Native subagents
 are optional transport. Reuse declared sessions and worktrees. Do not create replacements or more agents without
 authority.
 
 ### Assignment
 
-Give each worker one bounded assignment: one outcome or an ordered sequence. For each outcome, name exclusive
-paths, runtime, base, acceptance criteria, checks and required native evidence. Name integration rights,
-dependencies, repair limits and the return boundary. Assign subsequent work explicitly. A priority list grants
+Give the named worker one outcome or an ordered sequence. Use this brief for each outcome:
+
+- Name the base revision, exclusive paths and assigned runtime.
+- State the acceptance criteria, an observation that disproves success, required checks and original native evidence.
+- Identify dependencies, repair limits, the authorized landing operator and the return boundary.
+
+Assign subsequent work explicitly. A priority list grants
 no scope. An assignment replaces its prior brief. Before incompatible work, preserve any unfinished candidate.
 Use the project's [setup route](PLAYBOOK.md#worktrees-and-setup). Delegate only if it saves more than the cost
 of briefing, review and integration.
@@ -54,19 +57,19 @@ of briefing, review and integration.
 ### Return
 
 Resolve routine details and review your exact candidate. Run the required success, failure and native checks for
-each outcome. If the adopter grants integration for the assignment, land the candidate under [PLAYBOOK](PLAYBOOK.md#integration). Otherwise return the gated candidate and evidence. Continue the assigned
-sequence without routine CEO approval. At the assignment boundary or a block, return once. Include commits,
-results, exact evidence, retained work, limits and the event that clears the block. Keep the result until the
-CEO accepts, rejects or replaces it. The CEO uses the result to judge quality and select the next assignment. A
-returned worker stops. It does not select more work or repeat its brief. While OWNER staffs a worker, the CEO
-assigns its next work when it returns.
+each outcome. Follow the authority decision in [integration](PLAYBOOK.md#integration).
+Continue an assigned sequence while its dependencies and rights permit.
+
+At the return boundary or a block, replace the worker's current result. Record the outcome, base and candidate
+commits, checks, original evidence paths, retained work and limits. Name the next dependency and its clearing event.
+Update the adopter's STATE and stop. Keep the result until the CEO accepts, rejects or replaces it.
+The CEO reviews the evidence and assigns the next ready outcome under OWNER's staffing rules.
 
 ### Capacity
 
 - Keep at most one active assignment per worker.
 - Follow the assigned order. Do not expand scope, create agents or select unassigned work.
 - Operate only the assigned runtime within the brief's rights.
-- Check the adopter’s integration grant for the assignment before landing. OWNER controls other external acts.
 - Use focused checks during edits. Use combined qualification for a shared-contract risk or release evidence.
 - If a sandbox blocks writes to a dependency's version-control metadata, leave that change uncommitted and return.
   The CEO reviews, commits and publishes under that repository's rules. The worker then updates the pin and adopts it.
@@ -76,9 +79,8 @@ assigns its next work when it returns.
 ### Lane rotation
 
 A lane is a worker role with its worktree and exclusive paths. At an outcome boundary, the CEO can transfer a
-lane to a fresh agent. The outgoing agent records landed commits, passed checks, failures and the next step in a
-hand-over file. The new agent reads that file and current STATE. Two agents must not hold one lane at the same
-time. A rotation grants no scope. The [adapters](../adapters/README.md) name each role's model.
+lane to a fresh agent. Use the [custody transfer](SUCCESSION.md#setup-handoff) for its checkout, evidence and runtime.
+Record the new holder in STATE. A rotation grants no scope. The [adapters](../adapters/README.md) name each role's model.
 
 ### Review
 

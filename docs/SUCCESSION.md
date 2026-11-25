@@ -10,21 +10,18 @@ CEO can operate at a time. Record that harness identity in [STATE](STATE.md).
 
 1. Replace the CEO appointment in [OWNER](OWNER.md) with the Owner's current terms.
 2. Prepare a fresh CEO candidate without production authority.
-3. At a safe run boundary, stop the replaced drivers' input and continuation.
-4. Read back those stops.
-5. Keep checkouts, evidence and running setup.
-6. Wait for each prior driver to release ownership before a replacement starts.
-7. Verify identity, model, effort, permission mode and continuation controls.
-8. Complete permitted setup and approval clicks under [conflict resolution](AGENTIC-STANDARD.md#conflict-resolution).
+3. Begin [setup handoff](#setup-handoff). Stop the outgoing drivers and verify their release.
+4. Verify identity, model, effort, permission mode and continuation controls.
+5. Complete permitted setup and approval clicks under [conflict resolution](AGENTIC-STANDARD.md#conflict-resolution).
    Keep required confirmation in the current conversation.
    Keep completed preparation. Do not appoint the candidate while required access remains unresolved.
-9. Confirm that `main` is clean and current.
-10. Read AGENTS, the operating skill and STATE.
-11. Verify that the [adapter](../adapters/README.md) can deliver the next useful assignment or task completion.
+6. Confirm that `main` is clean and current.
+7. Read AGENTS, the operating skill and STATE.
+8. Verify that the [adapter](../adapters/README.md) can deliver the next useful assignment or task completion.
     Do not start an idle loop.
-12. Record the verified identity, settings and next useful event in STATE.
-13. Integrate the control change through [PLAYBOOK](PLAYBOOK.md).
-14. After identity verification, archive the stopped prior session.
+9. Complete custody acceptance. Record the verified identity, settings and next useful event in STATE.
+10. Integrate the control change through [PLAYBOOK](PLAYBOOK.md).
+11. After identity verification, archive the stopped prior session.
     If verification fails, leave the CEO role empty or explicitly restore the prior identity.
     Do not permit overlapping drivers.
 
@@ -34,13 +31,16 @@ does not reset the queue.
 
 ## Setup handoff
 
-Before the prior CEO stops, complete the [recovery record](STATE.md#recovery). Link evidence for workers,
-background tasks, unlanded work, integration in progress and the next action. Record checkout paths, source
-revisions, services, sessions and exact resource bindings. Keep credentials out of the handoff.
+Use the adopter's [recovery record](STATE.md#recovery) for either a lane transfer or a CEO change.
 
-1. The outgoing CEO stops input and continuation before the successor takes control.
-2. The successor reads back resource identity, health and ownership before commands.
-3. The successor reconciles unlanded work before edits.
+1. The outgoing holder records each checkout and revision, runtime instance, active command, original evidence path
+   and pending journal. Name the current holder, intended recipient, scope, release condition and next action.
+   Keep credentials out of this record.
+2. At a safe boundary, stop outgoing input and continuation. Verify their stopped state. Keep healthy services running.
+3. The recipient checks the actual refs, processes, bindings, receipts and open transactions against the record.
+   For an incomplete landing, follow [interrupted landing](PLAYBOOK.md#interrupted-landing).
+4. Record release and the recipient's acceptance in STATE before new input. If identity, authority or release
+   is uncertain, keep the resource on hold and name the event that resolves custody.
 
 A CEO change alone requires no new setup or calibration. Reuse recorded worktrees through worker-setup. A branch
 is landed if `git merge-tree --write-tree main <branch>` equals main's tree. Commit counts can mislead after
