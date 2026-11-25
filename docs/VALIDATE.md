@@ -1,6 +1,6 @@
 # Validate Execute
 
-Read [AGENTS](../AGENTS.md) and the [agentic standard](AGENTIC-STANDARD.md) before you change Execute. Keep
+Read the source checkout's `AGENTS.md` and the [agentic standard](AGENTIC-STANDARD.md) before you change Execute. Keep
 reusable rules here. Keep product decisions in the adopting project. Update each changed contract and its
 callers together.
 
@@ -24,7 +24,7 @@ that contain a text, use `--name text`. Other selectors are `--only producer`, `
 `--explain id` and `--list`. A selected subset does not replace the gate.
 
 After a specification changes, run `lute run tools/check-test-manifest.luau --write`. Run the
-[example](../examples/scoped-checks.luau) with `lute run examples/scoped-checks.luau`. It prints the selected
+example in the Execute source checkout (`examples/scoped-checks.luau`) with `lute run examples/scoped-checks.luau`. It prints the selected
 groups, specifications, commands and paths without an owner.
 
 ## Final gate and integration
@@ -39,7 +39,7 @@ GitHub Actions runs the gate with the pinned tools and SDK types.
 
 The [Verify](https://github.com/voidmeld/verify) gate checks:
 
-- the license and relative Markdown links and anchors
+- the license and relative Markdown links and anchors in the checkout and the package file list
 - source comments, format and lint
 - strict types under the current Luau solver
 - executable module contracts

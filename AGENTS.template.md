@@ -26,7 +26,7 @@ The adopter names the holders for reserved acts in [OWNER](docs/OWNER.md).
 - Exact [OWNER](docs/OWNER.md) grants must precede these acts: spending beyond subscriptions, release, user communication, remote destruction, account changes and ownership transfer.
 - Verify a running build before publication. Source checks prove no product behavior that nobody observed.
 - Use isolated worktrees for concurrent edits, or when the primary checkout has unrelated work. A sole driver may use a clean primary checkout.
-- An assignment grants scoped integration unless it withholds it. Freeze the candidate, run the declared gate, land serially on shared main and prove remote equality. Landing grants no release authority.
+- Freeze the candidate and run the declared gate. Before landing, check the adopter’s grant for the assignment. Without it, return the gated candidate and evidence. With it, land serially and prove remote equality. Landing grants no release authority.
 - Do not kill, restart or reconfigure resources that you do not own. Hand off runtime ownership before another driver acts.
 - Publication, credentials and other external acts stay with the holder that OWNER names. A QA surface handoff grants only its stated tools and scope.
 
@@ -46,7 +46,7 @@ The host injects git, filesystem, clock and process access.
 ## Delivery standard
 
 Apply [the standard](docs/AGENTIC-STANDARD.md) to workflows and code review.
-Workers self-review, verify and land assigned changes. The CEO judges the integrated product. OWNER names any required independent review.
+Workers self-review and verify assigned changes. OWNER defines who may land them. The CEO judges the integrated product. OWNER names any required independent review.
 A gate proves its checks. It does not prove a consumer outcome that nobody observed.
 
 ## Operating documents

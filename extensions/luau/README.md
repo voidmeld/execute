@@ -5,7 +5,7 @@ process operations. The modules do not access those services directly. Execute's
 Markdown. Copy only the modules that a current consumer needs. Keep product values and rules in that consumer.
 
 The [API reference](../../docs/api.md) owns public signatures, configuration, returns and failures. The
-[example](../../examples/scoped-checks.luau) selects checks for changed paths.
+example in the Execute source checkout (`examples/scoped-checks.luau`) selects checks for changed paths.
 
 | Module | Operation |
 | --- | --- |

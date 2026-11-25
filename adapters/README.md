@@ -9,10 +9,10 @@ harnesses and models.
 
 ## Shared procedure
 
-1. Record observed identity and settings in STATE.
+1. Read the adopter’s worktree-root `AGENTS.md`. Use its grant, STATE and command bindings. Record observed identity and settings in that STATE.
 2. Mark unavailable controls `not exposed`.
 3. Use native message, resume and completion controls for declared sessions.
-4. Continue the assigned sequence through self-review, native verification and scoped integration.
+4. Continue the assigned sequence through self-review, native verification and the adopter's gate. Land only with the adopter's grant. Otherwise return the candidate and evidence.
 5. Use only the assigned runtime.
 6. Follow [delivery control](../docs/TASKS.md#delivery-control) for shared input, capture and other shared resources.
 7. Run long commands as native background tasks.

@@ -86,6 +86,12 @@ local function anchors(path: string, cache: { [string]: { [string]: boolean } })
 	return found
 end
 
+local packed: { [string]: boolean }? = nil
+
+local function available(path: string): boolean
+	return packed == nil or packed[path] == true
+end
+
 local function checkDestination(source: string, raw: string, cache: { [string]: { [string]: boolean } })
 	local target = string.gsub(raw, "^%s*<([^>]+)>%s*$", "%1")
 	target = string.match(target, "^([^%s]+)") or target
@@ -98,13 +104,13 @@ local function checkDestination(source: string, raw: string, cache: { [string]: 
 	local destination = source
 	if filePart ~= "" then
 		destination = normalize((if dirname(source) == "" then "" else dirname(source) .. "/") .. (assert(filePart)))
-		if fs.exists(destination) and fs.type(destination) == "dir" then
+		if available(destination) and fs.exists(destination) and fs.type(destination) == "dir" then
 			if fragment == "" then
 				return
 			end
 			destination ..= "/README.md"
 		end
-		if not fs.exists(destination) or fs.type(destination) ~= "file" then
+		if not available(destination) or not fs.exists(destination) or fs.type(destination) ~= "file" then
 			fail(("%s links to missing path %q"):format(source, assert(target)))
 		end
 	end
@@ -124,22 +130,43 @@ local function checkLinks(files: { string })
 	for _, path in files do
 		if string.match(path, "%.md$") then
 			local fenced = false
+			local prose: { string } = {}
 			for line in string.gmatch(fs.readFileToString(path) .. "\n", "([^\r\n]*)\r?\n") do
 				if string.match(line, "^%s*```") or string.match(line, "^%s*~~~") then
 					fenced = not fenced
 				elseif not fenced then
-					for target in string.gmatch(line, "%b[]%(([^%)]+)%)") do
-						checkDestination(path, target, cache)
-					end
+					table.insert(prose, line)
 					local reference = string.match(line, "^%s*%[[^]]+%]:%s*(%S+)")
 					if reference ~= nil then
 						checkDestination(path, reference, cache)
 					end
 				end
 			end
+			for target in string.gmatch(table.concat(prose, "\n"), "%b[]%(([^%)]+)%)") do
+				checkDestination(path, target, cache)
+			end
 		end
 	end
-	print("links: tracked Markdown relative links and anchors resolve")
+	print("links: Markdown relative links and anchors resolve")
 end
 
-checkLinks(trackedFiles())
+if process.args[2] == "--packed" then
+	local entries: { [string]: boolean } = {}
+	local files: { string } = {}
+	for path in string.gmatch(run({ "lute", "pkg", "publish", "--list" }), "[^\r\n]+") do
+		entries[path] = true
+		local parent = dirname(path)
+		while parent ~= "" do
+			entries[parent] = true
+			parent = dirname(parent)
+		end
+		if path ~= "PUBLISHED_README.md" or fs.exists(path) then
+			table.insert(files, path)
+		end
+	end
+	assert(entries["README.md"], "missing package README")
+	packed = entries
+	checkLinks(files)
+else
+	checkLinks(trackedFiles())
+end

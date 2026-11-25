@@ -3,11 +3,11 @@
 Select checks for changed files before connecting any host operations.
 The fixture does no filesystem, process or remote work.
 
-## Prepare the tools
+## Prepare the tools in an Execute source checkout
 
 1. Run `rokit install` from the repository root.
 2. Run `lute setup` to install the SDK types.
-3. Run the [complete example](../examples/scoped-checks.luau):
+3. Run the complete example in the Execute source checkout (`examples/scoped-checks.luau`):
 
 ```console
 lute run examples/scoped-checks.luau
@@ -46,7 +46,7 @@ lute run tools/gate.luau --file extensions/luau/scoped-checks.verify.luau
    files from a checkout. Copy `AGENTS.template.md` to the adopter's `AGENTS.md`.
 2. Copy the core documents listed in the [README](../README.md#documentation).
 3. Select one [adapter](../adapters/README.md) and only the required [extensions](../extensions/README.md).
-4. Fill the project values and authority grants before using the documents.
+4. Fill the project values and grants. In the adopter’s root `AGENTS.md`, name the live authority, state and command files.
 5. Record the exact source commit in the adopter's `docs/ADOPTION.md`.
 
 Copy only the Luau modules that a current tool needs.

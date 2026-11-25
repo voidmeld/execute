@@ -1,5 +1,7 @@
 # Adoption record
 
+Name the project's OWNER, STATE and command bindings in its root `AGENTS.md`. Keep the live records in the project.
+
 Record the current relationship between this project and Execute.
 
 - Template repository: FILL

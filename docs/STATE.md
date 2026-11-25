@@ -1,5 +1,7 @@
 # Current operation
 
+This package file is a template. Update the state file named by the adopter’s root `AGENTS.md`.
+
 Keep current facts and ready work here. Put useful lessons in the rule or procedure that they change.
 
 - CEO identity, harness, settings and appointment commit: FILL

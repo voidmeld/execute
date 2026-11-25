@@ -112,7 +112,7 @@ pin change, review local template changes and run checks for any tools that use 
 | Test interfaces | [Interactive QA extension](extensions/interactive-qa/README.md) |
 | Adopt Roblox procedures | [Roblox extension](extensions/roblox/README.md), [integration](extensions/roblox/INTEGRATION.md) |
 | Set up tools or diagnose checks | [Validation](docs/VALIDATE.md) |
-| Change this repository | [Maintainer guide](AGENTS.md) |
+| Change this repository | `AGENTS.md` in the source checkout |
 
 ## Compatibility
 
@@ -127,4 +127,4 @@ verification fixtures are not public APIs.
 ## License
 
 Execute is [MIT licensed](LICENSE). Its development dependency, Verify, is declared in
-[pkg.luau](pkg.luau) and locked in [pkg.lock.luau](pkg.lock.luau).
+[pkg.luau](pkg.luau) and locked in `pkg.lock.luau` in the source checkout.
