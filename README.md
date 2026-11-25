@@ -1,16 +1,16 @@
 # Execute
 
-Execute helps a team of agents keep improving a game. The owner orders the backlog.
-An agent takes one playable outcome, checks it, and pushes the passing commit to main.
+Execute helps a team of agents keep improving a software project. The owner orders the backlog.
+An agent works one item and checks its outcome. The authorized operator pushes the passing commit to main.
 The project supplies one fast guardrail command and one ship command.
 
 ## Start in your project
 
 1. Copy [AGENTS.template.md](AGENTS.template.md) to `AGENTS.md` and [BACKLOG.template.md](BACKLOG.template.md) to `BACKLOG.md` in your project root.
-2. Fill in the commands, who may run them, and the hard rules that protect your game.
+2. Fill in the commands, who may run them, and the hard rules that protect your project.
 3. Put the owner's first request at the top of the backlog. Follow the [operating guide](docs/OPERATING.md) for one change.
 
-Choose a guardrail command that exercises your essential player journeys and exits nonzero if any breaks.
+Choose a guardrail command that checks essential user workflows or public interfaces and exits nonzero if a check fails.
 Keep the ship command bound to the revision and destination it will release.
 
 | Task | Where to go |

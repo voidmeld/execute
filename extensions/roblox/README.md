@@ -1,5 +1,6 @@
 # Roblox extension
 
+Roblox is an experience platform.
 Keep the operator, allowed accounts, places, build commands, ship command and rollback target in the project.
 Use an isolated test destination for development. Confirm the place and account before a save, upload or release.
 

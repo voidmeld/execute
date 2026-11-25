@@ -6,9 +6,9 @@ local Verify = require("@verify/src/core")
 local Bdd = require("@verify/src/bdd")
 
 local TREE: { [string]: { string } } = {
-	roblox = { "shared" },
-	["roblox/shared"] = { "Core.luau", "Core.lute.verify.luau", "Legacy.lua", "notes.md", "deep" },
-	["roblox/shared/deep"] = { "Inner.luau" },
+	src = { "parser" },
+	["src/parser"] = { "Core.luau", "Core.lute.verify.luau", "Legacy.lua", "notes.md", "deep" },
+	["src/parser/deep"] = { "Inner.luau" },
 	shared = { "Rules.luau" },
 }
 
@@ -27,7 +27,7 @@ local host: SourceScan.Host = {
 local function config(compile: (source: string) -> ()): RegisterLimit.Config
 	return {
 		label = "register-limit",
-		roots = { "roblox", "shared", "absent" },
+		roots = { "src", "shared", "absent" },
 		include = { "%.luau$", "%.lua$" },
 		exclude = { "%.verify%.luau$" },
 		compile = compile,
@@ -41,10 +41,10 @@ return function(suite: Verify.Harness)
 	describe("register limit", function()
 		it("lists every shipped module and no specification or other file", function()
 			expect(RegisterLimit.shipped(config(function() end), host)):toEqual({
-				"roblox/shared/Core.luau",
-				"roblox/shared/Legacy.lua",
-				"roblox/shared/deep/Inner.luau",
 				"shared/Rules.luau",
+				"src/parser/Core.luau",
+				"src/parser/Legacy.lua",
+				"src/parser/deep/Inner.luau",
 			})
 		end)
 

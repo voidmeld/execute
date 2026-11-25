@@ -15,7 +15,7 @@ These steps form one line:
 6. a played experience
 
 Assets without a real consumer do not establish progress. Use reusable families for environments, structures,
-props, gear, avatars and creatures. Name the game consumer before generation starts.
+props, gear, avatars and creatures. Name what will use the asset in the experience before generation starts.
 
 Image conditioning helps control shape and design. Record the prompt, the conditioning inputs, the tool or
 provider, the output hash, the creator, the rights, the review and every transformation. If generation capacity

@@ -3,7 +3,7 @@
 | Module | Use |
 | --- | --- |
 | [call-scanner](call-scanner.luau) | Find calls, arguments and member references in source. |
-| [register-limit](register-limit.luau) | Compile shipped modules at the engine register limit. |
+| [register-limit](register-limit.luau) | Check shipped modules against the Luau compiler's register limit. |
 | [scoped-checks](scoped-checks.luau) | Select focused checks for changed paths. |
 | [silent-fallbacks](silent-fallbacks.luau) | Compare silent fallbacks with an allowlist. |
 | [source-scan](source-scan.luau) | Collect source files and reconcile findings with an allowlist. |

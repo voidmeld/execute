@@ -3,6 +3,14 @@
 Execute follows [semantic versioning](https://semver.org). While the version is `0.x`, a minor
 release may change a public contract.
 
+## 0.2.1
+
+- The operating guide and adopter templates apply Execute's backlog, fast guardrail and ship workflow to software
+  projects. Backlog items state what users should be able to see or do. The guide shows how to verify those
+  outcomes in a web app, CLI or library.
+- The optional [Roblox extension](extensions/roblox/README.md) describes Studio, live client and asset operations
+  in terms of experiences and their users.
+
 ## 0.2.0
 
 **Migrating from 0.1.x.** Move live grants, hard rules and the guardrail and ship commands into the project's
@@ -18,7 +26,7 @@ in the project. Platform capture guidance now lives in the [platform operations 
 
 - The operating skill routes assignments, returns and landing through the adopter's grants. The playbook covers
   interrupted landings, original evidence, receipt closure and external transactions. Succession records custody transfers.
-- The Roblox extension documents Quick Sign-in recovery for Studio automation and Windows profile requirements.
+- The [platform extension](extensions/roblox/README.md) added sign-in recovery and profile requirements.
 
 ## 0.1.3
 

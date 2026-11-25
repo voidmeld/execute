@@ -4,7 +4,7 @@ Keep the owner's requests in priority order. Quote each request as given.
 Add a short observation that would let someone tell when it is done.
 
 - [ ] “[Owner's highest priority request]”
-  Done when [what a player can see or do].
+  Done when [what a user can see or do].
 - [ ] “[Next request]”
   Done when [observable result].
 
