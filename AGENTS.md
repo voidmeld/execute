@@ -5,7 +5,7 @@ It owns reusable procedures. Adopters own authority, product policy and host ope
 This file owns contribution rules. The [README](README.md) maps the repository.
 
 First action: identify the contract for the assigned change in the README task table.
-Read only that contract and its consumers. For a first use, follow the [quickstart](docs/quickstart.md).
+Read only that contract and its consumers. For a first use, follow the [operating guide](docs/OPERATING.md).
 The [adopter template](AGENTS.template.md) governs an adopter only after its values and grants are filled.
 
 ## Rules

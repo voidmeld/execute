@@ -1,27 +1,9 @@
-# Harness adapters
+# Agent adapters
 
-Adapters connect Execute's operating rules to native harness controls. They grant no authority and define no
-staffing. [TASKS](../docs/TASKS.md) owns assignments and results. OWNER chooses sessions. ADOPTION records
-harnesses and models.
+Read the project's root `AGENTS.md` before assigning work. Use the [helper brief](../docs/helper-brief.md)
+in the assigned session. Give each writer a separate worktree. Let one person or agent drive a shared game window at a time.
 
-- [Codex](codex/README.md): task controls.
-- [Claude](claude/README.md): session controls.
+Use the adapter for the helper's session. Resume it when a result arrives or its blocker clears.
 
-## Shared procedure
-
-1. Read the adopter’s worktree-root `AGENTS.md`. Use its grant, STATE and command bindings. Record observed identity and settings in that STATE.
-2. Mark unavailable controls `not exposed`.
-3. Use native message, resume and completion controls for declared sessions.
-4. Continue the assigned sequence through self-review, native verification and the adopter's gate. Land only with the adopter's grant. Otherwise return the candidate and evidence.
-5. Use only the assigned runtime.
-6. Follow [delivery control](../docs/TASKS.md#delivery-control) for shared input, capture and other shared resources.
-7. Run long commands as native background tasks.
-8. After completion, inspect results and reconcile owned processes before resource release.
-
-A denial holds the action. Do not widen permissions to bypass it. Resume only for the useful events that TASKS
-defines. Do not install heartbeats, timers, prompt replay or polling supervisors for idle sessions. If a
-required completion control is unavailable, record the limit and stop at the dependency. If no useful action
-remains, record the dependency and stop. A restarted session reads current STATE. A changed CEO follows
-[SUCCESSION](../docs/SUCCESSION.md). Keep healthy setup and retained work. Change staffing only as OWNER
-directs. Do not permit overlapping drivers on a shared surface. A worker on another harness uses its declared
-native transport and the same assignment and result contract.
+- [Codex](codex/README.md)
+- [Claude](claude/README.md)

@@ -1,68 +1,20 @@
-# FILL: project name
+# [Game name]
 
-FILL: product, users and complete success outcome.
+[What players should be able to do or experience.]
 
-This is an adoption template. Fill the project values before you use it to govern a product.
-To change Execute itself, follow [Validation](docs/VALIDATE.md).
-Changes to Execute use a pull request to `main` and the required `Gate` check.
-Do not push directly to `main` or bypass a failing check.
+## Work
 
-Keep the machinery that current consumers need. Remove duplication without weakening authority or evidence.
-Every maintained Luau file requires strict typing, zero explicit `any` and zero type assertions (`::`).
-The required gate enforces this without baselines or exemptions.
-This file owns the repository rules. The [agentic standard](docs/AGENTIC-STANDARD.md) governs conflicts and changed workflows.
+Take the first ready item in `BACKLOG.md`. Keep the owner's wording and order.
+Set a checkpoint for active work. Exercise the changed behavior in the game. Mark the item done when its stated outcome is met.
+If it is blocked, record what would unblock it and continue with the next ready item.
 
-## Roles
+## Hard rules
 
-The Owner holds taste, rights, spending, release and succession.
-[TASKS](docs/TASKS.md) defines the accountable CEO and the optional workers.
-The adopter names the holders for reserved acts in [OWNER](docs/OWNER.md).
+- Run `<fast guardrail command>` on the clean commit before every push to main. Fix any failure and check the new commit.
+- Only [push operator] may push to [main destination] through [allowed route].
+- Only [ship operator] may ship. From the checked main commit, run `<ship command>` for [allowed destination]. Confirm the running version and check the player outcome there.
+- Never expose credentials. Reserve [spending, uploads, destructive actions and other restricted operations] for [holder].
+- Use separate worktrees for concurrent edits. Use only assigned sessions and resources. Preserve unfinished work.
+- [Add the game's hard rules here.]
 
-[Adapters](adapters/README.md) supply native controls. [OWNER](docs/OWNER.md#staffing) owns worker domains, staffing limits and grants.
-
-## Safety rules
-
-- Never create, expose or change credentials or payment data.
-- Exact [OWNER](docs/OWNER.md) grants must precede these acts: spending beyond subscriptions, release, user communication, remote destruction, account changes and ownership transfer.
-- Verify a running build before publication. Source checks prove no product behavior that nobody observed.
-- Use isolated worktrees for concurrent edits, or when the primary checkout has unrelated work. A sole driver may use a clean primary checkout.
-- Freeze the candidate and run the declared gate. Before landing, check the adopter’s grant for the assignment. Without it, return the gated candidate and evidence. With it, land serially and prove remote equality. Landing grants no release authority.
-- Do not kill, restart or reconfigure resources that you do not own. Hand off runtime ownership before another driver acts.
-- Publication, credentials and other external acts stay with the holder that OWNER names. A QA surface handoff grants only its stated tools and scope.
-
-## Engineering rules
-
-FILL: project architecture, data and security invariants.
-
-- Add no code comments. Keep compiler directives, shebangs and required license notices.
-- Keep the core neutral to the product and to the technology.
-- Optional [extensions](extensions/README.md) own domain rules. Adapters own harness controls.
-- Keep adopter content, policy, destinations, identities and milestones in the adopting repository. Keep comparisons in research.
-- Keep exact technical identifiers.
-
-Execute is prose first. Its auxiliary Luau extension supplies generic landing, scoped check selection, authority, retention and worktree setup.
-The host injects git, filesystem, clock and process access.
-
-## Delivery standard
-
-Apply [the standard](docs/AGENTIC-STANDARD.md) to workflows and code review.
-Workers self-review and verify assigned changes. OWNER defines who may land them. The CEO judges the integrated product. OWNER names any required independent review.
-A gate proves its checks. It does not prove a consumer outcome that nobody observed.
-
-## Operating documents
-
-In an adopting project, start with [TASKS](docs/TASKS.md), [STATE](docs/STATE.md) and the priority queue of the adopter.
-
-- Read [OWNER](docs/OWNER.md) for authority.
-- Read [PLAYBOOK](docs/PLAYBOOK.md) for the next procedure.
-- Read [SUCCESSION](docs/SUCCESSION.md) only to appoint or replace the CEO.
-
-Keep the current facts aligned.
-
-## Changes to this file
-
-Keep this file short. Add an irreversible-loss rule only for a concrete risk, and replace redundant guidance.
-Run focused checks while editing with `lute run tools/gate.luau --tier fast`, `--file <spec>` or `--name <text>`.
-After a specification changes, run `lute run tools/check-test-manifest.luau --write`.
-Commit the candidate. Run `lute run tools/gate.luau` on the clean HEAD, including its fresh-clone check.
-Do not change verified bytes before integration. See [Validation](docs/VALIDATE.md).
+Hold an action until the owner fills its grant.

@@ -1,13 +1,7 @@
 # Roblox extension
 
-Use this page to find Roblox rules and their owning documents. Keep universe, place and group IDs, operator
-names, build commands and product architecture in the project.
+Keep the operator, allowed accounts, places, build commands, ship command and rollback target in the project.
+Use an isolated test destination for development. Confirm the place and account before a save, upload or release.
 
-- [Integration](INTEGRATION.md): the values that the adopter must declare.
-- [Roblox operations](docs/ROBLOX.md): account and destination, the verification ladder, Studio, persistence, live client runs, admission gates, assets and source authority.
-- [Generative assets](docs/ROBLOX-GENERATIVE-ASSETS.md): load it only for generative-asset work.
-
-For scenario play and captures, use the [interactive QA extension](../interactive-qa/README.md). Follow the core
-[external-action procedure](../../docs/PLAYBOOK.md#external-actions). An assigned scratch grant can permit
-reversible generation and staging in its exact DataModel. Follow the authority named in the adopter's root `AGENTS.md`. It grants no durable publication, no credentials, no permission
-changes and no new destination.
+- [Platform operations](docs/ROBLOX.md) covers Studio, persistence and testing in the played client.
+- [Generative assets](docs/ROBLOX-GENERATIVE-ASSETS.md) covers source rights, review, staging and durable asset IDs.

@@ -3,7 +3,6 @@
 local fs = require("@std/fs")
 local process = require("@lute/process")
 
-local Landing = require("./landing")
 local WorkerSetup = require("./worker-setup")
 local Verify = require("@verify/src/core")
 local Bdd = require("@verify/src/bdd")
@@ -24,19 +23,15 @@ local function commit(repo: string, message: string)
 	sh(repo, { "git", "-c", "user.name=t", "-c", "user.email=t@example.com", "commit", "-q", "-m", message })
 end
 
-local function initRepository(root: string): (string, string)
-	local origin = root .. "/origin.git"
+local function initRepository(root: string): string
 	local primary = root .. "/primary"
-	sh(root, { "git", "init", "-q", "--bare", "-b", "main", origin })
 	sh(root, { "git", "init", "-q", "-b", "main", primary })
-	sh(primary, { "git", "remote", "add", "origin", origin })
 	write(primary .. "/.gitignore", "*.project.json\n!tracked.project.json\nbuild/\n")
 	write(primary .. "/source.txt", "one\n")
 	write(primary .. "/tracked.project.json", "{}\n")
 	write(primary .. "/deps.lock", "lock1\n")
 	commit(primary, "base")
-	sh(primary, { "git", "push", "-q", "origin", "main" })
-	return root, primary
+	return primary
 end
 
 type Recorder = {
@@ -102,90 +97,6 @@ local function age(path: string)
 	sh(".", { "touch", "-t", "200001010000", path })
 end
 
-local function realGit(primary: string): Landing.Git
-	local function git(arguments: { string }, cwd: string?): Landing.CommandResult
-		local command: { string } = { "git" }
-		for _, argument in arguments do
-			table.insert(command, argument)
-		end
-		local result = process.run(command, { cwd = cwd or primary })
-		return { exitcode = result.exitcode, stdout = result.stdout, stderr = result.stderr }
-	end
-	return {
-		commonDir = function()
-			return git({ "rev-parse", "--git-common-dir" })
-		end,
-		branchRef = function(branch)
-			return git({ "rev-parse", "--verify", "--quiet", "refs/heads/" .. branch })
-		end,
-		worktreeList = function()
-			return git({ "worktree", "list", "--porcelain" })
-		end,
-		worktreeAdd = function(path, branch, startPoint)
-			return git({ "worktree", "add", path, "-b", branch, startPoint })
-		end,
-		worktreeRemove = function(path)
-			return git({ "worktree", "remove", "--force", path })
-		end,
-		branchDelete = function(branch)
-			return git({ "branch", "-D", branch })
-		end,
-		rebase = function(worktreePath, onto)
-			return git({ "rebase", onto }, worktreePath)
-		end,
-		rebaseContinue = function(worktreePath)
-			return git({ "-c", "core.editor=true", "rebase", "--continue" }, worktreePath)
-		end,
-		conflictedFiles = function(worktreePath)
-			return git({ "diff", "--name-only", "--diff-filter=U" }, worktreePath)
-		end,
-		add = function(worktreePath, path)
-			return git({ "add", path }, worktreePath)
-		end,
-		mergeFastForward = function(branch, cwd)
-			return git({ "merge", "--ff-only", branch }, cwd)
-		end,
-		mergeBase = function(a, b)
-			return git({ "merge-base", a, b })
-		end,
-		pathsBetween = function(from, to)
-			return git({ "diff", "--name-only", from .. ".." .. to })
-		end,
-		changedPaths = function(worktreePath)
-			return git({ "diff", "--name-only", "main..HEAD" }, worktreePath)
-		end,
-		push = function()
-			return git({ "push", "origin", "main" })
-		end,
-		fetch = function()
-			return git({ "fetch", "origin", "main" })
-		end,
-		revParse = function(ref)
-			return git({ "rev-parse", ref })
-		end,
-	}
-end
-
-local function landingPlan(root: string, verify: (worktree: string) -> Landing.Refusal?): Landing.Plan
-	local function none(): Landing.Refusal?
-		return nil
-	end
-	return {
-		base = "main",
-		remote = "origin",
-		trainRoot = root .. "/trains",
-		trainBranchPrefix = "train-",
-		conflicts = { resolvers = {}, handAuthored = {}, maxIterations = 4 },
-		failure = { maxLines = 4, maxLineChars = 80, patterns = { "^✗" } },
-		setup = none,
-		prepare = none,
-		commitGuard = none,
-		verify = verify,
-		changeGuard = none,
-		log = function() end,
-	}
-end
-
 return function(suite: Verify.Harness)
 	local test = Bdd.create(suite)
 	local describe, it, expect = test.describe, test.it, test.expect
@@ -201,9 +112,9 @@ return function(suite: Verify.Harness)
 
 	describe("worktree", function()
 		case("creates, reuses and refuses worktrees and reports a moved base", function(directory)
-			local root, primary = initRepository(directory)
+			local primary = initRepository(directory)
 			local host = checkoutHost(primary, recorder())
-			local path = root .. "/helper"
+			local path = directory .. "/helper"
 			local spec: WorkerSetup.WorktreeSpec = { repo = primary, path = path, branch = "helper/a", base = "main" }
 
 			local created = WorkerSetup.ensureWorktree(spec, host)
@@ -221,14 +132,14 @@ return function(suite: Verify.Harness)
 
 			sh(primary, { "git", "branch", "helper/c", "main" })
 			local existing = WorkerSetup.ensureWorktree(
-				{ repo = primary, path = root .. "/c", branch = "helper/c", base = "main" },
+				{ repo = primary, path = directory .. "/c", branch = "helper/c", base = "main" },
 				host
 			)
 			assert(existing.status == "PASS")
 			expect(existing.detail):toContain("existing branch")
 
 			local occupied = WorkerSetup.ensureWorktree(
-				{ repo = primary, path = root .. "/d", branch = "helper/c", base = "main" },
+				{ repo = primary, path = directory .. "/d", branch = "helper/c", base = "main" },
 				host
 			)
 			assert(occupied.status == "FAIL")
@@ -247,7 +158,7 @@ return function(suite: Verify.Harness)
 		end)
 
 		case("syncs dependencies only when the lock changes", function(directory)
-			local _, primary = initRepository(directory)
+			local primary = initRepository(directory)
 			local rec = recorder()
 			local host = checkoutHost(primary, rec)
 			local config: WorkerSetup.Config = {
@@ -283,7 +194,7 @@ return function(suite: Verify.Harness)
 		end)
 
 		case("creates declared directories", function(directory)
-			local _, primary = initRepository(directory)
+			local primary = initRepository(directory)
 			local host = checkoutHost(primary, recorder())
 			local config: WorkerSetup.Config =
 				{ base = "main", directories = { "build", "build/generated" }, inputs = {} }
@@ -294,7 +205,7 @@ return function(suite: Verify.Harness)
 		end)
 
 		case("runs appended steps after checkout preparation and continues after a failed step", function(directory)
-			local _, primary = initRepository(directory)
+			local primary = initRepository(directory)
 			local host = checkoutHost(primary, recorder())
 			local config: WorkerSetup.Config = { base = "main", directories = { "build/generated" }, inputs = {} }
 			local after: { WorkerSetup.Step } = {}
@@ -319,7 +230,7 @@ return function(suite: Verify.Harness)
 		end)
 
 		case("hydrates LFS pointer files", function(directory)
-			local _, primary = initRepository(directory)
+			local primary = initRepository(directory)
 			local rec = recorder()
 			local host = checkoutHost(primary, rec)
 			local config: WorkerSetup.Config = { base = "main", lfs = true, inputs = {} }
@@ -356,7 +267,7 @@ return function(suite: Verify.Harness)
 		end)
 
 		case("removes undeclared generated manifests", function(directory)
-			local _, primary = initRepository(directory)
+			local primary = initRepository(directory)
 			local rec = recorder()
 			local host = checkoutHost(primary, rec)
 			local config: WorkerSetup.Config = {
@@ -382,7 +293,7 @@ return function(suite: Verify.Harness)
 		end)
 
 		case("ignores a collapsed ignored directory", function(directory)
-			local _, primary = initRepository(directory)
+			local primary = initRepository(directory)
 			local rec = recorder()
 			local host = checkoutHost(primary, rec)
 			local config: WorkerSetup.Config = {
@@ -400,7 +311,7 @@ return function(suite: Verify.Harness)
 		end)
 
 		case("regenerates and verifies generated inputs", function(directory)
-			local _, primary = initRepository(directory)
+			local primary = initRepository(directory)
 			local rec = recorder()
 			local host = checkoutHost(primary, rec)
 			local input: WorkerSetup.Input = {
@@ -439,166 +350,6 @@ return function(suite: Verify.Harness)
 			local silent = WorkerSetup.prepareCheckout(config, host, {})
 			expect(silent[1].status):toBe("FAIL")
 			expect(silent[1].detail):toContain("absent")
-		end)
-
-		for _, stage in { "setup", "rebase", "verify" } do
-			case("preserves work and evidence after a train " .. stage .. " refusal", function(directory)
-				local root, primary = initRepository(directory)
-				local members = { root .. "/one", root .. "/two" }
-				local heads: { string } = {}
-				for index, member in members do
-					local branch = if index == 1 then "one" else "two"
-					sh(primary, { "git", "worktree", "add", "-q", "-b", branch, member, "main" })
-					write(member .. "/" .. branch .. ".txt", branch .. "\n")
-					commit(member, branch)
-					heads[index] = sh(member, { "git", "rev-parse", "HEAD" })
-					fs.createDirectory(member .. "/build")
-					write(member .. "/build/evidence.bin", "original\0evidence")
-				end
-				local function dirtyMembers()
-					for index, member in members do
-						heads[index] = sh(member, { "git", "rev-parse", "HEAD" })
-						write(member .. "/source.txt", "unfinished tracked work\n")
-					end
-				end
-				if stage ~= "verify" then
-					dirtyMembers()
-				end
-				local trainPath = ""
-				local trainRef = ""
-				local plan = landingPlan(root, function()
-					dirtyMembers()
-					return { ok = false, reason = "verify_red", detail = "verification refused", failingLines = {} }
-				end)
-				plan.setup = function(path: string): Landing.Refusal?
-					trainPath = path
-					trainRef = sh(path, { "git", "branch", "--show-current" })
-					fs.createDirectory(path .. "/build")
-					write(path .. "/build/evidence.bin", "failed train\0evidence")
-					if stage == "setup" then
-						return { ok = false, reason = "setup_red", detail = "setup refused", failingLines = {} }
-					end
-					return nil
-				end
-				local outcome = Landing.landTrain({ "one", "two" }, { git = realGit(primary), plan = plan })
-				assert(not outcome.ok)
-				expect(outcome.reason):toBe(if stage == "rebase" then "rebase_failed" else stage .. "_red")
-				for index, member in members do
-					expect(fs.readFileToString(member .. "/source.txt")):toBe("unfinished tracked work\n")
-					expect(fs.readFileToString(member .. "/build/evidence.bin")):toBe("original\0evidence")
-					expect(sh(member, { "git", "rev-parse", "HEAD" })):toBe(heads[index])
-				end
-				expect(fs.readFileToString(trainPath .. "/build/evidence.bin")):toBe("failed train\0evidence")
-				expect(sh(primary, { "git", "rev-parse", trainRef })):toBe(
-					sh(trainPath, { "git", "rev-parse", "HEAD" })
-				)
-				expect(sh(primary, { "git", "rev-parse", "main" })):toBe(
-					sh(primary, { "git", "rev-parse", "origin/main" })
-				)
-			end)
-		end
-
-		case("lands a candidate through real git and refuses a red gate", function(directory)
-			local root, primary = initRepository(directory)
-			local git = realGit(primary)
-			local stepHost: Landing.StepHost = {
-				run = function(command, cwd)
-					local result = process.run(command, { cwd = cwd })
-					return { exitcode = result.exitcode, stdout = result.stdout, stderr = result.stderr }
-				end,
-				writeLog = function(label, output)
-					local path = root .. "/" .. string.gsub(label, "%W", "-") .. ".log"
-					write(path, output)
-					return path
-				end,
-			}
-			local policy = landingPlan(root, function()
-				return nil
-			end).failure
-
-			sh(primary, { "git", "branch", "no-worktree", "main" })
-			local absent = Landing.landOne("no-worktree", {
-				git = git,
-				plan = landingPlan(root, function(): Landing.Refusal?
-					error("the gate must not run without a worktree")
-				end),
-			})
-			assert(not absent.ok)
-			expect((absent).reason):toBe("worktree_missing")
-			expect((absent).detail):toContain("git worktree add <path> no-worktree")
-
-			local candidate = root .. "/candidate"
-			sh(primary, { "git", "worktree", "add", "-q", "-b", "candidate", candidate, "main" })
-			write(candidate .. "/feature.txt", "one squashed commit\n")
-			commit(candidate, "squashed candidate")
-			write(primary .. "/source.txt", "main moved\n")
-			commit(primary, "main moves while the candidate is in flight")
-			sh(primary, { "git", "push", "-q", "origin", "main" })
-
-			local gateRuns = 0
-			local failed = Landing.landOne("candidate", {
-				git = git,
-				plan = landingPlan(root, function(worktree)
-					gateRuns += 1
-					return Landing.runStep({
-						reason = "test_red",
-						label = "scoped specs",
-						command = {
-							"sh",
-							"-c",
-							"echo '✗ Inventory stacks items'; echo 'noise'; echo '✗ Quest resets'; exit 1",
-						},
-						cwd = worktree,
-					}, stepHost, policy)
-				end),
-			})
-			assert(not failed.ok)
-			expect(gateRuns):toBe(1)
-			local refusal = failed
-			expect(refusal.reason):toBe("test_red")
-			expect(#refusal.failingLines):toBe(2)
-			expect(refusal.failingLines[1]):toBe("✗ Inventory stacks items")
-			expect(refusal.detail):toContain("✗ Quest resets")
-			expect(refusal.logPath):toBe(root .. "/scoped-specs.log")
-			assert(
-				string.find(fs.readFileToString(assert(refusal.logPath)), "noise", 1, true) ~= nil,
-				"the full output is retained"
-			)
-			expect(sh(primary, { "git", "rev-parse", "main" })):toBe(sh(primary, { "git", "rev-parse", "origin/main" }))
-			expect(fs.exists(candidate)):toBeTruthy()
-
-			local landed = Landing.landOne("candidate", {
-				git = git,
-				plan = landingPlan(root, function(worktree)
-					gateRuns += 1
-					return Landing.runStep({
-						reason = "test_red",
-						label = "scoped specs",
-						command = { "sh", "-c", "test -f feature.txt" },
-						cwd = worktree,
-					}, stepHost, policy)
-				end),
-			})
-			assert(landed.ok)
-			expect(gateRuns):toBe(2)
-			expect(sh(primary, { "git", "rev-parse", "origin/main" })):toBe((landed).sha)
-			expect(sh(primary, { "git", "rev-list", "--count", "main" })):toBe("3")
-			expect(fs.exists(candidate)):toBeFalsy()
-
-			local unreadable = Landing.runStep(
-				{ reason = "x", label = "tail", command = { "sh", "-c", "echo a; echo b; exit 3" }, cwd = primary },
-				{
-					run = stepHost.run,
-					writeLog = function()
-						return nil
-					end,
-				},
-				policy
-			)
-			assert(unreadable)
-			expect((unreadable).detail):toContain("last output: a | b")
-			expect((unreadable).detail):toContain("no log could be written")
-			expect((unreadable).logPath):toBeNil()
 		end)
 	end)
 end

@@ -3,11 +3,14 @@
 return {
 	package = {
 		name = "voidmeld/execute",
-		version = "0.1.4",
+		version = "0.2.0",
 		files = {
 			"/AGENTS.template.md",
+			"/BACKLOG.template.md",
 			"/adapters/**",
-			"/docs/**",
+			"/docs/OPERATING.md",
+			"/docs/helper-brief.md",
+			"/docs/api.md",
 			"/extensions/**",
 			"/tools/check-links.luau",
 			"/.agents/**",
@@ -18,16 +21,12 @@ return {
 			"!*.verify.luau",
 		},
 		metadata = {
-			description = "Reusable project instructions and Luau workflow tools for coding agents.",
+			description = "A backlog, guardrails and optional Luau tools for agents working on a game.",
 			license = "MIT",
 			repository = "https://github.com/voidmeld/execute",
 			exports = {
 				CallScanner = "extensions/luau/call-scanner.luau",
-				CommitPolicy = "extensions/luau/commit-policy.luau",
-				GuardedSurface = "extensions/luau/guarded-surface.luau",
-				Landing = "extensions/luau/landing.luau",
 				RegisterLimit = "extensions/luau/register-limit.luau",
-				Retention = "extensions/luau/retention.luau",
 				ScopedChecks = "extensions/luau/scoped-checks.luau",
 				SilentFallbacks = "extensions/luau/silent-fallbacks.luau",
 				SourceScan = "extensions/luau/source-scan.luau",
