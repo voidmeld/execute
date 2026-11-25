@@ -12,7 +12,7 @@ A worker self-reviews and verifies its assigned outcomes. The CEO accepts integr
 
 ## Inputs
 
-- The exact assignment: ordered outcomes, falsifiers, exclusive paths and runtime, base, required proof, integration rights and return boundary.
+- The adopter's current [assignment](../../../docs/TASKS.md#assignment).
 - Read `AGENTS.md` at the root of the adopter's assigned worktree. Follow the files it names for OWNER grants, current STATE and command bindings. Resolve those paths from the adopter's worktree.
 - Package copies of `docs/OWNER.md`, `docs/STATE.md` and `AGENTS.template.md` are templates. They never supply live authority or state.
 - The [harness adapter](../../../adapters/README.md) for native task controls.
@@ -22,28 +22,13 @@ A worker self-reviews and verifies its assigned outcomes. The CEO accepts integr
 1. Prepare or reuse an isolated worktree on a named branch from the base. Use the adopter's worker-setup. Read the [PLAYBOOK](../../../docs/PLAYBOOK.md#worktrees-and-setup) procedure.
 2. Diagnose the observed failure at its causal boundary. Implement the bounded outcome. Run focused checks.
 3. Verify each user-visible or runtime claim on the assigned native surface against the exact candidate. Inspect original evidence before landing.
-4. Self-review and complete any OWNER-required review. Commit the scoped candidate. Run the adopter's gate. Before landing, check the adopter's grant and assignment. Without integration rights, return the gated candidate and evidence. With the grant, follow [integration](../../../docs/PLAYBOOK.md#integration) and verify remote equality.
-5. Continue explicitly assigned follow-on outcomes under [TASKS](../../../docs/TASKS.md#workers). Respect shared resources without serializing independent runtimes. Return at the assignment boundary or a genuine block.
-6. CEO: inspect the integrated product and returned evidence. Remove dependencies and choose the next assignment.
-7. Publish only where the adopter's OWNER grants it, after the required running-build proof. Use the [external transaction](../../../docs/PLAYBOOK.md#external-actions). Then verify the published result as PLAYBOOK requires.
-
-## Verification
-
-- The gate passes on frozen committed bytes.
-- An authorized landing proves remote equality.
-- Every external action has a closed write-ahead and a readback.
+4. Self-review and commit the scoped candidate. Run its declared gate. Follow [integration](../../../docs/PLAYBOOK.md#integration) for the grant decision, landing and receipt.
+5. Continue the assigned sequence. At its boundary or a block, use the [worker return](../../../docs/TASKS.md#return).
+6. As CEO, inspect integrated quality and returned evidence before selecting the next assignment.
+7. For authorized publication, follow [external actions](../../../docs/PLAYBOOK.md#external-actions) after the required running-build proof.
 
 ## Recovery
 
-A failed check holds its own claim, not unrelated work.
-Before you rerun, read the failing names and the log path in the refusal.
-Diagnose a tooling refusal within the assigned repair budget. Return at the boundary. Continue ready independent work.
-Never retry an ambiguous or attempted external action. Reconcile its journal first.
-
-## Exit
-
-Return once with the outcomes, commits, checks, original evidence, retained work, limits and the next dependency.
-Update the recovery record in the adopter's STATE.
-Replace the worker's current result instead of appending a history. Stop until a useful new assignment or dependency event arrives.
-Keep assigned surfaces between outcomes. When ownership changes, stop input and hand the surfaces back.
-Report source readiness separately from product acceptance.
+Read the failing check names and log before repair. Continue independent assigned work within the brief.
+For an interrupted integration, use [interrupted landing](../../../docs/PLAYBOOK.md#interrupted-landing).
+When the driver changes, use the [custody transfer](../../../docs/SUCCESSION.md#setup-handoff).

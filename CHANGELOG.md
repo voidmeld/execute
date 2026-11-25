@@ -3,6 +3,12 @@
 Execute follows [semantic versioning](https://semver.org). While the version is `0.x`, a minor
 release may change a public contract.
 
+## 0.1.4
+
+- The operating skill routes assignments, returns and landing through the adopter's grants. The playbook covers
+  interrupted landings, original evidence, receipt closure and external transactions. Succession records custody transfers.
+- The Roblox extension documents Quick Sign-in recovery for Studio automation and Windows profile requirements.
+
 ## 0.1.3
 
 - Both operating skills and adapters use the adopter's root `AGENTS.md` to find grants, state and commands.

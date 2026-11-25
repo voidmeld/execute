@@ -27,6 +27,15 @@ After a specification changes, run `lute run tools/check-test-manifest.luau --wr
 example in the Execute source checkout (`examples/scoped-checks.luau`) with `lute run examples/scoped-checks.luau`. It prints the selected
 groups, specifications, commands and paths without an owner.
 
+## Delivery contract walkthrough
+
+Start at the installed operating skill with a frozen candidate and its gate result. Trace the same
+[integration decision](PLAYBOOK.md#integration) with two briefs. With CEO-only landing, the worker returns
+the candidate and the CEO owns the landing. With delegated landing, the named worker owns the same steps.
+Check that both routes require the same proof and receipt. Then interrupt the route after a successful push
+and before cleanup. Use the fetched remote commit to finish closure without issuing a second push.
+If a required original exists only in the checkout, hold retirement until its retained bytes are verified.
+
 ## Final gate and integration
 
 1. Commit the candidate.

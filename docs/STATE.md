@@ -42,7 +42,4 @@ prompt queue.
 6. Reuse each listed worktree through worker-setup.
 7. Run its freshness check to identify stale inputs.
 
-If a tool stops during a run, inspect Git state. `git status` identifies a rebase in progress. Also check for a
-train branch and worktree, or a candidate that you did not push. Finish or abort the rebase. Remove a train
-worktree only if its members are intact. Run the tool again. Landing is idempotent until the push. Do not start
-a second integration while a live integration holds main.
+If landing stopped, follow [interrupted landing](PLAYBOOK.md#interrupted-landing) before resuming integration.
