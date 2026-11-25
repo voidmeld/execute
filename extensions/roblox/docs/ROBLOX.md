@@ -11,7 +11,7 @@ If Studio needs sign-in, leave recovery to the account holder. On Windows, keep 
 | --- | --- |
 | Source builds and pure logic works | Static checks and focused specs |
 | Engine calls work | Headless engine with isolated test data |
-| A player can complete an interaction | Scripted play on the candidate, using ordinary controls |
+| A user can complete an interaction | Scripted play on the candidate, using ordinary controls |
 | The shipped change works | Played client at the allowed destination, with its running revision confirmed |
 
 For rollback, ship the last accepted revision through the project's usual command. Read back the place, owner, privacy, access and version.
@@ -22,16 +22,16 @@ Use one driver per Studio window and one source synchronizer per script tree. Re
 After a mount change or reconnection, inspect the actual instances and source in that document before starting Play.
 A cached module can still contain the previous revision.
 
-For multiplayer, use `StudioTestService` in the assigned session. Match the client count to the claim.
-For replicated actions, observe both the actor and another client. Exercise cleanup when a player leaves.
+For tests with multiple clients, use `StudioTestService` in the assigned session. Match the client count to the claim.
+For replicated actions, observe both the actor and another client. Exercise cleanup when a user leaves the experience.
 Check that a probe belongs to the current scenario before it ends the session. Stop play with the native controls and preserve the Edit document.
 
-Plugin-context code and game scripts have separate module caches. Use shared engine state for test hooks.
+Plugin-context code and experience scripts have separate module caches. Use shared engine state for test hooks.
 For required replicated instances, wait for them at the point of use. Check client startup and input in an actual client.
 
 ## Captures
 
-Capture the assigned game window. A Studio automation screenshot can omit world-space labels.
+Capture the assigned Roblox client window. A Studio automation screenshot can omit world-space labels.
 For a label, inspect the original window image and check that its text is readable.
 For motion or audio, capture the change over time. Record the candidate, device and input used.
 Release held input when the scenario ends.

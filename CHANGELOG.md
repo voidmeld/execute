@@ -5,9 +5,11 @@ release may change a public contract.
 
 ## 0.2.1
 
-- The operating guide and adopter templates frame backlog items as observable user outcomes for any software
-  project. The guide shows how to check changes in a web app, CLI or library. Game-specific procedures live in
-  the [optional platform extension](extensions/roblox/README.md).
+- The operating guide and adopter templates apply Execute's backlog, fast guardrail and ship workflow to software
+  projects. Backlog items state what users should be able to see or do. The guide shows how to verify those
+  outcomes in a web app, CLI or library.
+- The optional [Roblox extension](extensions/roblox/README.md) describes Studio, live client and asset operations
+  in terms of experiences and their users.
 
 ## 0.2.0
 
