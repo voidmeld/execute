@@ -51,4 +51,6 @@ because shared checks time out during integration.
 - Watch reports by change, not by first sight, so a rewritten report is noticed.
 - Make no direct pushes to the trunk while a landing runs; queue them behind it.
 - After resolving a merge conflict, run the checks that each side's change relied on.
+- Leave no litter. Remove a landed lane's worktree and branch with it. Land or explicitly discard a lane that
+  stops without landing within the same watch cycle; an idle unmerged branch is lost work.
 - After every release, verify the change where users run it before reporting it.
