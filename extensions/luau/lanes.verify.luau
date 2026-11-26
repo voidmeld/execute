@@ -6,6 +6,7 @@ local Bdd = require("@verify/src/bdd")
 local Verify = require("@verify/src/core")
 local TemporaryDirectory = require("@verify/src/checks").temporaryDirectory
 local Lanes = require("./lanes")
+local WorkerSetup = require("./worker-setup")
 
 local function git(cwd: string, ...: string): string
 	local result = process.run({ "git", ... }, { cwd = cwd })
@@ -115,6 +116,85 @@ return function(suite: Verify.Harness)
 		end)
 	end)
 
+	describe("running a lane queue", function()
+		it("fills free slots in order and skips names that already started", function()
+			local pending = {
+				{ name = "done", brief = "one" },
+				{ name = "docs", brief = "two" },
+				{ name = "api", brief = "three" },
+				{ name = "style", brief = "four" },
+			}
+			local known = { done = false, api = true, external = true }
+			local starts = Lanes.selectStarts(pending, known, 3)
+			expect(#starts):toBe(1)
+			expect(starts[1].brief):toBe("two")
+			expect(#Lanes.selectStarts(pending, known, 1)):toBe(0)
+			expect(#Lanes.selectStarts(pending, {}, 0)):toBe(0)
+			expect(Lanes.selectStarts(pending, known, 4)[2].name):toBe("style")
+			expect(#pending):toBe(4)
+			expect(known.docs):toBe(nil)
+		end)
+
+		it("rejects duplicate names and fractional slot limits", function()
+			local lane = { name = "api", brief = "brief" }
+			expect(pcall(Lanes.selectStarts, { lane, lane }, {}, 1)):toBeFalsy()
+			expect(pcall(Lanes.selectStarts, { lane }, {}, 1.5)):toBeFalsy()
+		end)
+
+		it("reports each change once and keeps a live lane in its slot", function()
+			local queue: Lanes.Queue = {
+				pending = { { name = "docs", brief = "first brief" }, { name = "api", brief = "second" } },
+				slots = 1,
+				capSeconds = 5,
+				start = { "launch", "--local" },
+			}
+			local runs: { Lanes.Run } = {}
+			local events: { string } = {}
+			local commands: { string } = {}
+			local now, alive, reported = 10, true, false
+			local host: Lanes.QueueHost = {
+				now = function()
+					return now
+				end,
+				alive = function(pid)
+					return pid ~= 11 or alive
+				end,
+				reported = function(file)
+					return file == "docs/report" and reported
+				end,
+				start = function(command)
+					table.insert(commands, table.concat(command, "|"))
+					return 10 + #commands, command[3] .. "/report"
+				end,
+				save = function(updated)
+					runs = table.clone(updated)
+				end,
+				notify = function(name, status)
+					table.insert(events, name .. " " .. status)
+				end,
+			}
+			local function advance()
+				table.clear(events)
+				Lanes.runTick(queue, runs, host)
+				return table.concat(events, ",")
+			end
+			expect(advance()):toBe("docs started")
+			expect(commands[1]):toBe("launch|--local|docs|first brief")
+			now = 15
+			expect(advance()):toBe("docs over the cap")
+			expect(advance()):toBe("")
+			alive = false
+			expect(advance()):toBe("docs exited without a report,api started")
+			expect(runs[1].pid):toBe(nil)
+			reported = true
+			expect(advance()):toBe("docs reported")
+			reported = false
+			expect(advance()):toBe("")
+			expect(runs[1].status):toBe("reported")
+			expect(#commands):toBe(2)
+		end)
+	end)
+
 	local function case(name: string, body: (Lanes.Landing, Lanes.Host, { string }, Hooks) -> ())
 		it(name, function()
 			TemporaryDirectory.run(TemporaryDirectory.root(), "execute-lanes", function(root)
@@ -157,6 +237,89 @@ return function(suite: Verify.Harness)
 			kept(lane)
 			expect(git(lane.worktree, "rev-parse", "HEAD")):toBe(before)
 			expect(git(lane.worktree, "status", "--porcelain")):toBe("")
+		end)
+
+		case("pauses matching peers before and during the check and restores only acquired pauses", function(lane, host)
+			lane.otherPids = {}
+			lane.pausePatterns = { "^builder ", "^formatter " }
+			local paused: { [number]: boolean } = { [14] = true }
+			local resumes: { number } = {}
+			local polls = 0
+			host.pause = function(pid): (() -> ())?
+				if paused[pid] then
+					return nil
+				end
+				paused[pid] = true
+				return function()
+					table.insert(resumes, pid)
+					paused[pid] = nil
+				end
+			end
+			host.polling = {
+				processes = function()
+					local peers = {
+						{ pid = 11, command = "builder docs" },
+						{ pid = 12, command = "unrelated job" },
+						{ pid = 14, command = "builder api" },
+					}
+					if polls == 2 then
+						table.insert(peers, { pid = 13, command = "formatter api" })
+					end
+					return peers
+				end,
+				startCheck = function(command, cwd)
+					expect(paused[11]):toBeTruthy()
+					expect(paused[13]):toBe(nil)
+					local result = host.run(command, cwd)
+					return function(seconds): WorkerSetup.CommandResult?
+						expect(seconds):toBe(3)
+						expect(paused[12]):toBe(nil)
+						polls += 1
+						if polls < 3 then
+							return nil
+						end
+						expect(paused[13]):toBeTruthy()
+						return result
+					end
+				end,
+			}
+			Lanes.land(lane, host)
+			expect(table.concat(resumes, ",")):toBe("13,11")
+			expect(paused[14]):toBeTruthy()
+		end)
+
+		case("finishes the check and resumes peers after a later scan fails", function(lane, host, calls, hooks)
+			lane.pausePatterns = { "worker" }
+			local scans, waits = 0, 0
+			host.polling = {
+				processes = function()
+					scans += 1
+					if scans == 2 then
+						error("inspection failed")
+					end
+					return { { pid = 14, command = "worker" } }
+				end,
+				startCheck = function()
+					return function(): WorkerSetup.CommandResult?
+						waits += 1
+						if waits == 3 then
+							return { exitcode = 1, stdout = "", stderr = "check failed" }
+						end
+						return nil
+					end
+				end,
+			}
+			hooks["resume 14"] = function(): number?
+				assert(waits == 3, "resumed before the check finished")
+				error("resume failed")
+			end
+			local ok, reason = pcall(Lanes.land, lane, host)
+			expect(ok):toBeFalsy()
+			expect(tostring(reason)):toContain("inspection failed")
+			expect(tostring(reason)):toContain("check failed")
+			expect(tostring(reason)):toContain("resume failed")
+			expect(calls[#calls]):toBe("resume 11")
+			expect(table.find(calls, "push")):toBe(nil)
 		end)
 
 		case("keeps the worktree and branch after a rejected push and can retry", function(lane, host, calls, hooks)

@@ -9,5 +9,6 @@ return table.freeze({
 	"extensions/luau/source-scan.verify.luau",
 	"extensions/luau/worker-setup.verify.luau",
 	"extensions/luau/worktree.lute.verify.luau",
+	"tools/tick-lanes.verify.luau",
 	"tools/type-policy.verify.luau",
 })

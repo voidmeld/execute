@@ -7,7 +7,7 @@ exported member and type.
 | Task | Reference |
 | --- | --- |
 | Find calls, arguments, and member references in Luau source | [Call scanner](#call-scanner) |
-| Check on parallel worktrees and land a reviewed lane | [Lanes](#lanes) |
+| Queue, watch and land parallel worktrees | [Lanes](#lanes) |
 | Choose which checks to run for changed files | [Scoped checks](#scoped-checks) |
 | Check that the modules you ship fit within the compiler's register limit | [Register limit](#register-limit) |
 | Compare silent fallbacks with a reviewed allowlist | [Silent fallbacks](#silent-fallbacks) |
@@ -166,6 +166,65 @@ lute run tools/supervise-lanes.luau 3600 docs ../docs-lane "$started_at" report.
 The command prints the lane name, status and worktree on one line per lane. All four statuses are
 normal output. Invalid arguments or a failed process inspection make the command exit with an error.
 
+### `Lanes.selectStarts`
+
+`selectStarts(pending: { Pending }, known: { [string]: boolean }, slots: number) -> { Pending }`
+
+Give each `Lanes.Pending` entry a unique `name` and the path to its `brief` file. In `known`, set
+a lane's name to `true` while its process is alive and to `false` after it exits. Every live lane
+uses one slot, including lanes outside the queue. The function returns the first pending entries
+that have never started, up to the number of free slots. It leaves both inputs alone. Duplicate
+queue names, empty names or briefs, and negative or fractional slot limits raise an error.
+
+### `Lanes.runTick`
+
+`runTick(queue: Queue, runs: { Run }, host: QueueHost) -> ()`
+
+To run one tick from a scheduler on a host with `ps`, give the command a slot limit, a cap in
+seconds, a queue file, a state file and your project's launcher. Run it from the project root
+with `execute_dir` set to the Execute checkout or installed package directory.
+For example, this queue has two rows with a tab between each name and its brief path.
+
+```sh
+printf 'docs\tbriefs/docs.md\napi\tbriefs/api.md\n' > queue.tsv
+lute run "$execute_dir/tools/tick-lanes.luau" 2 3600 queue.tsv runs.tsv ./start-lane
+```
+
+The command appends the name and brief path to the launcher's arguments. The launcher starts one
+worker, redirects its streams, and prints its PID, a tab and its report path on one line. Give each
+run its own report path, relative to the project root or absolute. A nonzero exit means the launch
+failed and left no worker running.
+
+Repeat the same command to print new reports, exits without a report and cap overruns, then fill
+free slots. Each output line contains the name, status and report path. For a start, it contains
+the name, `started` and the brief path. A live worker still occupies its slot after it reports or
+reaches the cap. Use zero slots and omit the launcher to watch existing runs.
+
+The command creates the state file as needed. It saves each launch before starting the next lane.
+It remembers each status, so a late report prints once even after an exit. A run keeps its name in
+the state file after it finishes. Use a new name for a new run. To include a worker already running,
+add a tab-separated row while the scheduler is idle. The columns are name, Unix start time, PID,
+absolute report path and last status (initially `running`). A dash in the PID column records an exit.
+Use a separate state file for each queue and keep tabs and newlines out of names and paths.
+
+Overlapping ticks use the same `.lock` directory beside the state file. If an interruption leaves
+the lock, first confirm the tick has stopped. Its `starting` file names any launch in progress.
+Check whether that worker started and add its row if missing, then remove the lock directory and
+rerun the command. A launcher that returns an invalid result also leaves the lock for recovery.
+
+In Luau, supply `pending`, `slots`, `capSeconds` and the launcher's argument array (`start`) in
+`Lanes.Queue`. Pass the last saved list of `Lanes.Run` records, or an empty list on the first tick.
+Each record holds `name`, `startedAt`, `pid`, `report` and `status`. An exited worker has a nil PID.
+The caller runs one tick at a time against that list.
+
+| Function in `Lanes.QueueHost` | What the project supplies |
+| --- | --- |
+| `now()` | Return the current time in seconds. |
+| `alive(pid)`, `reported(file)` | Check whether the recorded worker is alive and whether the report file exists. |
+| `start(command)` | Start one lane with the supplied argument array and return its PID and unique report path. |
+| `save(runs)` | Persist the whole list before returning. The tick saves observed changes and each successful start. |
+| `notify(name, status, detail)` | Deliver a status line. An interruption between notification and saving can repeat it on retry. |
+
 ### `Lanes.land`
 
 `land(lane: Landing, host: Host) -> string`
@@ -174,7 +233,7 @@ In `Lanes.Landing`, supply the coordinating checkout (`repo`), the lane's `workt
 the Git `remote` and the name of its `main` branch. Supply `setup` and `check` as argument arrays.
 List the PIDs of peer lanes your coordinator owns in `otherPids`. An empty list works for a single lane.
 
-The project supplies four functions in `Lanes.Host`.
+The project supplies these functions in `Lanes.Host`.
 
 | Function | What the project supplies |
 | --- | --- |
@@ -182,6 +241,18 @@ The project supplies four functions in `Lanes.Host`.
 | `releaseRunning()` | Return whether the project's release is in progress. |
 | `waitForPoll()` | Wait until it is time to check again. |
 | `pause(pid)` | Pause that peer and return a function that resumes the same process. Return `nil` if it has exited or was already paused. Check ownership and identity before signaling a process. Raise an error if the pause fails and leave the peer as you found it. |
+
+To pause other work during the check, set `pausePatterns` to Luau patterns for peer command lines.
+Supply `polling` in the host with these two functions from `Lanes.PeerPolling`.
+
+| Function | What the project supplies |
+| --- | --- |
+| `processes()` | List the peers this coordinator owns and may pause, each with a `pid` and a `command` string. Exclude the coordinator, the check and its children. |
+| `startCheck(command, cwd)` | Start the check once and return a function that waits up to the given number of seconds for its exit. Return `nil` on timeout or the command result on exit. If a host error ends the wait, finish or stop the check before raising it. |
+
+The coordinator pauses matches before starting the check. Every three seconds while the check
+runs, it asks for the list again and pauses matching newcomers. If a later scan or pause fails,
+it waits for the check to finish, resumes the peers it paused and reports the error.
 
 The coordinator waits for the current release to finish, then fetches the remote main branch and
 rebases the lane onto it. On a rebase conflict it runs `git rebase --abort` and reports the error.

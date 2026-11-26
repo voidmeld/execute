@@ -14,6 +14,8 @@ return {
 			"/extensions/**",
 			"/tools/check-links.luau",
 			"/tools/supervise-lanes.luau",
+			"/tools/tick-lanes.luau",
+			"/tools/lib/lane-process.luau",
 			"/.agents/**",
 			"/.claude/**",
 			"/README.md",
@@ -37,6 +39,7 @@ return {
 			commands = {
 				CheckLinks = "tools/check-links.luau",
 				SuperviseLanes = "tools/supervise-lanes.luau",
+				TickLanes = "tools/tick-lanes.luau",
 			},
 		},
 		dev_dependencies = {
