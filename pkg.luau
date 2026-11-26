@@ -13,6 +13,7 @@ return {
 			"/docs/api.md",
 			"/extensions/**",
 			"/tools/check-links.luau",
+			"/tools/supervise-lanes.luau",
 			"/.agents/**",
 			"/.claude/**",
 			"/README.md",
@@ -26,6 +27,7 @@ return {
 			repository = "https://github.com/voidmeld/execute",
 			exports = {
 				CallScanner = "extensions/luau/call-scanner.luau",
+				Lanes = "extensions/luau/lanes.luau",
 				RegisterLimit = "extensions/luau/register-limit.luau",
 				ScopedChecks = "extensions/luau/scoped-checks.luau",
 				SilentFallbacks = "extensions/luau/silent-fallbacks.luau",
@@ -34,6 +36,7 @@ return {
 			},
 			commands = {
 				CheckLinks = "tools/check-links.luau",
+				SuperviseLanes = "tools/supervise-lanes.luau",
 			},
 		},
 		dev_dependencies = {
