@@ -7,9 +7,12 @@ return {
 		files = {
 			"/AGENTS.template.md",
 			"/BACKLOG.template.md",
+			"/REFERENCE-SHELF.template.md",
+			"/REVIEWERS-EYE.template.md",
 			"/adapters/**",
 			"/docs/OPERATING.md",
 			"/docs/helper-brief.md",
+			"/docs/expertise-lane.md",
 			"/docs/api.md",
 			"/extensions/**",
 			"/tools/check-links.luau",

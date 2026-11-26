@@ -9,6 +9,13 @@ Set a time to check progress while the work is underway. Try the change as a use
 and mark the item done when you can see the result it calls for. If you're blocked, record
 what you need to continue and move on to the next ready item.
 
+## Domain expertise
+
+If the project keeps a reference shelf, read the relevant entry in [shelf path]
+before choosing an approach. Every review and QA lane reads its section of
+[reviewer's-eye checklist path] by default. The owner's recorded taste and feedback
+in [location] take precedence over the shelf and checklist.
+
 ## Hard rules
 
 - Before every push to `main`, run `<fast guardrail command>` on the commit you plan to push, with a clean worktree. If it fails, fix the problem and rerun the check on the new commit.

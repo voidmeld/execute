@@ -138,6 +138,9 @@ to the report files and processes can check their progress. To land a lane, take
 worktree after review. Use the landing procedure in projects that authorize direct pushes to their
 main branch. The project decides who may push, control peer processes, and release.
 
+For a lane that researches the domain and prepares review questions, use the
+[expertise lane brief](expertise-lane.md).
+
 ### `Lanes.classify`
 
 `classify(lane: Observation, now: number, capSeconds: number) -> Status`
