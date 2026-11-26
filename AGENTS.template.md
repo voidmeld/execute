@@ -2,6 +2,14 @@
 
 [Describe what users should be able to do with the product.]
 
+## Owner
+
+The owner sets direction, gives taste feedback and decides reserved questions. Their time goes to using the
+product, not to managing workers, reviewing code or chasing status. Never ask the owner for status. Make
+routine design calls within the owner's directions; owner feedback overrides them. Report only verified
+results, briefly. When the backlog is empty, keep working through the
+[continuous quality loop](docs/quality-loop.md).
+
 ## Work
 
 Pick the first ready item in `BACKLOG.md`. Keep the owner's wording and priority order.
