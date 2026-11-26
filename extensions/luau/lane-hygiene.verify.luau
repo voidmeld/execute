@@ -13,6 +13,7 @@ local function fixture()
 	local writes: { string } = {}
 	local dirty: { [string]: boolean } = {}
 	local locked: { [string]: boolean } = {}
+	local missing: { [string]: boolean } = {}
 	local workers: { [string]: boolean } = {}
 	local counts: { [string]: number } = {}
 	local merged: { [string]: string } = {}
@@ -32,6 +33,7 @@ local function fixture()
 			.. "\0"
 			.. (if paths[path] == "" then "detached" else "branch refs/heads/" .. paths[path])
 			.. (if locked[path] then "\0locked user reservation" else "")
+			.. (if missing[path] then "\0prunable missing gitdir" else "")
 			.. "\0\0"
 	end
 	local function canonical(path: string): string
@@ -117,6 +119,7 @@ local function fixture()
 		workers = workers,
 		config = config,
 		locked = locked,
+		missing = missing,
 		dirty = dirty,
 		counts = counts,
 		merged = merged,
@@ -160,11 +163,35 @@ return function(suite: Verify.Harness)
 			expect(output):toContain("REMOVED contained /alias/contained")
 			expect(output):toContain("REMOVED squash /lanes/squash")
 			expect(f.writes[1]):toBe("git worktree prune")
-			expect(f.writes[2]):toBe("git fetch --prune --all")
+			expect(f.writes[2]):toBe("git fetch --prune --all --no-auto-maintenance")
 			expect(#f.writes):toBe(6)
 			expect(f.refs.working):toBe("aa")
 			expect(f.refs.reserved):toBe("aa")
 			expect(f.refs[f.config.trunk]):toBe("aa")
+		end)
+
+		it("leaves extra managed roots and their stale registrations to their owner", function()
+			local f = fixture()
+			f.config.extraManagedRoots = { "/primary/releases", "/alias/builds" }
+			local release = "/primary/releases/dev/aa"
+			f.paths[release], f.tips[release] = "", "aa"
+			f.dirty[release] = true
+			f.add("owned", "bb", "/lanes/builds/publish")
+			f.add("ordinary", "bb", "/lanes/builds-old/publish")
+			f.add("foreign", "bb", "/primary/releases-old/dev/bb")
+			local expected = "REMOTE up/topic\nSTRAY /primary/releases-old/dev/bb"
+			f.config.dryRun = true
+			expect(f.run()):toBe(expected .. "\nWOULD REMOVE ordinary /lanes/builds-old/publish")
+			expect(#f.writes):toBe(0)
+			f.config.dryRun = false
+			f.missing[release] = true
+			expect(f.run()):toBe(
+				"REMOTE up/topic\nREMOVED ordinary /lanes/builds-old/publish\nSTRAY /primary/releases-old/dev/bb"
+			)
+			expect(#f.writes):toBe(3)
+			expect(f.writes[1]):toBe("git fetch --prune --all --no-auto-maintenance")
+			expect(f.refs.owned):toBe("bb")
+			expect(f.paths[release]):toBe("")
 		end)
 
 		it("repeats dirty, divergent, detached and unattached findings every tick", function()

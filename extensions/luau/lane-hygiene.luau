@@ -6,6 +6,7 @@ export type Config = {
 	repo: string,
 	trunk: string,
 	lanesRoot: string,
+	extraManagedRoots: { string }?,
 	lanePath: ((branch: string) -> string?)?,
 	dryRun: boolean?,
 }
@@ -56,10 +57,27 @@ local function hygiene(config: Config, host: Host)
 	local repo = config.repo
 	local root = host.canonical(config.lanesRoot)
 	assert(root:sub(1, 1) == "/" and root ~= "/", "supply an absolute lanes directory")
+	local extraRoots: { string } = {}
+	for _, directory in config.extraManagedRoots or {} do
+		local physical = host.canonical(directory)
+		assert(physical:sub(1, 1) == "/" and physical ~= "/", "supply an absolute managed directory")
+		table.insert(extraRoots, physical)
+	end
+	local function externallyManaged(physical: string): boolean
+		for _, directory in extraRoots do
+			if physical == directory or inside(physical, directory) then
+				return true
+			end
+		end
+		return false
+	end
 	local trunkRef = "refs/heads/" .. config.trunk
 	local function git(cwd: string, ...: string): string
 		local argv = { "git", ... }
 		return checked(argv, host.run(argv, cwd))
+	end
+	local function inventory(): { Tree }
+		return worktrees(git(repo, "worktree", "list", "--porcelain", "-z"), host.canonical)
 	end
 	local function attempt(label: string, operation: () -> ())
 		local ok, problem = pcall(operation)
@@ -70,10 +88,17 @@ local function hygiene(config: Config, host: Host)
 	git(repo, "check-ref-format", trunkRef)
 	if not config.dryRun then
 		attempt("prune", function()
+			if #extraRoots > 0 then
+				for _, tree in inventory() do
+					if tree.missing and externallyManaged(tree.physical) then
+						return
+					end
+				end
+			end
 			git(repo, "worktree", "prune")
 		end)
 		attempt("fetch", function()
-			git(repo, "fetch", "--prune", "--all")
+			git(repo, "fetch", "--prune", "--all", "--no-auto-maintenance")
 		end)
 	end
 
@@ -103,9 +128,6 @@ local function hygiene(config: Config, host: Host)
 		end
 	end
 	local trunk = assert(branches[trunkRef], "missing trunk " .. trunkRef)
-	local function inventory(): { Tree }
-		return worktrees(git(repo, "worktree", "list", "--porcelain", "-z"), host.canonical)
-	end
 	local trees = inventory()
 	local coordinator = host.canonical(repo)
 	local attached: { [string]: boolean } = {}
@@ -113,7 +135,12 @@ local function hygiene(config: Config, host: Host)
 	for _, tree in trees do
 		if tree.ref then
 			attached[tree.ref] = true
-		elseif tree.head and not tree.missing and inside(tree.physical, root) then
+		elseif
+			tree.head
+			and not tree.missing
+			and inside(tree.physical, root)
+			and not externallyManaged(tree.physical)
+		then
 			detached[tree.physical] = true
 		end
 	end
@@ -162,6 +189,11 @@ local function hygiene(config: Config, host: Host)
 		end
 		local fullRef = "refs/heads/" .. branch
 		local function available(list: { Tree }): boolean
+			for _, directory in extraRoots do
+				if inside(directory, tree.physical) then
+					return false
+				end
+			end
 			local found = false
 			for _, other in list do
 				if other.physical == tree.physical then
@@ -199,6 +231,9 @@ local function hygiene(config: Config, host: Host)
 	end
 
 	for index, tree in trees do
+		if externallyManaged(tree.physical) then
+			continue
+		end
 		local managed = inside(tree.physical, root)
 		if index ~= 1 and not managed then
 			host.notify("STRAY " .. tree.path)
