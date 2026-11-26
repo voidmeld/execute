@@ -7,6 +7,7 @@ exported member and type.
 | Task | Reference |
 | --- | --- |
 | Find calls, arguments, and member references in Luau source | [Call scanner](#call-scanner) |
+| Check on parallel worktrees and land a reviewed lane | [Lanes](#lanes) |
 | Choose which checks to run for changed files | [Scoped checks](#scoped-checks) |
 | Check that the modules you ship fit within the compiler's register limit | [Register limit](#register-limit) |
 | Compare silent fallbacks with a reviewed allowlist | [Silent fallbacks](#silent-fallbacks) |
@@ -19,6 +20,7 @@ The examples use the `execute` alias from the [package install instructions](../
 
 ```luau
 local CallScanner = require("@execute/extensions/luau/call-scanner")
+local Lanes = require("@execute/extensions/luau/lanes")
 local ScopedChecks = require("@execute/extensions/luau/scoped-checks")
 local RegisterLimit = require("@execute/extensions/luau/register-limit")
 local SilentFallbacks = require("@execute/extensions/luau/silent-fallbacks")
@@ -128,6 +130,77 @@ Otherwise it returns `nil`.
 `lineOf(source: string, position: number) -> number`
 
 `lineOf` returns the number of the line containing the given byte position.
+
+## Lanes
+
+A lane is a coding agent working on its own Git branch in a linked worktree. Anyone with read access
+to the report files and processes can check their progress. To land a lane, take over its idle
+worktree after review. Use the landing procedure in projects that authorize direct pushes to their
+main branch. The project decides who may push, control peer processes, and release.
+
+### `Lanes.classify`
+
+`classify(lane: Observation, now: number, capSeconds: number) -> Status`
+
+Pass one `Lanes.Observation` per lane. Supply its start time in seconds, whether its report file exists
+(`reported`), and whether its process is still `alive`. Use the same clock for `startedAt` and `now`
+and a positive time cap. This function only reads its arguments. It returns a `Lanes.Status` using
+the first matching row.
+
+| What you observe | Status |
+| --- | --- |
+| The report file exists | `reported` |
+| The process has exited | `exited without a report` |
+| Elapsed time has reached the cap | `over the cap` |
+| The process is still within its time cap | `running` |
+
+On hosts with `ps`, the supervision command reads the clock, checks the recorded PIDs and looks for
+a report file in each worktree. Supply the cap in seconds, then five arguments for each lane.
+Use a Unix timestamp for the start time and a report path unique to this run. An absolute report
+path also works.
+
+```sh
+lute run tools/supervise-lanes.luau 3600 docs ../docs-lane "$started_at" report.txt "$pid"
+```
+
+The command prints the lane name, status and worktree on one line per lane. All four statuses are
+normal output. Invalid arguments or a failed process inspection make the command exit with an error.
+
+### `Lanes.land`
+
+`land(lane: Landing, host: Host) -> string`
+
+In `Lanes.Landing`, supply the coordinating checkout (`repo`), the lane's `worktree` and `branch`,
+the Git `remote` and the name of its `main` branch. Supply `setup` and `check` as argument arrays.
+List the PIDs of peer lanes your coordinator owns in `otherPids`. An empty list works for a single lane.
+
+The project supplies four functions in `Lanes.Host`.
+
+| Function | What the project supplies |
+| --- | --- |
+| `run(command, cwd)` | Run the argument array in the given directory and return a `WorkerSetup.CommandResult`. |
+| `releaseRunning()` | Return whether the project's release is in progress. |
+| `waitForPoll()` | Wait until it is time to check again. |
+| `pause(pid)` | Pause that peer and return a function that resumes the same process. Return `nil` if it has exited or was already paused. Check ownership and identity before signaling a process. Raise an error if the pause fails and leave the peer as you found it. |
+
+The coordinator waits for the current release to finish, then fetches the remote main branch and
+rebases the lane onto it. On a rebase conflict it runs `git rebase --abort` and reports the error.
+Setup runs in the lane. The coordinator pauses the peers for the check and calls every resume
+function it acquired, even if another pause, the check, or a resume fails. A resume error identifies
+the PID that needs attention.
+
+Setup and checks must leave the same commit and a clean worktree. Once the check and resumes
+succeed, the coordinator pushes that exact commit to the remote main branch with an ordinary
+fast-forward push. If the push fails, the worktree and branch stay available. If main advanced,
+run the landing procedure again to rebase and check the new commit.
+
+After a successful push, the coordinator removes the worktree and deletes the lane branch only if
+it still points to the checked commit. If you supply a `release` argument array, the coordinator
+runs it from `repo` with the pushed commit ID appended. The release command must release that revision.
+The call returns its full commit ID on success. A cleanup or release error includes the ID already
+pushed so you can finish that step separately.
+
+For an example in the source checkout, see `examples/lanes.luau`.
 
 ## Register limit
 

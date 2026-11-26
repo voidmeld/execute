@@ -3,6 +3,7 @@
 | Module | When to use it |
 | --- | --- |
 | [call-scanner](call-scanner.luau) | Find calls, arguments, and member references in source files. |
+| [lanes](lanes.luau) | Check on parallel worktrees and land a checked commit on the main branch. |
 | [register-limit](register-limit.luau) | Check whether the modules you ship fit within the Luau compiler's register limit. |
 | [scoped-checks](scoped-checks.luau) | Choose which checks to run for the paths that changed. |
 | [silent-fallbacks](silent-fallbacks.luau) | Find silent fallbacks and compare them with an allowlist. |

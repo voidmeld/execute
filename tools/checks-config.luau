@@ -92,6 +92,13 @@ local config: {
 					end,
 				},
 				{
+					prefix = "Lanes",
+					entry = "extensions/luau/lanes.luau",
+					load = function(): unknown
+						return require("../extensions/luau/lanes")
+					end,
+				},
+				{
 					prefix = "RegisterLimit",
 					entry = "extensions/luau/register-limit.luau",
 					load = function(): unknown

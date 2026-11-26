@@ -2,6 +2,7 @@
 
 return table.freeze({
 	"extensions/luau/call-scanner.verify.luau",
+	"extensions/luau/lanes.verify.luau",
 	"extensions/luau/register-limit.verify.luau",
 	"extensions/luau/scoped-checks.verify.luau",
 	"extensions/luau/silent-fallbacks.verify.luau",
