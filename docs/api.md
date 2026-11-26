@@ -238,7 +238,11 @@ checkout path followed by `-worktrees`). The POSIX host uses Git with `merge-tre
 `hygiene(config: Hygiene, host: HygieneHost) -> ()`
 
 Pass the coordinating checkout (`repo`), local branch name (`trunk`) and managed directory
-(`lanesRoot`) in `Lanes.Hygiene`. Set `dryRun = true` to preview cleanup using the current refs.
+(`lanesRoot`) in `Lanes.Hygiene`. If a lane uses a fixed checkout for its branch, supply
+`lanePath(branch)` returning its absolute path or nil for other branches. The tick resolves
+symlinks on the configured path and Git's path so a temporarily detached lane still counts
+as having a worktree. It checks the idle branch tip even while the checkout is detached.
+Set `dryRun = true` to preview cleanup using the current refs.
 On a live tick the pass prunes stale worktree records and fetches all remotes with pruning.
 It checks each idle tip against the local trunk commit. A tip has landed if trunk contains it or
 a conflict-free merge would reproduce trunk's exact tree, including after a squash landing.

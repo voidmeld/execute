@@ -2,7 +2,13 @@
 
 local WorkerSetup = require("./worker-setup")
 
-export type Config = { repo: string, trunk: string, lanesRoot: string, dryRun: boolean? }
+export type Config = {
+	repo: string,
+	trunk: string,
+	lanesRoot: string,
+	lanePath: ((branch: string) -> string?)?,
+	dryRun: boolean?,
+}
 export type Host = {
 	run: (argv: { string }, cwd: string) -> WorkerSetup.CommandResult,
 	canonical: (path: string) -> string,
@@ -103,9 +109,12 @@ local function hygiene(config: Config, host: Host)
 	local trees = inventory()
 	local coordinator = host.canonical(repo)
 	local attached: { [string]: boolean } = {}
+	local detached: { [string]: boolean } = {}
 	for _, tree in trees do
 		if tree.ref then
 			attached[tree.ref] = true
+		elseif tree.head and not tree.missing and inside(tree.physical, root) then
+			detached[tree.physical] = true
 		end
 	end
 
@@ -155,12 +164,11 @@ local function hygiene(config: Config, host: Host)
 		local function available(list: { Tree }): boolean
 			local found = false
 			for _, other in list do
-				if other.path == tree.path then
-					found = other.physical == tree.physical
-						and other.ref == fullRef
-						and other.head == ref.tip
-						and not other.held
-						and not other.missing
+				if other.physical == tree.physical then
+					if found or other.ref ~= fullRef or other.head ~= ref.tip or other.held or other.missing then
+						return false
+					end
+					found = true
 				elseif other.ref == fullRef or inside(other.physical, tree.physical) then
 					return false
 				end
@@ -182,7 +190,7 @@ local function hygiene(config: Config, host: Host)
 		if host.busy(tree.physical, branch, true) then
 			return
 		end
-		git(repo, "worktree", "remove", "--", tree.path)
+		git(repo, "worktree", "remove", "--", tree.physical)
 		for _, remaining in inventory() do
 			assert(remaining.ref ~= fullRef, "branch is checked out")
 		end
@@ -213,7 +221,15 @@ local function hygiene(config: Config, host: Host)
 	for _, ref in ordered do
 		if not attached[ref] then
 			local branch = ref:sub(#"refs/heads/" + 1)
-			host.notify("NO_WORKTREE " .. branch)
+			local expected = config.lanePath and config.lanePath(branch)
+			local physical = expected and host.canonical(expected)
+			if physical and detached[physical] then
+				if host.busy(physical, branch, false) then
+					continue
+				end
+			else
+				host.notify("NO_WORKTREE " .. branch)
+			end
 			if ref ~= trunkRef then
 				attempt(branch, function()
 					inspect(nil, branch, branches[ref], false)

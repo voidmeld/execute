@@ -34,13 +34,14 @@ local function fixture()
 			.. (if locked[path] then "\0locked user reservation" else "")
 			.. "\0\0"
 	end
+	local function canonical(path: string): string
+		return (path:gsub("^/alias", "/lanes"))
+	end
 	local host: Lanes.HygieneHost = {
 		now = function()
 			return 250
 		end,
-		canonical = function(path)
-			return (path:gsub("^/alias", "/lanes"))
-		end,
+		canonical = canonical,
 		busy = function(path, branch)
 			return workers[path or branch or ""] == true
 		end,
@@ -79,8 +80,13 @@ local function fixture()
 				assert(args[3] == "status")
 				stdout = if dirty[cwd] then "?? unsaved\n" else ""
 			elseif verb == "worktree" and args[3] == "remove" then
-				assert(#args == 5 and args[4] == "--" and paths[args[5]])
-				paths[args[5]] = nil
+				assert(#args == 5 and args[4] == "--")
+				for path in paths do
+					if canonical(path) == args[5] then
+						paths[path] = nil
+						break
+					end
+				end
 				table.insert(writes, table.concat(args, " "))
 			elseif verb == "update-ref" then
 				local branch = assert(args[5]:match("^refs/heads/(.+)$"))
@@ -123,6 +129,24 @@ return function(suite: Verify.Harness)
 	local test = Bdd.create(suite)
 	local describe, it, expect = test.describe, test.it, test.expect
 	describe("lane hygiene", function()
+		it("matches detached lane paths through directory aliases and still reports idle branch work", function()
+			local f = fixture()
+			f.config.lanePath = function(branch)
+				local name = branch:match("^topic/(.+)$")
+				return if name then "/alias/" .. name else nil
+			end
+			f.add("topic/data", "bb", nil)
+			f.add("topic/data-old", "dd", nil)
+			f.paths["/lanes/data"], f.tips["/lanes/data"] = "", "aa"
+			f.counts.bb = 1
+			local expected = "NO_WORKTREE topic/data-old\nREMOTE up/topic"
+			expect(f.run()):toBe(expected .. "\nUNLANDED topic/data 1 100s")
+			f.workers["/lanes/data"] = true
+			expect(f.run()):toBe(expected)
+			expect(f.refs["topic/data"]):toBe("bb")
+			expect(f.paths["/lanes/data"]):toBe("")
+		end)
+
 		it("prunes and removes only idle, clean, landed lane pairs", function()
 			local f = fixture()
 			f.add("contained", "bb", "/alias/contained")
