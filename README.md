@@ -19,6 +19,7 @@ only the specified revision to the specified destination.
 | Task | Where to go |
 | --- | --- |
 | Give part of a change to a helper | [Helper brief](docs/helper-brief.md) and [agent adapters](adapters/README.md) |
+| Learn what good work looks like in a domain and apply it in review | [Expertise lane brief and worked example](docs/expertise-lane.md) |
 | Check on a session that seems to have stalled | [Stall check](docs/OPERATING.md#stall-check) |
 | Use an optional tool or follow instructions for a particular platform | [Extensions](extensions/README.md) and [Luau API](docs/api.md) |
 | Upgrade from 0.1 | [Migration note](CHANGELOG.md#020) |
