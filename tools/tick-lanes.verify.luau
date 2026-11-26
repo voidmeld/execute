@@ -20,6 +20,53 @@ return function(suite: Verify.Harness)
 	local describe, it, expect = test.describe, test.it, test.expect
 
 	describe("the lane tick command", function()
+		it("cleans an idle squash landing and keeps live and conflicting lanes in a local repository", function()
+			TemporaryDirectory.run(TemporaryDirectory.root(), "execute-hygiene", function(root)
+				local repo = root .. "/primary"
+				local trees = repo .. "-worktrees"
+				local function git(cwd: string, ...: string): string
+					local result = process.run({ "git", ... }, { cwd = cwd })
+					assert(result.ok, result.stderr)
+					return result.stdout
+				end
+				git(root, "init", "-qb", "main", repo)
+				git(repo, "config", "user.name", "Test")
+				git(repo, "config", "user.email", "test@example.com")
+				git(repo, "config", "merge.keep.driver", "true")
+				fs.writeStringToFile(repo .. "/.gitattributes", "setting merge=keep\n")
+				fs.writeStringToFile(repo .. "/setting", "base\n")
+				git(repo, "add", ".")
+				git(repo, "commit", "-qm", "base")
+				for _, branch in { "squash", "active", "conflict" } do
+					git(repo, "worktree", "add", "-qb", branch, trees .. "/" .. branch)
+				end
+				local squash = trees .. "/squash"
+				for _, file in { "one", "two" } do
+					fs.writeStringToFile(squash .. "/" .. file, file)
+					git(squash, "add", file)
+					git(squash, "commit", "-qm", file)
+				end
+				git(repo, "merge", "--squash", "squash")
+				git(repo, "commit", "-qm", "both changes")
+				fs.writeStringToFile(repo .. "/setting", "trunk edit\n")
+				git(repo, "commit", "-qam", "advance trunk")
+				local conflict = trees .. "/conflict"
+				fs.writeStringToFile(conflict .. "/setting", "lane edit\n")
+				git(conflict, "commit", "-qam", "keep for review")
+				fs.writeStringToFile(repo .. "/queue", "")
+				fs.writeStringToFile(repo .. "/state", ("active\t1\t%d\t/missing\trunning\n"):format(process.pid()))
+				local result = run(repo, 0)
+				assert(result.ok, result.stderr)
+				expect(result.stdout):toContain("REMOVED squash ")
+				expect(result.stdout):toContain("UNLANDED conflict 1 ")
+				expect(git(repo, "branch", "--list", "squash")):toBe("")
+				expect(fs.exists(squash)):toBeFalsy()
+				expect(fs.exists(trees .. "/active")):toBeTruthy()
+				expect(fs.readFileToString(conflict .. "/setting")):toBe("lane edit\n")
+				return true
+			end)
+		end)
+
 		it("saves each launch, retries the next lane and remembers a report across invocations", function()
 			TemporaryDirectory.run(TemporaryDirectory.root(), "execute-queue", function(root)
 				fs.writeStringToFile(root .. "/queue", "docs\tbrief one\r\napi\tbrief two")

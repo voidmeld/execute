@@ -5,6 +5,7 @@ local path = require("@std/path")
 local process = require("@std/process")
 local Lanes = require("../extensions/luau/lanes")
 local LaneProcess = require("./lib/lane-process")
+local hygiene = require("./lib/lane-hygiene-host")
 
 local args = process.args
 local usage = "usage: tick-lanes SLOTS CAP_SECONDS QUEUE STATE [START [ARG ...]]"
@@ -101,6 +102,21 @@ local function runTick()
 			reported = LaneProcess.reported,
 			start = start,
 			save = save,
+			hygiene = function(known)
+				local result = process.run({ "git", "rev-parse", "--show-toplevel" })
+				if result.exitcode == 128 and result.stderr:find("not a git repository", 1, true) then
+					return
+				end
+				assert(result.ok, result.stderr)
+				local repo = result.stdout:gsub("\n$", "")
+				hygiene({
+					repo = repo,
+					trunk = process.env.EXECUTE_TRUNK or "main",
+					lanesRoot = process.env.EXECUTE_LANES_ROOT or repo .. "-worktrees",
+				}, function(name)
+					return known[name] == true
+				end, print)
+			end,
 			notify = function(name, status, detail)
 				print(("%s\t%s\t%s"):format(name, status, detail))
 			end,

@@ -2,6 +2,10 @@
 
 local WorkerSetup = require("./worker-setup")
 local ScopedChecks = require("./scoped-checks")
+local Hygiene = require("./lane-hygiene")
+
+export type Hygiene = Hygiene.Config
+export type HygieneHost = Hygiene.Host
 
 export type Observation = {
 	startedAt: number,
@@ -21,6 +25,7 @@ export type QueueHost = {
 	start: (command: { string }) -> (number, string),
 	save: (runs: { Run }) -> (),
 	notify: (name: string, status: Status | "started", detail: string) -> (),
+	hygiene: ((known: { [string]: boolean }) -> ())?,
 }
 
 export type Landing = {
@@ -121,6 +126,9 @@ local function runTick(queue: Queue, runs: { Run }, host: QueueHost)
 	local starts = selectStarts(queue.pending, known, queue.slots)
 	if changed then
 		host.save(updated)
+	end
+	if host.hygiene then
+		host.hygiene(known)
 	end
 	for _, lane in starts do
 		local command = table.clone(queue.start)
@@ -290,5 +298,6 @@ return {
 	classify = classify,
 	selectStarts = selectStarts,
 	runTick = runTick,
+	hygiene = Hygiene.run,
 	land = land,
 }
