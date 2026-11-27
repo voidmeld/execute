@@ -134,7 +134,7 @@ return function(suite: Verify.Harness)
 	describe("lane hygiene", function()
 		it("matches detached lane paths through directory aliases and still reports idle branch work", function()
 			local f = fixture()
-			f.config.lanePath = function(branch)
+			f.config.lanePath = function(branch: string): string?
 				local name = branch:match("^topic/(.+)$")
 				return if name then "/alias/" .. name else nil
 			end

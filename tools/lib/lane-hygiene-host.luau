@@ -13,19 +13,70 @@ local function output(argv: { string }): string
 end
 
 local function canonical(directory: string): string
-	local absolute = path.format(path.resolve(directory))
+	local absolute = if directory:sub(1, 1) == "/" then directory else tostring(process.cwd()) .. "/" .. directory
 	if fs.exists(absolute) then
 		return (output({ "realpath", absolute }):gsub("\n$", ""))
 	end
-	local parent, name = absolute:match("^(.*)/([^/]+)$")
+	local parent, name = absolute:match("^(.*)/([^/]+)/*$")
 	assert(parent and name, "invalid directory: " .. absolute)
-	return canonical(if parent == "" then "/" else parent) .. "/" .. name
+	return path.format(path.resolve(canonical(if parent == "" then "/" else parent), name))
+end
+
+local function checkoutArguments(command: string, cwd: string?, paths: { [string]: boolean })
+	for option, after in command:gmatch("%s(%-%-?[%w%-]+)()") do
+		if option ~= "-C" and option ~= "--cd" then
+			continue
+		end
+		local arguments = command:sub(assert(after)):match("^[%s=]+(.+)$")
+		if not arguments then
+			continue
+		end
+		for boundary in (arguments .. " "):gmatch("()%s+") do
+			local value = arguments:sub(1, boundary - 1)
+			local directory = if value:sub(1, 1) == "/" then value elseif cwd then cwd .. "/" .. value else nil
+			if directory and fs.exists(directory) then
+				paths[canonical(directory)] = true
+			end
+			if arguments:sub(boundary):match("^%s+%-") then
+				break
+			end
+		end
+	end
+end
+
+local function census(): (string, { [string]: boolean })
+	local files = output({ "lsof", "-nP", "-F0fn" })
+	local working: { [string]: string } = {}
+	local pid = ""
+	local openPaths: { [string]: boolean } = {}
+	for record in files:gmatch("(.-)%z\n") do
+		if record:sub(1, 1) == "p" then
+			pid = record:sub(2)
+		else
+			local fd, file = record:match("^f([^%z]+)%zn(/[^%z]*)$")
+			if file then
+				openPaths[file] = true
+				if fd == "cwd" then
+					working[pid] = file
+				end
+			end
+		end
+	end
+	assert(working[tostring(process.pid())], "incomplete working directory inventory")
+	local commands = output({ "ps", "-Aww", "-o", "pid=,command=" })
+	local observed = false
+	for id, command in ("\n" .. commands):gmatch("\n%s*(%d+)%s+([^\n]+)") do
+		observed = observed or id == tostring(process.pid())
+		checkoutArguments(assert(command), working[id], openPaths)
+	end
+	assert(observed, "incomplete process inventory")
+	return commands, openPaths
 end
 
 local function hygiene(config: Lanes.Hygiene, active: (name: string) -> boolean, notify: (string) -> ())
 	local root = canonical(config.lanesRoot)
 	local spelling = path.format(path.resolve(config.lanesRoot))
-	local openPaths: { string } = {}
+	local openPaths: { [string]: boolean } = {}
 	local commands = ""
 	local function mentions(directory: string): boolean
 		local at = 1
@@ -52,16 +103,9 @@ local function hygiene(config: Lanes.Hygiene, active: (name: string) -> boolean,
 			return true
 		end
 		if commands == "" or refresh then
-			local files = output({ "lsof", "-nP", "-F0n" })
-			assert(files:find("p" .. process.pid() .. "\0", 1, true), "incomplete open file inventory")
-			table.clear(openPaths)
-			for file in files:gmatch("%zn(/[^%z]*)%z") do
-				table.insert(openPaths, file)
-			end
-			commands = output({ "ps", "-Aww", "-o", "command=" })
-			assert(commands:find("%S"), "empty process inventory")
+			commands, openPaths = census()
 		end
-		for _, file in openPaths do
+		for file in openPaths do
 			if file == directory or file:sub(1, #directory + 1) == directory .. "/" then
 				return true
 			end

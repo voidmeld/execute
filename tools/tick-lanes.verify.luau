@@ -67,6 +67,62 @@ return function(suite: Verify.Harness)
 			end)
 		end)
 
+		it("keeps unqueued helpers using a worktree cwd or a symlinked checkout argument until they exit", function()
+			TemporaryDirectory.run(TemporaryDirectory.root(), "execute-live-lanes", function(root)
+				local repo = root .. "/primary"
+				local lanes = root .. "/physical lanes"
+				local alias = repo .. "-worktrees"
+				fs.createDirectory(lanes)
+				fs.symbolicLink(lanes, alias)
+				local function git(...: string): string
+					local result = process.run({ "git", "-C", repo, ... })
+					assert(result.ok, result.stderr)
+					return result.stdout
+				end
+				fs.createDirectory(repo)
+				git("init", "-qb", "main")
+				git(
+					"-c",
+					"user.name=Test",
+					"-c",
+					"user.email=test@example.com",
+					"commit",
+					"--allow-empty",
+					"-qm",
+					"base"
+				)
+				for _, branch in { "fix", "rebase", "idle" } do
+					git("worktree", "add", "-qb", branch, lanes .. "/" .. branch)
+				end
+				fs.writeStringToFile(repo .. "/queue", "")
+				fs.createDirectory(alias .. "/fix/subdir")
+				local handoff = root .. "/handoff checkout"
+				fs.symbolicLink(lanes .. "/rebase", handoff)
+				local running = process.run({
+					"sh",
+					"-c",
+					'(cd "$1" && "$2" run "$3" 0 3600 queue state); exit "$?"',
+					"manual-helper",
+					repo,
+					process.execPath(),
+					command,
+					"-C",
+					"../../../handoff checkout",
+				}, { cwd = alias .. "/fix/subdir" })
+				assert(running.ok, running.stderr)
+				expect(running.stdout):toContain("REMOVED idle ")
+				for _, branch in { "fix", "rebase" } do
+					expect(fs.exists(lanes .. "/" .. branch)):toBeTruthy()
+					expect(git("branch", "--list", branch)):toContain(branch)
+				end
+				local finished = run(repo, 0)
+				assert(finished.ok, finished.stderr)
+				expect(finished.stdout):toContain("REMOVED fix ")
+				expect(finished.stdout):toContain("REMOVED rebase ")
+				return true
+			end)
+		end)
+
 		it("saves each launch, retries the next lane and remembers a report across invocations", function()
 			TemporaryDirectory.run(TemporaryDirectory.root(), "execute-queue", function(root)
 				fs.writeStringToFile(root .. "/queue", "docs\tbrief one\r\napi\tbrief two")

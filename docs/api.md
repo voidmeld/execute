@@ -266,7 +266,8 @@ Supply `run(argv, cwd)`, `canonical(path)`, `busy(path, branch, refresh)`, `now(
 Resolve directory aliases, check worker ownership (including workers outside the queue), and
 refresh the process census when requested. The packaged `tools/lib/lane-hygiene-host.luau`
 adapter takes the config, a live lane-name predicate and an output function. It checks working
-directories, open files and command lines. A temporary Git repository uses the built-in merge
+directories, open files and command lines, resolving `-C` and `--cd` paths against each process's
+working directory. A temporary Git repository uses the built-in merge
 rules to compare content independently of the adopter's custom merge drivers.
 Custom schedulers can use the optional `QueueHost.hygiene(known)` callback or invoke the pass
 directly while holding their tick lock.
