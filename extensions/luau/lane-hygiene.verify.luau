@@ -239,6 +239,10 @@ return function(suite: Verify.Harness)
 			f.host.busy = function(_, branch, refresh)
 				return branch == "started" and refresh
 			end
+			f.config.dryRun = true
+			expect(f.run()):toBe("REMOTE up/topic\nWOULD REMOVE changed /lanes/changed")
+			expect(#f.writes):toBe(0)
+			f.config.dryRun = false
 			local run = f.host.run
 			f.host.run = function(args, cwd)
 				if args[3] == "remove" then

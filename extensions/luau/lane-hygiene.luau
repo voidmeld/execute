@@ -212,15 +212,15 @@ local function hygiene(config: Config, host: Host)
 			host.notify("HELD " .. tree.path)
 			return
 		end
-		if config.dryRun then
-			host.notify("WOULD REMOVE " .. branch .. " " .. tree.path)
-			return
-		end
 		assert(
 			available(inventory()) and git(repo, "rev-parse", "--verify", trunkRef) == trunk.tip .. "\n",
 			"worktree or trunk moved"
 		)
 		if host.busy(tree.physical, branch, true) then
+			return
+		end
+		if config.dryRun then
+			host.notify("WOULD REMOVE " .. branch .. " " .. tree.path)
 			return
 		end
 		git(repo, "worktree", "remove", "--", tree.physical)
