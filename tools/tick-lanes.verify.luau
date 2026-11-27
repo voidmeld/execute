@@ -98,6 +98,10 @@ return function(suite: Verify.Harness)
 				fs.createDirectory(alias .. "/fix/subdir")
 				local handoff = root .. "/handoff checkout"
 				fs.symbolicLink(lanes .. "/rebase", handoff)
+				local reserved = lanes .. "/build cache"
+				git("worktree", "add", "-qb", "snapshot", reserved .. "/snapshot")
+				local env = table.clone(process.env)
+				env.EXECUTE_EXTRA_MANAGED_ROOTS = "snapshots:../physical lanes/build cache"
 				local running = process.run({
 					"sh",
 					"-c",
@@ -108,9 +112,10 @@ return function(suite: Verify.Harness)
 					command,
 					"-C",
 					"../../../handoff checkout",
-				}, { cwd = alias .. "/fix/subdir" })
+				}, { cwd = alias .. "/fix/subdir", env = env })
 				assert(running.ok, running.stderr)
 				expect(running.stdout):toContain("REMOVED idle ")
+				expect(fs.exists(reserved .. "/snapshot/.git")):toBeTruthy()
 				for _, branch in { "fix", "rebase" } do
 					expect(fs.exists(lanes .. "/" .. branch)):toBeTruthy()
 					expect(git("branch", "--list", branch)):toContain(branch)

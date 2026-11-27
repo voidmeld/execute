@@ -109,10 +109,12 @@ local function runTick()
 				end
 				assert(result.ok, result.stderr)
 				local repo = result.stdout:gsub("\n$", "")
+				local extraRoots = process.env.EXECUTE_EXTRA_MANAGED_ROOTS
 				hygiene({
 					repo = repo,
 					trunk = process.env.EXECUTE_TRUNK or "main",
 					lanesRoot = process.env.EXECUTE_LANES_ROOT or repo .. "-worktrees",
+					extraManagedRoots = if extraRoots and extraRoots ~= "" then extraRoots:split(":") else nil,
 				}, function(name)
 					return known[name] == true
 				end, print)

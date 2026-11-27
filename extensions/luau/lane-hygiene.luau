@@ -59,7 +59,8 @@ local function hygiene(config: Config, host: Host)
 	assert(root:sub(1, 1) == "/" and root ~= "/", "supply an absolute lanes directory")
 	local extraRoots: { string } = {}
 	for _, directory in config.extraManagedRoots or {} do
-		local physical = host.canonical(directory)
+		assert(directory ~= "", "empty managed directory")
+		local physical = host.canonical(if directory:sub(1, 1) == "/" then directory else repo .. "/" .. directory)
 		assert(physical:sub(1, 1) == "/" and physical ~= "/", "supply an absolute managed directory")
 		table.insert(extraRoots, physical)
 	end

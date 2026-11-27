@@ -222,7 +222,8 @@ The caller runs one tick at a time against that list.
 
 Inside a Git checkout the tick also runs [lane hygiene](#laneshygiene) under its lock before
 starting workers. Set `EXECUTE_TRUNK` (default `main`) and `EXECUTE_LANES_ROOT` (default the
-checkout path followed by `-worktrees`). The POSIX host uses Git with `merge-tree --write-tree`,
+checkout path followed by `-worktrees`). Set `EXECUTE_EXTRA_MANAGED_ROOTS` to a colon-separated
+list of directories owned by other checkout managers. The POSIX host uses Git with `merge-tree --write-tree`,
 `realpath`, `lsof`, `ps` and `mktemp`. Standalone queues outside Git still supervise their workers.
 
 | Function in `Lanes.QueueHost` | What the project supplies |
@@ -242,7 +243,8 @@ Pass the coordinating checkout (`repo`), local branch name (`trunk`) and managed
 `lanePath(branch)` returning its absolute path or nil for other branches. The tick resolves
 symlinks on the configured path and Git's path so a temporarily detached lane still counts
 as having a worktree. It checks the idle branch tip even while the checkout is detached.
-List absolute directories owned by other tools in `extraManagedRoots`. The tick leaves those
+List directories owned by other tools in `extraManagedRoots`, using absolute paths or paths
+relative to `repo`. The tick leaves those
 checkouts and their cleanup to their owner. A stale registration in one of these roots defers
 Git's repository-wide worktree prune. On a live tick the pass fetches all remotes with pruning.
 Set `dryRun = true` to preview cleanup using the current refs.
