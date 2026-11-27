@@ -21,6 +21,7 @@ return {
 			"/tools/supervise-lanes.luau",
 			"/tools/tick-lanes.luau",
 			"/tools/lib/lane-process.luau",
+			"/tools/lib/lane-hygiene-host.luau",
 			"/.agents/**",
 			"/.claude/**",
 			"/README.md",

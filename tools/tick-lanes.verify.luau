@@ -20,6 +20,114 @@ return function(suite: Verify.Harness)
 	local describe, it, expect = test.describe, test.it, test.expect
 
 	describe("the lane tick command", function()
+		it("cleans an idle squash landing and keeps live and conflicting lanes in a local repository", function()
+			TemporaryDirectory.run(TemporaryDirectory.root(), "execute-hygiene", function(root)
+				local repo = root .. "/primary"
+				local trees = repo .. "-worktrees"
+				local function git(cwd: string, ...: string): string
+					local result = process.run({ "git", ... }, { cwd = cwd })
+					assert(result.ok, result.stderr)
+					return result.stdout
+				end
+				git(root, "init", "-qb", "main", repo)
+				git(repo, "config", "user.name", "Test")
+				git(repo, "config", "user.email", "test@example.com")
+				git(repo, "config", "merge.keep.driver", "true")
+				fs.writeStringToFile(repo .. "/.gitattributes", "setting merge=keep\n")
+				fs.writeStringToFile(repo .. "/setting", "base\n")
+				git(repo, "add", ".")
+				git(repo, "commit", "-qm", "base")
+				for _, branch in { "squash", "active", "conflict" } do
+					git(repo, "worktree", "add", "-qb", branch, trees .. "/" .. branch)
+				end
+				local squash = trees .. "/squash"
+				for _, file in { "one", "two" } do
+					fs.writeStringToFile(squash .. "/" .. file, file)
+					git(squash, "add", file)
+					git(squash, "commit", "-qm", file)
+				end
+				git(repo, "merge", "--squash", "squash")
+				git(repo, "commit", "-qm", "both changes")
+				fs.writeStringToFile(repo .. "/setting", "trunk edit\n")
+				git(repo, "commit", "-qam", "advance trunk")
+				local conflict = trees .. "/conflict"
+				fs.writeStringToFile(conflict .. "/setting", "lane edit\n")
+				git(conflict, "commit", "-qam", "keep for review")
+				fs.writeStringToFile(repo .. "/queue", "")
+				fs.writeStringToFile(repo .. "/state", ("active\t1\t%d\t/missing\trunning\n"):format(process.pid()))
+				local result = run(repo, 0)
+				assert(result.ok, result.stderr)
+				expect(result.stdout):toContain("REMOVED squash ")
+				expect(result.stdout):toContain("UNLANDED conflict 1 ")
+				expect(git(repo, "branch", "--list", "squash")):toBe("")
+				expect(fs.exists(squash)):toBeFalsy()
+				expect(fs.exists(trees .. "/active")):toBeTruthy()
+				expect(fs.readFileToString(conflict .. "/setting")):toBe("lane edit\n")
+				return true
+			end)
+		end)
+
+		it("keeps unqueued helpers using a worktree cwd or a symlinked checkout argument until they exit", function()
+			TemporaryDirectory.run(TemporaryDirectory.root(), "execute-live-lanes", function(root)
+				local repo = root .. "/primary"
+				local lanes = root .. "/physical lanes"
+				local alias = repo .. "-worktrees"
+				fs.createDirectory(lanes)
+				fs.symbolicLink(lanes, alias)
+				local function git(...: string): string
+					local result = process.run({ "git", "-C", repo, ... })
+					assert(result.ok, result.stderr)
+					return result.stdout
+				end
+				fs.createDirectory(repo)
+				git("init", "-qb", "main")
+				git(
+					"-c",
+					"user.name=Test",
+					"-c",
+					"user.email=test@example.com",
+					"commit",
+					"--allow-empty",
+					"-qm",
+					"base"
+				)
+				for _, branch in { "fix", "rebase", "idle" } do
+					git("worktree", "add", "-qb", branch, lanes .. "/" .. branch)
+				end
+				fs.writeStringToFile(repo .. "/queue", "")
+				fs.createDirectory(alias .. "/fix/subdir")
+				local handoff = root .. "/handoff checkout"
+				fs.symbolicLink(lanes .. "/rebase", handoff)
+				local reserved = lanes .. "/build cache"
+				git("worktree", "add", "-qb", "snapshot", reserved .. "/snapshot")
+				local env = table.clone(process.env)
+				env.EXECUTE_EXTRA_MANAGED_ROOTS = "snapshots:../physical lanes/build cache"
+				local running = process.run({
+					"sh",
+					"-c",
+					'(cd "$1" && "$2" run "$3" 0 3600 queue state); exit "$?"',
+					"manual-helper",
+					repo,
+					process.execPath(),
+					command,
+					"-C",
+					"../../../handoff checkout",
+				}, { cwd = alias .. "/fix/subdir", env = env })
+				assert(running.ok, running.stderr)
+				expect(running.stdout):toContain("REMOVED idle ")
+				expect(fs.exists(reserved .. "/snapshot/.git")):toBeTruthy()
+				for _, branch in { "fix", "rebase" } do
+					expect(fs.exists(lanes .. "/" .. branch)):toBeTruthy()
+					expect(git("branch", "--list", branch)):toContain(branch)
+				end
+				local finished = run(repo, 0)
+				assert(finished.ok, finished.stderr)
+				expect(finished.stdout):toContain("REMOVED fix ")
+				expect(finished.stdout):toContain("REMOVED rebase ")
+				return true
+			end)
+		end)
+
 		it("saves each launch, retries the next lane and remembers a report across invocations", function()
 			TemporaryDirectory.run(TemporaryDirectory.root(), "execute-queue", function(root)
 				fs.writeStringToFile(root .. "/queue", "docs\tbrief one\r\napi\tbrief two")

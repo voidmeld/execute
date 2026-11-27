@@ -220,6 +220,12 @@ In Luau, supply `pending`, `slots`, `capSeconds` and the launcher's argument arr
 Each record holds `name`, `startedAt`, `pid`, `report` and `status`. An exited worker has a nil PID.
 The caller runs one tick at a time against that list.
 
+Inside a Git checkout the tick also runs [lane hygiene](#laneshygiene) under its lock before
+starting workers. Set `EXECUTE_TRUNK` (default `main`) and `EXECUTE_LANES_ROOT` (default the
+checkout path followed by `-worktrees`). Set `EXECUTE_EXTRA_MANAGED_ROOTS` to a colon-separated
+list of directories owned by other checkout managers. The POSIX host uses Git with `merge-tree --write-tree`,
+`realpath`, `lsof`, `ps` and `mktemp`. Standalone queues outside Git still supervise their workers.
+
 | Function in `Lanes.QueueHost` | What the project supplies |
 | --- | --- |
 | `now()` | Return the current time in seconds. |
@@ -227,6 +233,46 @@ The caller runs one tick at a time against that list.
 | `start(command)` | Start one lane with the supplied argument array and return its PID and unique report path. |
 | `save(runs)` | Persist the whole list before returning. The tick saves observed changes and each successful start. |
 | `notify(name, status, detail)` | Deliver a status line. An interruption between notification and saving can repeat it on retry. |
+
+### `Lanes.hygiene`
+
+`hygiene(config: Hygiene, host: HygieneHost) -> ()`
+
+Pass the coordinating checkout (`repo`), local branch name (`trunk`) and managed directory
+(`lanesRoot`) in `Lanes.Hygiene`. If a lane uses a fixed checkout for its branch, supply
+`lanePath(branch)` returning its absolute path or nil for other branches. The tick resolves
+symlinks on the configured path and Git's path so a temporarily detached lane still counts
+as having a worktree. It checks the idle branch tip even while the checkout is detached.
+List directories owned by other tools in `extraManagedRoots`, using absolute paths or paths
+relative to `repo`. The tick leaves those
+checkouts and their cleanup to their owner. A stale registration in one of these roots defers
+Git's repository-wide worktree prune. On a live tick the pass fetches all remotes with pruning.
+Set `dryRun = true` to preview cleanup using the current refs.
+It checks each idle tip against the local trunk commit. A tip has landed if trunk contains it or
+a conflict-free merge would reproduce trunk's exact tree, including after a squash landing.
+
+Each `UNLANDED <lane> <commits> <age>` gives the local branch name (checkout path for a detached
+HEAD), the number of commits outside trunk's history and the age of the tip in seconds. A
+`DIRTY` line identifies pending worktree changes, which can give an idle lane a zero commit count.
+The tick repeats findings until they clear. `REMOTE`, `NO_WORKTREE` and `STRAY` name nontrunk
+remote branches, unattached local branches and linked checkouts outside the lanes root.
+
+Only idle, clean, branch-bearing lane worktrees inside the resolved root qualify for removal.
+The coordinating and primary checkouts, trunk, locks and parents of registered worktrees are
+protected. The pass rechecks the checkout and worker before unforced removal, then deletes the
+branch conditional on its inspected tip. A failed command prints `HYGIENE ERROR` with its reason.
+Review any remaining branch on the next tick. Dry runs print `WOULD REMOVE` and skip mutations.
+
+Supply `run(argv, cwd)`, `canonical(path)`, `busy(path, branch, refresh)`, `now()` and
+`notify(line)` in `Lanes.HygieneHost`. Git output must preserve NULs, newlines and exit codes.
+Resolve directory aliases, check worker ownership (including workers outside the queue), and
+refresh the process census when requested. The packaged `tools/lib/lane-hygiene-host.luau`
+adapter takes the config, a live lane-name predicate and an output function. It checks working
+directories, open files and command lines, resolving `-C` and `--cd` paths against each process's
+working directory. A temporary Git repository uses the built-in merge
+rules to compare content independently of the adopter's custom merge drivers.
+Custom schedulers can use the optional `QueueHost.hygiene(known)` callback or invoke the pass
+directly while holding their tick lock.
 
 ### `Lanes.land`
 
